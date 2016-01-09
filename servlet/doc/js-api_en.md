@@ -80,7 +80,7 @@ Styles are calculated by the browser in the following priority:
 
 **[\[⬆\]](#table-of-contents)**
 
-## `Handling Non-JavaScript Users`
+## Handling Non-JavaScript Users
 
 Almost all browsers have JavaScript enabled but for accessibility & SEO use the 
 following approach as a fallback for non-JavaScript browsers:
@@ -100,7 +100,7 @@ pictura.js only loads images present in the markup at the time the script is
 executed.
 
 If you inject image elements after page load using JavaScript, you have to tell 
-pictura.js about it using the ```reload()``` method:
+pictura.js about it using the `reload()` method:
 
 ```html
 <script>
@@ -119,9 +119,9 @@ pictura.js about it using the ```reload()``` method:
 
 ### debug
 
-If set to ```true```, the script will automatically creats debug URL's instead
-of default image URL's (debug URL's contains an additional ```debug``` request
-parameter). The default value is ```false```.
+If set to `true`, the script will automatically creats debug URL's instead
+of default image URL's (debug URL's contains an additional `debug` request
+parameter). The default value is `false`.
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -167,7 +167,7 @@ PicturaIO = {
 // Domain sharding
 PicturaIO = {
     init: {
-        server: ['http://my-image-server-1.de/pictura/', 'http://my-image-server-1.de/pictura/'],
+        server: ['http://my-image-server-1.de/pictura/', 'http://my-image-server-2.de/pictura/'],
         ...
     }
 };
@@ -178,35 +178,35 @@ PicturaIO = {
 ### delay
 
 Defines a delay in millis before the script will start. Must be a positive 
-integer. The default value is ```0```.
+integer. The default value is `0`.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### imageClass
 
 Defines the CSS image class name. Must be a string. If the value is **not**
- ```null```, only ```img``` tags with the specified CSS class name are 
-considered by the script. As default, this value is not set.
+`null`, only `img` tags with the specified CSS class name are considered by the 
+script. As default, this value is not set.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### imageQuality
 
-Sets the default image quality. Must be a string or ```null``` to unset. As
-default, this value is not set.
+Sets the default image quality. Must be a string or `null` to unset. As default, 
+this value is not set.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### imageCompressionQuality
 
 Sets the default image compression quality. Valid values are in the range 
-```0 - 100```. As default, this value is not set.
+`0 - 100`. As default, this value is not set.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### imageOnError
 
-Callback function to notify for ```onError``` events. As default, there is no 
+Callback function to notify for `onError` events. As default, there is no 
 callback function set. If a callback function is specified and the callback
 returns an alternative image source the script tries to load this one.
 
@@ -236,7 +236,7 @@ PicturaIO.param('imageOnError', function(event) {
 
 ### imageOnLoad
 
-Callback function to notify for ```onLoad``` events. As default, there is no 
+Callback function to notify for `onLoad` events. As default, there is no 
 callback function set.
 
 **Example 1**
@@ -263,7 +263,7 @@ PicturaIO.param('imageOnLoad', function(event) {
 
 ### imageOnChange
 
-Callback function to notify for ```onChange``` events. As default, there is no 
+Callback function to notify for `onChange` events. As default, there is no 
 callback function set.
 
 **Example 1**
@@ -317,41 +317,41 @@ PicturaIO.param('imageResolver', function(src, params) {
 
 ### lazyLoad
 
-Enables/disables lazy loading of images. The default value is ```false```.
+Enables/disables lazy loading of images. The default value is `false`.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### lazyLoadOffset
 
 Vertical offset in px used for preloading images while scrolling. Must be a
-positive integer or ```-1``` for auto calculation. The default value is ```-1```.
+positive integer or `-1` for auto calculation. The default value is `-1`.
 
-> The auto calculated value results to ```Viewport Height / 6```.
+> The auto calculated value results to `Viewport Height / 6`.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### reloadOnResize
 
-If ```true``` resizes images on browser resize.
+If `true` resizes images on browser resize.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### reloadOnResizeDown
 
-If ```true``` resizes images when scaled down in size.
+If `true` resizes images when scaled down in size.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### reloadOnOrientationChange
 
-If ```true``` resizes images on device rotation (orientation change).
+If `true` resizes images on device rotation (orientation change).
 
 **[\[⬆\]](#table-of-contents)**
 
 ### reloadThreshold
 
 Reload images only if the size changed is larger than the specified delta in px.
-Must be positive integers. The default value is ```10```. 
+Must be positive integers. The default value is `10`. 
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -389,7 +389,7 @@ Converts the given image URL to a valid palette CSS URL.
 var css = PicturaIO.pcssURL('/image.jpg');
 ```
 
-> Requires a registered ```io.pictura.servlet.CSSColorPaletteRequestProcessor```
+> Requires a registered `io.pictura.servlet.CSSColorPaletteRequestProcessor`
 > request processor at the requested service endpoint.
 
 **[\[⬆\]](#table-of-contents)**
@@ -427,8 +427,8 @@ var url = PicturaIO.serverAddr();
 ### reload
 
 Reloads the specified image. If there is no image is specified or the image is 
-```null```, this function triggers a reload of all images with the current 
-global and image specific (data-params) parameters.
+`null`, this function triggers a reload of all images with the current global 
+and image specific (data-params) parameters.
 
 **Example 1**
 
@@ -455,16 +455,16 @@ PicturaIO.reload(document.getElementWithId(...), 500);
 
 ## Data Attributes
 
-### `data-src`
+### data-src
 
 Image path or URL.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `data-srcset`
+### data-srcset
 
-Image path or URL as ```srcset```. On clients without ```srcset``` support, the 
-value of the ```src``` attribute will be used as the image source.
+Image path or URL as `srcset`. On clients without `srcset` support, the 
+value of the `src` attribute will be used as the image source.
 
 **Example**
 
@@ -474,7 +474,7 @@ value of the ```src``` attribute will be used as the image source.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `data-params`
+### data-params
 
 Specifies the optional API parameters.
 
@@ -486,10 +486,10 @@ Specifies the optional API parameters.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `data-lazyload`
+### data-lazyload
 
-If present and set, the attribute will override the global ```lazyLoad```
-parameter with the specified value. Valid values are ```true``` or ```false```.
+If present and set, the attribute will override the global `lazyLoad`
+parameter with the specified value. Valid values are `true` or `false`.
 
 **Example**
 
@@ -499,10 +499,10 @@ parameter with the specified value. Valid values are ```true``` or ```false```.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `data-skip`
+### data-skip
 
 If present and set to true, the script will ignore the affected image tag.
-Valid values are ```true``` or ```false```.
+Valid values are `true` or `false`.
 
 **Example**
 
@@ -516,7 +516,7 @@ Valid values are ```true``` or ```false```.
 
 ### Usage
 
-> Keep sure, the ```io.pictura.servlet.ClientHintRequestProcessor``` is used
+> Keep sure, the `io.pictura.servlet.ClientHintRequestProcessor` is used
 > otherwise the cookie is ignored at server site.
 
 ```html

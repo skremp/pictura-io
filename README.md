@@ -112,8 +112,8 @@ Optionally, you can install the project in your local Maven repository using:
 
 ## Usage
 
-To use the servlet in your web application project, include the ```pictura-servlet-{VERSION}.jar```
-in your web-application's classpath (```WEB-INF/lib```) or if your project is a 
+To use the servlet in your web application project, include the `pictura-servlet-{VERSION}.jar`
+in your web-application's classpath (`WEB-INF/lib`) or if your project is a 
 Maven based project, append the dependency
 
 ```xml
@@ -124,7 +124,7 @@ Maven based project, append the dependency
 </dependency>
 ```
 
-to the project's ```pom.xml```.
+to the project's `pom.xml`.
 
 With Gradle append
 
@@ -132,9 +132,9 @@ With Gradle append
 compile 'io.pictura:pictura-servlet:{VERSION}'
 ```
 
-to the ```build.gradle```.
+to the `build.gradle`.
 
-Next, to ```WEB-INF/web.xml``` add
+Next, to `WEB-INF/web.xml` add
 
 ```xml
 <web-app ...>
@@ -175,7 +175,7 @@ webapp and context) to see the current servlet status and statistics.
 
 Once your PicturaIO servlet is registered then simply add the client side
 dependency free pictura.js JavaScript library (only 4kB minified and compressed)
-to your page and replace the image tag ```src``` attributes with ```data-src``` 
+to your page and replace the image tag `src` attributes with `data-src` 
 to enable the client side features:
 
 ```html
@@ -317,7 +317,7 @@ public class JettyPicturaServer {
 }
 ```
 
-## `Run & Play`
+## Run & Play
 
 The test package contains a simple embedded [Undertow](http://undertow.io/) 
 server (`io.pictura.servlet.UndertowPicturaServer`) which deploys the PicturaIO 
@@ -450,7 +450,7 @@ Here is a list of frequently asked questions.
     Unfortunately, the JDK JPEG ImageIO plug-in does not support CMYK color
     profiles. If you require support for CMYK color profiles in JPEG images,
     you have to install a 3rd party ImageIO JPEG plug-in with support for CMYK
-    color profiles, e.g. ```com.twelvemonkeys.imageio:imageio-jpeg```, to solve
+    color profiles, e.g. `com.twelvemonkeys.imageio:imageio-jpeg`, to solve
     this until the JDK embedded JPEG image reader does not support CMYK color
     profiles.
 
@@ -466,7 +466,7 @@ Here is a list of frequently asked questions.
     ```
 
     Next, exclude the default JDK JPEG ImageIO plug-in from your PicturaIO
-    servlet instance by adding the init parameter ```imageioSpiFilterExclude```
+    servlet instance by adding the init parameter `imageioSpiFilterExclude`
 
     ```xml
     <servlet>

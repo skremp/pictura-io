@@ -69,8 +69,8 @@ declaration and mapping for the default `PicturaServlet`:
 ## Servlet Types
   
 The PicturaIO web servlet is available in two different kinds. The default servlet
-```io.pictura.servlet.PicturaServlet``` to handle GET requests only and a POST 
-variant ```io.pictura.servlet.PicturaPostServlet``` to handle GET and POST 
+`io.pictura.servlet.PicturaServlet` to handle GET requests only and a POST 
+variant `io.pictura.servlet.PicturaPostServlet` to handle GET and POST 
 requests.
 
 In cases of POST requests, the source image is not specified as part of the 
@@ -86,10 +86,10 @@ to convert is given as POST body data as part of the request.
 The Pictura servlet supports property placeholders for init parameters. You can
 use this feature to refer to system properties.
 
-For example, the placeholder ```${http.proxyPort}``` will refer to 
-```java.lang.System.getProperty("http.proxyPort")```. You can also define a
-default value if the system property is not set with the ```:``` delimeter
-```${http.proxyPort:8077}```. In this case the value after the delimeter is
+For example, the placeholder `${http.proxyPort}` will refer to 
+`java.lang.System.getProperty("http.proxyPort")`. You can also define a
+default value if the system property is not set with the `:` delimeter
+`${http.proxyPort:8077}`. In this case the value after the delimeter is
 used. 
 
 > To override servlet configuration defaults, specify them in the init-params 
@@ -704,7 +704,7 @@ default this value is not set.
 </pictura>
 ```
 
-> See ```/META-INF/resources/dtd/pictura-config-1.0.dtd``` for the document type
+> See `/META-INF/resources/dtd/pictura-config-1.0.dtd` for the document type
 > definition.
 
 *Properties Format*
@@ -714,7 +714,7 @@ io.pictura.servlet.debug=true
 io.pictura.servlet.resourceLocators=io.pictura.servlet.FileResourceLocator,io.pictura.servlet.HttpResourceLocator
 ```
 
-> A init parameter is specified as ```io.pictura.servlet.{PARAM_NAME}```.
+> A init parameter is specified as `io.pictura.servlet.{PARAM_NAME}`.
 
 If both configurations contains a servlet init parameter (web.xml and the
 external referenced config file), the value from the web.xml will override
@@ -724,11 +724,10 @@ the value from the external config file.
 
 ## Context Parameters
 
-### `io.pictura.servlet.LOG_LEVEL`
+### io.pictura.servlet.LOG_LEVEL
 
 Sets the log level for the internal Pictura servlet logger. Valid values are
-```TRACE```, ```DEBUG```, ```INFO```, ```WARN```, ```ERROR``` and ```FATAL```.
-The default value is ```INFO```.
+`TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR` and `FATAL`. The default value is `INFO`.
 
 > The intention of an internal servlet logger is that there maybe problems with 
 > different logging frameworks on the running app server. So the internal logger
@@ -737,14 +736,14 @@ The default value is ```INFO```.
 
 **[\[⬆\]](#table-of-contents)**
 
-## `Servlet Status & Statistics`
+## Servlet Status &amp; Statistics
 
 If enabled (see servlet parameters) the servlet provides status and statistic
-values as JSON output. The default path (relativ to servlet path) is ```/stats```.
+values as JSON output. The default path (relativ to servlet path) is `/stats`.
 
 **Example Output**
 
-```json
+```javascript
 {
     id: "mYXmkYVdpIoBGUY5",
     version: "1.0.0.Final",
@@ -785,22 +784,21 @@ values as JSON output. The default path (relativ to servlet path) is ```/stats``
 
 ### Query Parameters
 
-#### `q (Query)`
+#### q (Query)
 
-Specifies the query to execute. Valid values are ```stats```, ```errors```,
-```params```, ```imageio``` and ```cache```. The default value (if parameter is
-not present) is ```stats```.
+Specifies the query to execute. Valid values are `stats`, `errors`, `params`, 
+`imageio` and `cache`. The default value (if parameter is not present) is `stats`.
 
 **[\[⬆\]](#table-of-contents)**
 
-#### `f (Filter)`
+#### f (Filter)
 
 An optional parameter to specify a regular expression filter. Depends on the
 query. 
 
 **[\[⬆\]](#table-of-contents)**
 
-#### `a (Action)`
+#### a (Action)
 
 An optional action parameter to specify an action to execute (e.g. delete 
 cache entry).
@@ -815,11 +813,11 @@ List the cumulative numbers of all client and server errors since start.
 
 *Request*
 
- ```/stats?q=errors```
+ `/stats?q=errors`
 
 *Response*
 
-```json
+```javascript
 {
     http400: 26,
     http415: 1,
@@ -833,11 +831,11 @@ List the cumulative numbers of all server errors since start.
 
 *Request*
 
- ```/stats?q=errors&f=5.*```
+ `/stats?q=errors&f=5.*`
 
 *Response*
 
-```json
+```javascript
 {
     http500: 3
 }
@@ -849,11 +847,11 @@ List the servlet init parameters.
 
 *Request*
 
- ```/stats?q=params```
+ `/stats?q=params`
 
 *Response*
 
-```json
+```javascript
 {
     initParams: {
         cacheCapacity: "100",
@@ -887,11 +885,11 @@ List all registered ImageIO plug-ins.
 
 *Request*
 
- ```/stats?q=imageio```
+ `/stats?q=imageio`
 
 *Response*
 
-```json
+```javascript
 {
     imageio: [
         {
@@ -940,11 +938,11 @@ List the current HTTP cache entries.
 
 *Request*
 
- ```/stats?q=cache```
+ `/stats?q=cache`
 
 *Response*
 
-```json
+```javascript
 {
     cacheEntries: [
         {
@@ -964,11 +962,11 @@ List the current HTTP cache entries.
 
 **Example 5**
 
-Delete all HTTP cache entries which contains the string ```jpg``` in the cache key.
+Delete all HTTP cache entries which contains the string `jpg` in the cache key.
 
 *Request*
 
- ```/stats?q=cache&f=.*jpg.*&a=delete```
+ `/stats?q=cache&f=.*jpg.*&a=delete`
 
 *Response*
 
@@ -1171,7 +1169,7 @@ also use regular expressions and wild-cards to specify the path rules.
 ### Custom Implementation
 
 A custom cache control handler implementation must implements the 
-interface ```io.pictura.servlet.CacheControlHandler```.
+interface `io.pictura.servlet.CacheControlHandler`.
 
 ```java
 package io.pictura.servlet.examples;
@@ -1233,17 +1231,17 @@ will lookup a new image request processor in the following order:
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.ImageRequestProcessor`
+### io.pictura.servlet.ImageRequestProcessor
 
 This is the default core image request processor. If nothing else is configured
 this request processor is used.
 
 > The default image request processor **doesn't** implements the strategy 
-> interface ```io.pictura.servlet.ImageRequestStrategy```.
+> interface `io.pictura.servlet.ImageRequestStrategy`.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.AutoFormatRequestProcessor`
+### io.pictura.servlet.AutoFormatRequestProcessor
 
 An output format content negotiation request processor to automatically decide 
 the best image format for the requested client if no output format was set.
@@ -1265,11 +1263,11 @@ and `GIF`.
 | Microsoft IE          | YES  |           |      | YES | YES |
 | Microsoft Edge        | YES  |           |      | YES | YES |
 
-> Implements the ```io.pictura.servlet.ImageRequestStrategy``` interface.
+> Implements the `io.pictura.servlet.ImageRequestStrategy` interface.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.ClientHintRequestProcessor`
+### io.pictura.servlet.ClientHintRequestProcessor
 
 Based on the new Client-Hint browser feature or the Pictura Client-Hint Cookie 
 Script, the processor will try to automatically negotiate the content.
@@ -1288,7 +1286,7 @@ a small cookie. To enable this feature it is necessary to embedd the
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.CSSColorPaletteRequestProcessor`
+### io.pictura.servlet.CSSColorPaletteRequestProcessor
 
 The CSS color palette processor is used to extract 1 - 32 dominant colors from 
 the specified image (after the optional image operations are done). The result 
@@ -1303,7 +1301,7 @@ For more details, please see [Palette CSS API Reference](servlet/doc/pcss-api_en
 
 **[\[⬆\]](#table-of-contents)**
  
-### `io.pictura.servlet.BotRequestProcessor`
+### io.pictura.servlet.BotRequestProcessor
 
 This is a special implementation of the default image request processor which 
 will handle bot requests different to normal "user" requests.
@@ -1313,21 +1311,21 @@ origin image unless it is a proxy request anyway. To handle this, the bot
 request processor will send a moved permanently status code with the location 
 to the unmodified image back to the client (bot).
 
-> Implements the ```io.pictura.servlet.ImageRequestStrategy``` interface.
+> Implements the `io.pictura.servlet.ImageRequestStrategy` interface.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.MetadataRequestProcessor`
+### io.pictura.servlet.MetadataRequestProcessor
 
-> Requires the optional dependencies ```com.drewnoakes:metadata-extractor``` and 
-> ```com.google.code.gson:gson```. For the first use (request), the request 
+> Requires the optional dependencies `com.drewnoakes:metadata-extractor` and 
+> `com.google.code.gson:gson`. For the first use (request), the request 
 > processor will check whether the dependencies are available or not.
 
 Produces a non-image, **JSON** file format. This is a data representation of 
 the image specified (EXIF values).
 
-The image processor strategy is listening for requested ```EXIF``` output file 
-formats (```/F=EXIF/image.jpg```).
+The image processor strategy is listening for requested `EXIF` output file 
+formats (`/F=EXIF/image.jpg`).
 
 **Example Response**
 
@@ -1373,35 +1371,35 @@ formats (```/F=EXIF/image.jpg```).
 }
 ```
 
-> Implements the ```io.pictura.servlet.ImageRequestStrategy``` interface.
+> Implements the `io.pictura.servlet.ImageRequestStrategy` interface.
 
 **[\[⬆\]](#table-of-contents)**
 
-### `io.pictura.servlet.PDFRequestProcessor`
+### io.pictura.servlet.PDFRequestProcessor
 
-> Requires the optional dependency ```org.apache.pdfbox:pdfbox```. For the 
+> Requires the optional dependency `org.apache.pdfbox:pdfbox`. For the 
 > first use (request), the request processor will check whether the dependency 
 > is available or not. 
 
 Produces a non-image, **PDF** file format. The actual image will be part of
 the generated PDF document.
 
-The image processor strategy is listening for requested ```PDF``` output file 
-formats ```/F=PDF/image.jpg```).
+The image processor strategy is listening for requested `PDF` output file 
+formats `/F=PDF/image.jpg`).
 
 **[\[⬆\]](#table-of-contents)**
 
 ## Request Processor Factory
 
 A custom image request processor factory must implements the interface
-```io.pictura.servlet.ImageRequestProcessorFactory```. The following example
+`io.pictura.servlet.ImageRequestProcessorFactory`. The following example
 demonstrates the usage of a custom image request processor factory. If a
-request contains the HTTP header ```X-JPEG```, the factory will create a
+request contains the HTTP header `X-JPEG`, the factory will create a
 custom image request processor which creates JPEG output images only, independent
 from the specified format parameter.
 
 > If you deal with dynamic client values like cookies, do not forget to 
-> override the ```getTrueCacheKey() : String``` method to prevent caching
+> override the `getTrueCacheKey() : String` method to prevent caching
 > errors.
 
 **Example**
@@ -1456,10 +1454,10 @@ A resource locator is used to locate a requested resource (image). In this
 connection it is irrelevant where the resource is located; for example on the 
 local disk or on a remote location. In any case, each resource locator returns
 a valid URL which will contains the full qualified path to the requested 
-resource or ```null``` if the resource can't be located by the resource locator.
+resource or `null` if the resource can't be located by the resource locator.
 
 As default (if nothing else was configured), the servlet will register a
-```io.pictura.servlet.FileResourceLocator``` with the root path of your web
+`io.pictura.servlet.FileResourceLocator` with the root path of your web
 application. To customize the root path, you can implement and register your
 own resource locator.
 
@@ -1550,7 +1548,7 @@ public class ProtectedHttpResourceLocator extends HttpResourceLocator {
 
 You can create customized URL Connections to fetch remote located image 
 resources if you register your own URL Connection Factory via the servlet init
-parameter ```urlConnectionFactory```.
+parameter `urlConnectionFactory`.
 
 If `newConnection(URL, Properties)` is called from an image request processor,
 the properties list contains the configured HTTP client connection settings as 
@@ -1629,8 +1627,8 @@ public class CustomConnectionFactory implements URLConnectionFactory {
 ## Params Interceptor
 
 > Please note, you can set params interceptors only with the corresponding 
-> annotation or programmatically if you override the ```doProcess(...)```
-> method from the ```PicturaServlet``` class.
+> annotation or programmatically if you override the `doProcess(...)`
+> method from the `PicturaServlet` class.
 
 Could be used to intercept and modify the request image parameters before the
 image will be processed. The following example will remove all defined image
@@ -1680,8 +1678,8 @@ public class InterceptablePicturaServlet extends PicturaServlet {
 ## Image Interceptor
 
 > Please note, you can set image interceptors only with the corresponding 
-> annotation or programmatically if you override the ```doProcess(...)```
-> method from the ```PicturaServlet``` class.
+> annotation or programmatically if you override the `doProcess(...)`
+> method from the `PicturaServlet` class.
 
 Could be used to intercept and modify an image before the image will be encode 
 and write out to the response stream. The following example will render a
@@ -1840,9 +1838,9 @@ public class InfinispanHttpCache implements HttpCache {
 </web-app>
 ```
 
-> Keep sure that responses from external resources contains an ```Expires``` or 
-> ```Cache-Control``` header. In cases of local file resources it is necessary 
-> to define a custom ```io.pictura.servlet.CacheControlHandler```, too.
+> Keep sure that responses from external resources contains an `Expires` or 
+> `Cache-Control` header. In cases of local file resources it is necessary 
+> to define a custom `io.pictura.servlet.CacheControlHandler`, too.
 
 **Example 2** *(Shared Cache)*
 
@@ -1877,7 +1875,7 @@ instance.
 
 ### @PicturaConfigFile
 
-Annotation to set the path, relativ to ```/WEB-INF``` or as absolute path, to
+Annotation to set the path, relativ to `/WEB-INF` or as absolute path, to
 the (optional) external configuration file.
 
 **Example**
@@ -1895,13 +1893,13 @@ public class ExternalConfigPicturaServlet extends PicturaServlet {
 }
 ```
 
-> In the example above, the configuration file is located at ```/WEB-INF/pictura.xml```.
+> In the example above, the configuration file is located at `/WEB-INF/pictura.xml`.
 
 **[\[⬆\]](#table-of-contents)**
 
 ### @PicturaImageInterceptor
 
-Annotation to intercept the image output (```BufferedImage```) with custom
+Annotation to intercept the image output (`BufferedImage`) with custom
 extensions like watermarks, etc.
 
 **Example**
@@ -1988,7 +1986,7 @@ public class ThreadFactoryPicturaServlet extends PicturaServlet {
 
 ### @ResourcePath
 
-Annotation to set the root path for customized ```io.pictura.servlet.FileResourceLocator```'s.
+Annotation to set the root path for customized `io.pictura.servlet.FileResourceLocator`'s.
 
 **Example**
 
