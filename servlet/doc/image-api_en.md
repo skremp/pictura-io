@@ -45,7 +45,7 @@ or with an optional query string as
 
 ## Format
 
- ```F={value}```
+ `F={value}`
 
 The output image format to convert the image to. Valid values are depending on
 the installed Java ImageIO plugins. As default, the Java runtime environment
