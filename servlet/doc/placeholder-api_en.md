@@ -62,14 +62,14 @@ operations like rotation or cropping.
  
 ## Dimension
 
- ```D={value}```
+ `D={value}`
 
 Controls the size (dimension) of the generated placeholder image. The value
-must given in the form ```{width}X{height}``` in pixels.
+must given in the form `{width}X{height}` in pixels.
 
 **Example**
 
- ```/ip/D=320x480```
+ `/ip/D=320x480`
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -78,11 +78,11 @@ must given in the form ```{width}X{height}``` in pixels.
 Sets the font name to print the placeholder dimension. Valid values are depending
 on the local graphics environment.
 
- ```TF={value}```
+ `TF={value}`
  
  **Example**
  
-  ```/ip/TF=mono```
+  `/ip/TF=mono`
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -114,9 +114,9 @@ can also use the following color names:
 
 **Examples**
 
- ```/ip/D=100x100/BG=RED/```
+ `/ip/D=100x100/BG=RED/`
  
- ```/ip/D=100x100/BG=BROWN/```
+ `/ip/D=100x100/BG=BROWN/`
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -127,6 +127,6 @@ format parameter `F`.
 
 **Example**
 
- ```/ip/D=100x100/BG=RED/F=PNG```
+ `/ip/D=100x100/BG=RED/F=PNG`
 
 **[\[⬆\]](#table-of-contents)**
