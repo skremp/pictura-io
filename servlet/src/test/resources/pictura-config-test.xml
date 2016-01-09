@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pictura>
+
+    <debug>false</debug>
+    
+    <jmx>
+        <enabled>true</enabled>
+    </jmx>
+    
+    <executor>
+        <core-pool-size>2</core-pool-size>
+        <max-pool-size>4</max-pool-size>
+        <keep-alive-time>25500</keep-alive-time>
+        <worker-queue-size>100</worker-queue-size>
+        <worker-timeout>15000</worker-timeout>
+    </executor>
+    
+    <resource-paths>
+        <path>/images/*</path>
+        <path>http://www.google.de/*</path>
+    </resource-paths>
+    
+    <resource-locators>
+        <class>io.pictura.servlet.FileResourceLocator</class>
+        <class>io.pictura.servlet.HttpResourceLocator</class>
+    </resource-locators>
+    
+    <request-processor>
+        <class>io.pictura.servlet.ImageRequestProcessor</class>
+        <factory>
+            <class>io.pictura.servlet.ImageRequestProcessorFactory</class>
+        </factory>
+        <strategy>
+            <class>io.pictura.servlet.BotRequestProcessor</class>
+            <class>io.pictura.servlet.WebPRequestProcessor</class>
+        </strategy>
+    </request-processor>
+    
+    <imageio>
+        <max-file-size>2000000</max-file-size>
+        <max-resolution>30000000</max-resolution>
+        <max-effects>3</max-effects>
+        <enabled-input-formats>
+            <format-name>jpg</format-name>
+            <format-name>gif</format-name>
+            <format-name>png</format-name>
+        </enabled-input-formats>
+        <enabled-output-formats>
+            <format-name>jpg</format-name>
+            <format-name>webp</format-name>
+        </enabled-output-formats>
+        <enable-base64-image-encoding>true</enable-base64-image-encoding>
+        <use-cache>true</use-cache>
+        <cache-dir>/foo</cache-dir>
+        <spi-filter>
+            <include>
+                <class></class>
+            </include>
+            <exclude>
+                <class></class>
+            </exclude>
+        </spi-filter>
+    </imageio>
+    
+    <url>
+        <connection-factory>
+            <class>com.mycompany.MyURLConnectionFactory</class>
+        </connection-factory>
+    </url>
+    
+    <http>
+        <agent>Pictura-Image-Processor</agent>
+        <connect-timeout>3500</connect-timeout>
+        <read-timeout>6000</read-timeout>
+        <follow-redirects>false</follow-redirects>
+        <max-forwards>0</max-forwards>
+        <proxy>
+            <host>localhost</host>
+            <port>7775</port>
+        </proxy>
+    </http>
+    
+    <https>
+        <disable-certificate-validation>true</disable-certificate-validation>
+    </https>
+    
+    <stats>
+        <enabled>true</enabled>
+        <path>myStats</path>
+        <ip-address-match>
+            <address>localhost</address>
+            <address>127.0.0.1/12</address>
+        </ip-address-match>
+    </stats>
+    
+    <script>
+        <enabled>false</enabled>
+        <path>/javascript</path>
+    </script>
+    
+    <placeholder-producer>
+        <enabled>true</enabled>
+        <path>/pp</path>
+    </placeholder-producer>
+    
+    <query-params>
+        <enable>true</enable>
+    </query-params>
+    
+    <content-disposition>
+        <enable>true</enable>
+    </content-disposition>
+    
+    <header>
+        <add-content-location>false</add-content-location>
+        <add-true-cache-key>true</add-true-cache-key>
+        <add-request-id>true</add-request-id>
+    </header>
+    
+    <cache-control-handler>
+        <class>io.pictura.servlet.CacheControlHandler</class>
+    </cache-control-handler>
+    
+    <deflater>
+        <compression-level>7</compression-level>
+        <compression-min-size>2048</compression-min-size>
+    </deflater>
+    
+</pictura>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cache-control>
+
+    <rule>
+        <path>/private/*</path>
+        <directive>private, no-cache</directive>
+    </rule>
+    
+    <rule>
+        <path>/public/id-[0-9]{1,4}/*</path>
+        <directive>public, max-age=1200</directive>
+    </rule>
+    
+    <rule>
+        <path>/*</path>
+        <directive>public, max-age=60</directive>
+    </rule>
+    
+</cache-control>

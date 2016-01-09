@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<pictura>
+
+    <debug>true</debug>
+    
+    <jmx>
+        <enabled>false</enabled>
+    </jmx>         
+    
+    <content-disposition>
+        <enable>true</enable>
+    </content-disposition>
+    
+</pictura>

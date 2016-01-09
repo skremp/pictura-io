@@ -1,0 +1,158 @@
+/**
+ * Copyright 2015 Steffen Kremp
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package io.pictura.servlet;
+
+import java.io.IOException;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import static org.mockito.Mockito.mock;
+
+/**
+ * @author Steffen Kremp
+ */
+public class HttpCacheServletTest {
+
+    @Test
+    public void testSetGetHttpCache() throws Exception {
+        HttpCacheServletMock s = new HttpCacheServletMock();
+        HttpCache c = HttpCacheServletMock.createDefaultHttpCache(100, 1024 * 1024 * 2);
+
+        s.setHttpCache(c);
+        assertSame(c, s.getHttpCache());
+    }
+
+    @Test
+    public void testCreateCacheRequestProcessor() throws Exception {
+        HttpCacheServletMock s = new HttpCacheServletMock();
+        s.setHttpCache(HttpCacheServletMock.createDefaultHttpCache(100, 1024 * 1024 * 2));
+
+        final RequestProcessor rpNotCacheable = new RequestProcessor() {
+            @Override
+            public boolean isCacheable() {
+                return false;
+            }
+
+            @Override
+            protected void doProcess(HttpServletRequest req, HttpServletResponse resp)
+                    throws ServletException, IOException {
+            }
+        };
+        RequestProcessor crp = s.createCacheRequestProcessor(rpNotCacheable);
+        assertSame(rpNotCacheable, crp);
+
+        final HttpServletRequest req = mock(HttpServletRequest.class);
+        final HttpServletResponse resp = mock(HttpServletResponse.class);
+
+        final RequestProcessor rpCacheable = new RequestProcessor() {
+
+            @Override
+            HttpServletRequest getRequest() {
+                return req;
+            }
+
+            @Override
+            HttpServletResponse getResponse() {
+                return resp;
+            }
+
+            @Override
+            public boolean isCacheable() {
+                return true;
+            }
+
+            @Override
+            public String getTrueCacheKey() {
+                return "test";
+            }
+
+            @Override
+            protected void doProcess(HttpServletRequest req, HttpServletResponse resp)
+                    throws ServletException, IOException {
+            }
+        };
+        crp = s.createCacheRequestProcessor(rpCacheable);
+        assertNotNull(crp);
+        assertNotSame(rpNotCacheable, crp);
+
+        assertTrue(crp.isCacheable());
+        assertNull(crp.getPreProcessor());
+    }
+
+    @Test
+    public void testInitialHttpCacheSize() throws Exception {
+        HttpCacheServlet servlet = new HttpCacheServletMock();
+        assertEquals(-1, servlet.getHttpCacheSize());
+        
+        servlet.setHttpCache(HttpCacheServletMock.createDefaultHttpCache(100, 1024));
+        assertEquals(0, servlet.getHttpCacheSize());
+    }
+    
+    @Test
+    public void testInitialHttpCacheHitRate() throws Exception {
+        HttpCacheServlet servlet = new HttpCacheServletMock();
+        assertEquals(-1f, servlet.getHttpCacheHitRate(), 0f);
+        
+        servlet.setHttpCache(HttpCacheServletMock.createDefaultHttpCache(100, 1024));
+        assertEquals(0f, servlet.getHttpCacheHitRate(), 0f);
+    }
+    
+    @Test
+    public void testCreateDefaultHttpCache() throws Exception {
+        HttpCache c = HttpCacheServletMock.createDefaultHttpCache(100, 1024);
+        assertNotNull(c);
+
+        assertNull(c.get("foo"));
+        assertTrue(c.keySet().isEmpty());
+
+        HttpCacheEntry e = new HttpCacheEntry("foo", new byte[512], null, null);
+        c.put("foo", e);
+
+        assertSame(e, c.get("foo"));
+        assertTrue(c.keySet().size() == 1);
+        assertTrue(c.keySet().contains("foo"));
+
+        assertTrue(c.remove("foo"));
+        assertTrue(c.keySet().isEmpty());
+
+        assertFalse(c.remove("foo"));
+
+        for (int i = 0; i < 110; i++) {
+            c.put("foo" + i, new HttpCacheEntry("foo" + 1, new byte[512], null, null));
+
+            if (i < 100) {
+                assertEquals((i + 1), c.keySet().size());
+            } else {
+                assertEquals(100, c.keySet().size());
+            }
+        }
+    }
+
+    public static final class HttpCacheServletMock extends HttpCacheServlet {
+
+        private static final long serialVersionUID = -802317978849685708L;
+
+    }
+
+}

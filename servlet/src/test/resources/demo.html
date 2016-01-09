@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <title>PicturaIO Demo</title>
+
+        <style type="text/css">            
+            body {
+                font-family: "Helvetica Neue", Helvetica, "Segoe UI", Arial, freesans, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+                font-size: 14px;
+                line-height: 1.6;
+                padding-top: 10px;
+                padding-bottom: 10px;
+                background-color: white;
+                padding: 30px;
+                word-wrap: break-word;
+                color: #333;
+                margin-right: auto;
+                margin-left: auto;
+                min-width: 480px;
+                max-width: 980px;
+                -webkit-text-size-adjust: 100%;
+            }
+
+            .pictura {
+            }
+        </style>        
+        
+        <link rel="stylesheet" href="/F=PCSS/PF=lenna/lenna.jpg">
+    </head>
+    <body>
+        <div>
+            <h3>Source</h3>
+            <img class="pictura" alt="" style="width: 200px;"
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg">
+        </div>
+
+        <div>
+            <h3>Scale</h3>
+            <img class="pictura" alt="" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=w200">
+            <img class="pictura" alt=""
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=w150">
+            <img class="pictura" alt=""
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=w100">
+            <br>
+            <img class="pictura" alt="" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=h100">
+            <img class="pictura" alt=""
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=h75">
+            <img class="pictura" alt=""
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/s=h50">
+        </div>
+        
+        <div>
+            <h3>Rotation</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/r=v">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/r=h">
+        </div>
+        
+        <div>
+            <h3>Crop</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/c=sq">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/c=ar4x3">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/c=t10,b10,l50">
+        </div>
+        
+        <div>
+            <h3>Quality</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/q=uh">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/q=h">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/q=m">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/q=l">
+        </div>
+        
+        <div>
+            <h3>Compression</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/o=80">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/o=60">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/o=40">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/o=20">
+        </div>
+        
+        <div>
+            <h3>Format</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/f=jpg">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/f=png">
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/f=gif">
+        </div>
+        
+        <div>
+            <h3>Effects</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=a">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=b">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=d">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=s">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=g">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=gl">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=sp">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=ss">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=i">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=t(100)">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=p">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=px(10)">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=n">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=gam(25)">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=ac">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=al">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=as">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=ae">
+            <br>
+        </div>
+        
+        <div>
+            <h3>Palette CSS</h3>
+            <img class="pictura" alt="" style="width: 200px;"
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg">
+            
+            <div>
+                <div style="float: left; width: 20px; height: 20px" class="lenna-bg-0"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-1"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-2"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-3"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-4"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-5"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-6"></div>
+                <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-7"></div>
+            </div>
+        </div>
+        
+        <div style="clear: left;"></div>
+        
+        <div>
+            <h3>Placeholder Images</h3>
+            
+            <img alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/ip/D=200x100">
+            <br>
+            <img alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/ip/D=200x50/TF=dialog">
+            <br>           
+            <img alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/ip/D=200x75/BG=bluegrey">
+            <br>
+            <img alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/ip/D=200x50/BG=blue">
+        </div>
+        
+        <script>
+            PicturaIO = {
+                init: {
+                    server: '/',
+                    delay: 500,
+                    imageClass: 'pictura',
+                    imageCompressionQuality: 80,
+                    reloadOnResize: true,
+                    reloadOnResizeDown: true,
+                    lazyLoad: true,
+                    imageOnLoad: function(e) {
+                        console.log("Loading image");
+                    }
+                }
+            };
+        </script>
+
+        <script src="/js/pictura.js" type="text/javascript"></script>
+        <script src="/js/cookie.js" type="text/javascript"></script>
+        
+        <script>
+            console.log("Pictura version: " + PicturaIO.version);
+        </script>
+    </body>
+</html>
