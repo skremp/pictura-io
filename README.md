@@ -1,6 +1,4 @@
 ![License Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-lightgrey.svg)
-![Java JDK7+](https://img.shields.io/badge/Java-7%2B-lightgrey.svg) 
-![Servlet 3.0+](https://img.shields.io/badge/Servlet-3%2B-lightgrey.svg) 
 
 # PicturaIO Image Servlet
 
@@ -12,47 +10,7 @@ ever increasing number of different screen sizes and displays with different
 pixel density.
 
 <div style="text-align: center; margin: 2em;">
-    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAekAAABXCAYAAAAgeb0
-         mAAAID0lEQVR42u3dW4iUZRzH8WfXcrUyEsLVIgg6iBfdWLpaUF5FEDnjplkQdFFdZNAZo
-         RNkKQgdxC2DslK7KCGh1ChvAiGtVqybujK0DV3LPK26Rrqa/Z/mGXybZvZ9393nnXkO3w/
-         8EdY5PDPPzP8372HmUQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-         AAAAAAAAAAAAAAAUKhpUhulTkidc7xOSm02YwaA4E2QWid1tIWNV4fDh1IXMx0tCehjHoR
-         zbR0jqAHEYLVDjfdtpqPpNprn/lOpTg/GOykx5k1MH4DQDTgU0oeZjqar7uLu9GjMnWbMg
-         0wffDdFaovUkHJvd9WQGdsUpqmlknNS9N/zXhfNm/+0+XKlGo0b8NIWD950XzJNhDRNl5B
-         uUUiPk+pxbI/ScTOmDl6e4TvtwZtuiGkipAlp50I6lnH2ONwbeyw/hxOl1poPAbbHqg89r
-         DP3gRE24JJD41pAY44+pLOENwjposdZ3YLucuixzjJjGrB4m+1S26T2ST0qNd9yLZLql9o
-         q1WZx3DdLvSu1IUN9JPWw1JgQGnCrjaMxE9KENCHtwDh9eby2gn9mjussllqf4/IzzX3Ms
-         DTm26TOSm0340grfbb/qQL2QBDS9ElCmtcCIe1ISId6YtxCc3vtOa6jT+rN8130NnMf8y2
-         NeXWdLfMZNVvPi2qu86Sq7M4npBu4SGqZVJ/5BKT/XWr+HkxId3d3z503b94vUgelnvG8S
-         R9S7hyDO8T8E9KEdCHzcG/i9lYVMO6ViXHbCmkdwt+asWetHt8ypZlBqIN4R4MJ7K0J6g5
-         fQ7pUKt0ljXlI6ly1pGm/4nGTXulQSL/J/BPSjoR0aPOQDGkdftuVvePR36nzu8Vth/RoP
-         +wQ0gnLUp60l0MI6XK5vCvZoANo1ONV5cSMI6q1Pwu6ps4eF+afkCakiwnp9RZve0OBIb1
-         +FI+TkK7Rl9KI9wSyJb23XpMOYIsKcc4/IU1IE9KRhPTZlJA+k7jsWI+3pB9p1KQJ6vAFO
-         P+ENCFNSLMl/W/tDiGkTaN+lqCOOqhDmn9CmpAmpCMJ6aUpIb0klJAOrFFfqio/AjCoWKo
-         yxvknpAlpQtrTkL5DSjeaWRkvr0/66W3QhPXZf+MTl71QBfDdWGnEzwXQqD9QLFUZ8/wT0
-         oQ0Ie1hSD+o/nssuZwjqPVZ3HvM9XabLejxNZcLIqQDadTHHArpw8w/IU1IE9KE9PBuVf9
-         fmOMvqTkWxxVMSGvSjJ/3uFGzwAbzT0gT0oS0JyF9tdTBBk1Vb3FNtzSuC1RgPwWZoVE/T
-         UiHuwpWAPNPSBPShLTjIT1B6kc1/O7IA1LXDXMbY2MNaa1cLr/QqEmXSqU+QjrspSo9n39
-         CmpAmpB0Oaf2j65tUtuOGutlcWXN9fSz6Y6m/VeWXo9J+xD26kNa/9UxIh73AhufzT0gT0
-         oS0wyG9PGcj/UnqcnPdK6R21vz/Oyn3Nya0kE5p0LoeI6TDDekA5p+QJqQJaUdD+n41sjN
-         x90qtVY1XUVoeS0inNeju7u6XPHyNENJxzT8hTUgT0g6GdJeqnLld1FdqFoce0p43aO2wY
-         qnKmOefkI5vqUpC2pOQvkrqtya86B6qc9/tKoJdnB40aO0txVKVMc8/IU1IE9IOhrQ+0eu
-         HJr3o9MIbC0IL6UAadPW1oE/2O6FYqjLG+Sek/Xi8hHREId0m9UmTm/ApqdtDCemAGjSYf
-         9e2JJu9pXnc3M4sh+bkFjOmAUI6zpBe0qI3l17AYXbig4KXIa3P0iWg4xXg/Mce0j0OP9Y
-         VhHR8IX2PqnyXuVUvuiNSN3ge0v0EdNQhHdr8+3rIyda4O0xQDzgUzgMmoDsI6VF/mPMqp
-         G+U+tOBF6A+We1aX5/Qcrm8K7CAZqnKuOe/qPfg3apytr7+meGyR+MOVW1I7zP/2qj+AkN
-         6m7m9rLXC55De69AnxT2+hrQ04ztLpdLpgLagWaoy7vkv6j2Y/P2EPwhpp0L6PhOqNmtBQ
-         SFdb4t/odngXJPyOL0LaR+OM3kT1FI/S7PeL/8+4fmbl6Uq457/ot6DyYV6Djg07p0e9cX
-         a6rUU0lm9qCpfi7wk57wUHdLrEnvgCGlCOngssBG3k+Z5n2T5dstmC1oH9FzLtz1ZnT8ZN
-         dSeaLtXVsOrLePlp6vhf+uinnbLIa338m2t8/drpN6TKtX5v6fMhgchTUgT0oR0EDab532
-         jVKcH452cGPNnDu05cH2Px2xz/a6Ml9fnh3yvKsebr895HzdZesxzpM5I7VDZjo1/oSpf9
-         32DkCakCWlCOhTTlFuHPLLWUampI3i8Ln4vOo2N703rrdyvpfZLPW62rG2WPuzzu9RXObb
-         Ws9DztEplOy6ud4M/oNJXYXTKkAdvttP0yShDmg9sbgW1Xqp20IN+MWi2oKeO8LH2KH93d
-         Y/2e9MTVWVRpCJ+XVB/+Hlf6jLeTvls8eCF9znTREgT0l5baebu9RyXfa1FY3Xxe9Gt+N4
-         0HDHFBLWLW9R6TPoYQifTREgT0t7Suxb7VfbjndVdt33K7m5RAAgSS1ViNKqh+2vG0NWhv
-         s9cZyZPHwAMj6UqMRrV3dev5rjOihFcBwCixFKVSNOKHwDp5WkHACBdbwtC+huedgAAAAA
-         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-         AAAAAAAAAAAAAAAAAAAAAAAQvMPeyD+iLdUOwAAAAAASUVORK5CYII=" alt=""/>
+    <img src="readme.png" alt=""/>
 </div>
 
 Essentially, the servlet works like a proxy that lies between image assets and 
