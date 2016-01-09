@@ -1,4 +1,4 @@
-# `webp-imageio`
+# webp-imageio
 
 Java ImageIO reader and writer for the [Google WebP](https://developers.google.com/speed/webp/) 
 image format.
