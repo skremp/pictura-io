@@ -32,7 +32,8 @@
         <maven.test.skip>${skip.tests}</maven.test.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <maven.compiler.optimize>true</maven.compiler.optimize>        
+        <maven.compiler.optimize>true</maven.compiler.optimize>
+        <maven.compiler.debug>false</maven.compiler.debug>
         
         <!--
             Integration test properties.
@@ -233,7 +234,7 @@
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                     <failOnError>true</failOnError>
-                    <debug>true</debug>
+                    <debug>${maven.compiler.debug}</debug>
                 </configuration>
             </plugin>
             
@@ -427,6 +428,7 @@
                 <skip.javadoc>true</skip.javadoc>
                 <skip.source>true</skip.source>
                 <maven.compiler.optimize>false</maven.compiler.optimize>
+                <maven.compiler.debug>true</maven.compiler.debug>
             </properties>
             <build>
                 <plugins>
@@ -454,7 +456,7 @@
                                         <rule>
                                             <limits>
                                                 <!-- 
-                                                    Overall code coverage for unit tests >= 50% 
+                                                    Overall code coverage for unit tests >= 60% 
                                                     NOTE: this does not include integration tests
                                                 -->
                                                 <limit>
