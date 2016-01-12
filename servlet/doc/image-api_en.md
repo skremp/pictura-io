@@ -3,9 +3,9 @@
 Once your servlet is configured and deployed, you can begin making requests.
 All PicturaIO image requests have the same basic structure:
 
-<div style="text-align: center; margin: 2em;">
+<p align="center">
     <img src="misc/url_schema.png" alt=""/>
-</div>
+</p>
 
 A image processor request path parameter `{PARAM}` is always a key-value-pair
 `{NAME}={VALUE}` where `{NAME}` is the operation and `{VALUE}` are the arguments 

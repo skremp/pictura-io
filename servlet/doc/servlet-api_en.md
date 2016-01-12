@@ -4,9 +4,9 @@ PicturaIO is designed around a dispatcher servlet (`PicturaServlet`) that handle
 all the image requests and responses. The image request processing workflow of
 the `PicturaServlet` is illustrated in the following diagram:
 
-<div style="text-align: center; margin: 2em;">
+<p align="center">
     <img src="misc/servlet_arch.png" alt=""/>
-</div>
+</p>
 
 After receiving an HTTP request, `PicturaServlet` consults the built-in HTTP
 cache (if enabled). If the response for the given request was already rendered
