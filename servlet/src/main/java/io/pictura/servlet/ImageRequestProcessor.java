@@ -35,6 +35,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -1884,10 +1885,13 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	if (isProxyRequest(req)) {
 	    doProcessFileProxy(f, req, resp);
 	} else {
-	    try (InputStream is = new FileInputStream(f)) {
-		req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", f.length());
-		doProcessImage(is, req, resp);
-	    }
+	    // Use NIO byte buffer
+            try (FileChannel ch = new FileInputStream(f).getChannel()) {
+                long length = f.length();
+                req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", length);
+		doProcessImage(new ByteBufferInputStream(ch.map(
+                        FileChannel.MapMode.READ_ONLY, 0, length)), req, resp);
+            }
 	}
     }
     
@@ -1912,13 +1916,20 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	resp.setContentLength((int) f.length());
 
 	OutputStream os = new ContextOutputStream(req, resp.getOutputStream());
-	try (InputStream is = new FileInputStream(f)) {
+	
+        // Use NIO byte buffer
+        try (FileChannel ch = new FileInputStream(f).getChannel()) {
+            
+            InputStream is = new ByteBufferInputStream(ch.map(
+                    FileChannel.MapMode.READ_ONLY, 0, f.length()));
+            
 	    int len;
 	    byte[] buf = new byte[1024 * 16];
+            
 	    while ((len = is.read(buf)) > -1) {
 		os.write(buf, 0, len);
 	    }
-	}
+        }
     }
 
     /**
