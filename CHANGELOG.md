@@ -1,6 +1,8 @@
-### 1.0.1.Final (TBD)
+### 1.0.1.Final (2016-01-14)
 
-* Removed debugging info from compiled class files for release profile.
+* Fixed missing filename suffix (content-disposition) in cases of ICO, PDF, CSS 
+  JS or JSON mime types if the download query param is present.
+* Fixed missing cache control header at placeholder images.
 
 ### 1.0.0.Final (2016-01-09)
 
