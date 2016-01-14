@@ -5,10 +5,10 @@ into the default PicturaIO servlet. You can also use all available request
 parameters, specified by the Pictura IO Image API, to apply custom image
 operations like rotation or cropping.
 
-<div style="text-align: center; margin: 2em;">
+<p align="center">
     <img src="misc/placeholder_300x60.gif" alt=""/>
     <p style="font-size: 0.9em; margin-top: 2px;"><i>Example placeholder image</i></p>
-</div>
+</p>
 
 > The placeholder image producer is disabled by default. To enable this feature,
 > you have to set the servlet init parameter `placeholderProducerEnabled` to
