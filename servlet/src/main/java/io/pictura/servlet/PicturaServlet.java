@@ -2095,7 +2095,8 @@ public class PicturaServlet extends HttpCacheServlet {
 		    public void run() {
 			// Test if the user has specified his own cache control directive
 			final String ccDirective = cacheControlHandler.getDirective(
-				(rp instanceof ImageRequestProcessor)
+				(!(rp instanceof PlaceholderRequestProcessor) 
+                                        && (rp instanceof ImageRequestProcessor))
 					? ((ImageRequestProcessor) rp).getRequestedImage(pReq)
 					: getRelativeRequestPath(pReq));
 			pResp.setHeader(HEADER_CACHECONTROL, ccDirective);
