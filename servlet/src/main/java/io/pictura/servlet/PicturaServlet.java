@@ -2006,40 +2006,40 @@ public class PicturaServlet extends HttpCacheServlet {
 		}
 
 		// General attributes
-		pReq.setAttribute("io.pictura.servlet.MAX_IMAGE_FILE_SIZE", maxImageFileSize);
-		pReq.setAttribute("io.pictura.servlet.MAX_IMAGE_RESOLUTION", maxImageResolution);
-		pReq.setAttribute("io.pictura.servlet.MAX_IMAGE_EFFECTS", maxImageEffects);
-		pReq.setAttribute("io.pictura.servlet.ENABLED_INPUT_IMAGE_FORMATS", enabledInputImageFormats);
-		pReq.setAttribute("io.pictura.servlet.ENABLED_OUTPUT_IMAGE_FORMATS", enabledOutputImageFormats);
-		pReq.setAttribute("io.pictura.servlet.ENABLE_BASE64_IMAGE_ENCODING", enableBase64ImageEncoding);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.MAX_IMAGE_FILE_SIZE", maxImageFileSize);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.MAX_IMAGE_RESOLUTION", maxImageResolution);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.MAX_IMAGE_EFFECTS", maxImageEffects);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLED_INPUT_IMAGE_FORMATS", enabledInputImageFormats);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLED_OUTPUT_IMAGE_FORMATS", enabledOutputImageFormats);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLE_BASE64_IMAGE_ENCODING", enableBase64ImageEncoding);
 
 		// HTTP client attributes
-		pReq.setAttribute("io.pictura.servlet.HTTP_AGENT", httpAgent);
-		pReq.setAttribute("io.pictura.servlet.HTTP_CONNECT_TIMEOUT", httpConnectTimeout);
-		pReq.setAttribute("io.pictura.servlet.HTTP_READ_TIMEOUT", httpReadTimeout);
-		pReq.setAttribute("io.pictura.servlet.HTTP_MAX_FORWARDS", httpMaxForwards);
-		pReq.setAttribute("io.pictura.servlet.HTTP_FOLLOW_REDIRECTS", httpFollowRedirects);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_AGENT", httpAgent);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_CONNECT_TIMEOUT", httpConnectTimeout);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_READ_TIMEOUT", httpReadTimeout);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_MAX_FORWARDS", httpMaxForwards);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_FOLLOW_REDIRECTS", httpFollowRedirects);
 
 		// HTTPS client attributes
-		pReq.setAttribute("io.pictura.servlet.HTTPS_DISABLE_CERTIFICATE_VALIDATION", httpsDisableCertificateValidation);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTPS_DISABLE_CERTIFICATE_VALIDATION", httpsDisableCertificateValidation);
 
 		// HTTP Proxy
 		if (httpProxyHost != null) {
-		    pReq.setAttribute("io.pictura.servlet.HTTP_PROXY_HOST", httpProxyHost);
-		    pReq.setAttribute("io.pictura.servlet.HTTP_PROXY_PORT", httpProxyPort);
+		    pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_PROXY_HOST", httpProxyHost);
+		    pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_PROXY_PORT", httpProxyPort);
 		}
 		
 		// HTTPS Proxy
 		if (httpsProxyHost != null) {
-		    pReq.setAttribute("io.pictura.servlet.HTTPS_PROXY_HOST", httpsProxyHost);
-		    pReq.setAttribute("io.pictura.servlet.HTTPS_PROXY_PORT", httpsProxyPort);
+		    pReq.setAttributeIfAbsent("io.pictura.servlet.HTTPS_PROXY_HOST", httpsProxyHost);
+		    pReq.setAttributeIfAbsent("io.pictura.servlet.HTTPS_PROXY_PORT", httpsProxyPort);
 		}
 
 		// ImageIO
-		pReq.setAttribute("io.pictura.servlet.IMAGEIO_USE_CACHE", imageioUseCache);
-		pReq.setAttribute("io.pictura.servlet.IMAGEIO_CACHE_DIR", imageioCacheDir);
-		pReq.setAttribute("io.pictura.servlet.IMAGEIO_SPI_FILTER_INCLUDE", imageioSpiFilterInclude);
-		pReq.setAttribute("io.pictura.servlet.IMAGEIO_SPI_FILTER_EXCLUDE", imageioSpiFilterExclude);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.IMAGEIO_USE_CACHE", imageioUseCache);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.IMAGEIO_CACHE_DIR", imageioCacheDir);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.IMAGEIO_SPI_FILTER_INCLUDE", imageioSpiFilterInclude);
+		pReq.setAttributeIfAbsent("io.pictura.servlet.IMAGEIO_SPI_FILTER_EXCLUDE", imageioSpiFilterExclude);
 
 		// Optional attributes
 		pReq.setAttribute("io.pictura.servlet.ENABLE_QUERY_PARAMS", enableQueryParams);
@@ -2069,16 +2069,16 @@ public class PicturaServlet extends HttpCacheServlet {
 
 	    // Additional response headers behaviour which is valid for all
 	    // types of processors	
-	    pReq.setAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL", deflaterCompressionLevel);
-	    pReq.setAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_MIN_SIZE", deflaterCompressionMinSize);
-	    pReq.setAttribute("io.pictura.servlet.SERVICE_NANO_TIMESTAMP", serviceNanoTimestamp);
-	    pReq.setAttribute("io.pictura.servlet.HEADER_ADD_CONTENT_LOCATION", headerAddContentLocation);
-	    pReq.setAttribute("io.pictura.servlet.HEADER_ADD_TRUE_CACHE_KEY", headerAddTrueCacheKey);
-	    pReq.setAttribute("io.pictura.servlet.HEADER_ADD_REQUEST_ID", headerAddRequestId);
-	    pReq.setAttribute("io.pictura.servlet.DEBUG", debug);
-	    pReq.setAttribute("io.pictura.servlet.URL_CONNECTION_FACTORY", urlConnectionFactory);
-
-	    pResp.setHeader(HEADER_ALLOW, "GET");
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.DEBUG", debug);
+            pReq.setAttributeIfAbsent("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL", deflaterCompressionLevel);
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.DEFLATER_COMPRESSION_MIN_SIZE", deflaterCompressionMinSize);
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_CONTENT_LOCATION", headerAddContentLocation);
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_TRUE_CACHE_KEY", headerAddTrueCacheKey);
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_REQUEST_ID", headerAddRequestId);
+	    pReq.setAttributeIfAbsent("io.pictura.servlet.URL_CONNECTION_FACTORY", urlConnectionFactory);
+            pReq.setAttributeIfAbsent("io.pictura.servlet.SERVICE_NANO_TIMESTAMP", serviceNanoTimestamp);
+	    
+            pResp.setHeader(HEADER_ALLOW, "GET");
 	    if (pResp.getContentType() != null) {
 		pResp.setHeader("X-Content-Type-Options", "nosniff");
 	    }
@@ -2423,7 +2423,6 @@ public class PicturaServlet extends HttpCacheServlet {
     }
 
     // Special URL query parameter names
-    private static final String QUERY_PARAM_DEBUG = "debug";
     private static final String QUERY_PARAM_DOWNLOAD = "dl";
     private static final String QUERY_PARAM_DO_NOT_CACHE = "dnc";
 
@@ -2455,15 +2454,26 @@ public class PicturaServlet extends HttpCacheServlet {
 		String filename = request.getParameter(QUERY_PARAM_DOWNLOAD);
                 
                 // Use the correct file name suffix for the current mime type
-                String fns = PicturaImageIO.getImageReaderWriterMIMETypes().get(getHeader(HEADER_CONTTYPE));
+                final String ct = getHeader(HEADER_CONTTYPE);
+                final String fns = PicturaImageIO.getImageReaderWriterMIMETypes().get(ct);
+                
                 if (fns != null && !fns.isEmpty()) {
                     filename += "." + fns;
+                } else if ("text/css".equals(ct)) {
+                    filename += ".css";
+                } else if ("application/pdf".equals(ct)) {
+                    filename += ".pdf";
+                } else if ("application/json".equals(ct)) {
+                    filename += ".json";
+                } else if ("application/javascript".equals(ct) 
+                        || "application/x-javascript".equals(ct)) {
+                    filename += ".js";
                 }
                 
 		if (!filename.isEmpty() && P_CONTENT_DISPOSITION_VALUE.matcher(filename).matches()) {
 		    setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 		} else {
-		    if (request.getParameter(QUERY_PARAM_DEBUG) != null || debug) {
+		    if (debug) {
 			setHeader("X-Pictura-ContentDispositionErr", "Invalid attachment filename");
 		    }
 		}
@@ -2587,15 +2597,12 @@ public class PicturaServlet extends HttpCacheServlet {
 	    super(request);
 	}
 
-	@Override
-	public void setAttribute(String name, Object o) {
-	    if (name.startsWith("io.pictura.servlet.") && getAttribute(name) == null) {
-		super.setAttribute(name, o);
-	    } else if (!name.startsWith("io.pictura.servlet.")) {
-		super.setAttribute(name, o);
-	    }
-	}
-
+        public void setAttributeIfAbsent(String name, Object o) {
+            if (name != null && o != null && getAttribute(name) == null) {
+                setAttribute(name, o);
+            }
+        }
+        
     }
 
     // Wrapper to inject the servlet init parameters. The intention is to allow
