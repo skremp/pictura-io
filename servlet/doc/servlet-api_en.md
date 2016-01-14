@@ -5,7 +5,7 @@ all the image requests and responses. The image request processing workflow of
 the `PicturaServlet` is illustrated in the following diagram:
 
 <p align="center">
-    <img src="servlet_arch.png" alt=""/>
+    <img src="misc/servlet_arch.png" alt=""/>
 </p>
 
 After receiving an HTTP request, `PicturaServlet` consults the built-in HTTP
