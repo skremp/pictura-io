@@ -1,4 +1,5 @@
-![License Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-lightgrey.svg)
+![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)
+![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
 
 # PicturaIO Image Servlet
 
