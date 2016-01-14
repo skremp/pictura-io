@@ -253,6 +253,7 @@ final class PicturaImageIO {
 
 	// Add build in image support
 	IMAGE_WRITER_FORMATS.put("ico", "image/x-icon");
+        MIME_MAPPING.put("image/x-icon", "ico");
     }   
     
     private static final class ServiceProviderFilter implements Filter {
