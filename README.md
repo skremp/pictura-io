@@ -9,9 +9,9 @@ resize, crop, trim, rotate, compress, apply effetcs and convert images for the
 ever increasing number of different screen sizes and displays with different 
 pixel density.
 
-<div style="text-align: center; margin: 2em;">
+<p align="center">
     <img src="readme.png" alt=""/>
-</div>
+</p>
 
 Essentially, the servlet works like a proxy that lies between image assets and 
 the browser or application requesting them. The servlet API is accessed entirely 
