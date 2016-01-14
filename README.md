@@ -10,7 +10,7 @@ ever increasing number of different screen sizes and displays with different
 pixel density.
 
 <p align="center">
-    <img src="readme.png" alt=""/>
+    <img src="README.png" alt=""/>
 </p>
 
 Essentially, the servlet works like a proxy that lies between image assets and 
