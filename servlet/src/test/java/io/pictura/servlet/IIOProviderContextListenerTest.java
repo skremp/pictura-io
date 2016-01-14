@@ -20,7 +20,6 @@ import javax.imageio.ImageIO;
 import javax.servlet.ServletContextEvent;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
 
@@ -31,7 +30,6 @@ public class IIOProviderContextListenerTest {
     
     // Set to @Ignore if there is already a WebP plugin installed
     @Test
-    @Ignore(value = "does not work on Travis CI")
     public void testListener() throws Exception {
         assertFalse(ImageIO.getImageReadersByMIMEType("image/webp").hasNext());
         
