@@ -153,5 +153,12 @@ public class PicturaImageIOTest {
 	assertNotNull(icoRaw);
 	assertTrue(icoRaw.length > 0);
     }
+    
+    // Regression test for missing ICO (image/x-icon) mime mapping
+    @Test
+    public void testICOMimeMapping() throws Exception {
+        PicturaImageIO.scanForPlugins();
+        assertEquals("ico", PicturaImageIO.getImageReaderWriterMIMETypes().get("image/x-icon"));
+    }
 
 }
