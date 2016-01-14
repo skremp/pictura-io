@@ -5,5 +5,3 @@ jdk:
 branches:
   only:
     - master
-env:
-  - skipITs=true  
