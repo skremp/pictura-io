@@ -269,7 +269,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
 			for (String s : cacheControl) {
 			    newCacheControl.append(sep);
 			    if (s.toLowerCase(Locale.ENGLISH).trim().startsWith("max-age=")) {
-				newCacheControl.append(" max-age=")
+				newCacheControl.append("max-age=")
 					.append((entry.getExpires()
 						- System.currentTimeMillis()) / 1000);
 			    } else {
