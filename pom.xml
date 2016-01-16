@@ -7,8 +7,8 @@
     <modelVersion>4.0.0</modelVersion>    
     
     <groupId>io.pictura</groupId>
-    <artifactId>pictura-parent</artifactId>    
-    <version>1.0.1.Final</version>
+    <artifactId>pictura-parent</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
     
     <name>PicturaIO</name>
         

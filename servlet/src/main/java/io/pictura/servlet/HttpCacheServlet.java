@@ -269,7 +269,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
 			for (String s : cacheControl) {
 			    newCacheControl.append(sep);
 			    if (s.toLowerCase(Locale.ENGLISH).trim().startsWith("max-age=")) {
-				newCacheControl.append(" max-age=")
+				newCacheControl.append("max-age=")
 					.append((entry.getExpires()
 						- System.currentTimeMillis()) / 1000);
 			    } else {
@@ -314,7 +314,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
 	    resp.setStatus(entry.getStatus());
 	    resp.setContentType(entry.getContentType());
 
-	    String acceptEncoding = req.getHeader("Accept-Encoding");
+	    String acceptEncoding = req.getHeader(HEADER_ACCEPTENC);
 	    acceptEncoding = acceptEncoding != null ? acceptEncoding.toLowerCase(Locale.ENGLISH) : "";
 
 	    if (("gzip".equalsIgnoreCase(entry.getContentEncoding())

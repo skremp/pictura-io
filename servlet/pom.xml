@@ -8,8 +8,8 @@
     
     <parent>
         <groupId>io.pictura</groupId>
-        <artifactId>pictura-parent</artifactId>    
-        <version>1.0.1.Final</version>
+        <artifactId>pictura-parent</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
     </parent>
     
     <artifactId>pictura-servlet</artifactId>    
@@ -32,7 +32,8 @@
         <maven.test.skip>${skip.tests}</maven.test.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <maven.compiler.optimize>true</maven.compiler.optimize>        
+        <maven.compiler.optimize>true</maven.compiler.optimize>
+        <maven.compiler.debug>false</maven.compiler.debug>
         
         <!--
             Integration test properties.
@@ -233,10 +234,30 @@
                         <arg>-Xlint:all</arg>
                     </compilerArgs>
                     <failOnError>true</failOnError>
-                    <debug>true</debug>
+                    <debug>${maven.compiler.debug}</debug>
                 </configuration>
             </plugin>
             
+            <!--
+                Unit tests
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.18.1</version>
+                <configuration>
+                    <argLine>${surefireArgLine}</argLine>
+                    <skipTests>${skip.tests}</skipTests>          
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                        <exclude>**/*LT.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            
+            <!--
+                Integration tests
+            -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -257,28 +278,26 @@
                         </goals>                        
                     </execution>                    
                 </executions>
-            </plugin>           
+            </plugin>                                   
             
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.18.1</version>
-                <configuration>
-                    <argLine>${surefireArgLine}</argLine>
-                    <skipTests>${skip.tests}</skipTests>          
-                    <excludes>
-                        <exclude>**/*IT.java</exclude>
-                        <exclude>**/*LT.java</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            
+            <!--
+                Unit/Integration test reports and code coverage
+            -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.7.4.201502262128</version>
                 <configuration>
                     <skip>false</skip>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.build.directory}</directory>
+                            <includes>
+                                <include>*.exec</include>
+                            </includes>
+                        </fileSet>
+                    </fileSets>
+                    <destFile>${project.build.directory}/merged.exec</destFile>
                 </configuration>
                 <executions>
                     <execution>
@@ -316,14 +335,38 @@
                     <execution>
                         <id>post-integration-test</id>
                         <phase>post-integration-test</phase>
-                        <goals>
+                        <goals>                            
                             <goal>report</goal>
+                            <goal>merge</goal>
                         </goals>
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-it.exec</dataFile>
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-it</outputDirectory>
                         </configuration>
-                    </execution>                   
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <limits>
+                                        <!-- 
+                                            Overall code coverage for unit tests >= 60% 
+                                            NOTE: this does not include integration tests
+                                        -->
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.6</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
                 </executions>               
             </plugin>
             
@@ -427,6 +470,7 @@
                 <skip.javadoc>true</skip.javadoc>
                 <skip.source>true</skip.source>
                 <maven.compiler.optimize>false</maven.compiler.optimize>
+                <maven.compiler.debug>true</maven.compiler.debug>
             </properties>
             <build>
                 <plugins>
@@ -439,35 +483,6 @@
                                 <arg>-g</arg>                                
                             </compilerArgs>
                         </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>check</id>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                                <configuration>
-                                    <rules>
-                                        <rule>
-                                            <limits>
-                                                <!-- 
-                                                    Overall code coverage for unit tests >= 50% 
-                                                    NOTE: this does not include integration tests
-                                                -->
-                                                <limit>
-                                                    <counter>LINE</counter>
-                                                    <value>COVEREDRATIO</value>
-                                                    <minimum>0.6</minimum>
-                                                </limit>
-                                            </limits>
-                                        </rule>
-                                    </rules>
-                                </configuration>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
