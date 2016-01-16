@@ -314,7 +314,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
 	    resp.setStatus(entry.getStatus());
 	    resp.setContentType(entry.getContentType());
 
-	    String acceptEncoding = req.getHeader("Accept-Encoding");
+	    String acceptEncoding = req.getHeader(HEADER_ACCEPTENC);
 	    acceptEncoding = acceptEncoding != null ? acceptEncoding.toLowerCase(Locale.ENGLISH) : "";
 
 	    if (("gzip".equalsIgnoreCase(entry.getContentEncoding())
