@@ -1,6 +1,7 @@
 ### 1.1.0.Final (TBD)
 
 * I/O performance improvements.
+* Reduced memory consumption.
 
 ### 1.0.2.Final (2016-01-16)
 
