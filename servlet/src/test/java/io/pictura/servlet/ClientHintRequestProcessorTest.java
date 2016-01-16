@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
@@ -122,6 +123,26 @@ public class ClientHintRequestProcessorTest {
         rp.setRequest(req);
         
 	assertEquals(new Integer(1920), rp.getRequestedScaleWidth(req));
+    }
+    
+    @Test
+    public void testGetRequestedScaleWidth_6() throws Exception {
+	System.out.println("getRequestedScaleWidth_6");
+
+	ClientHintRequestProcessor rp = new ClientHintRequestProcessor();
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+        when(req.getHeader("Width")).thenReturn("900");
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=h100/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+        
+        rp.setRequest(req);
+        
+	assertNull(rp.getRequestedScaleWidth(req));
+        assertEquals(new Integer(100), rp.getRequestedScaleHeight(req));
     }
 
     @Test

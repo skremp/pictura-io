@@ -137,7 +137,8 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
     @Override
     protected Integer getRequestedScaleWidth(HttpServletRequest req) {
 	Integer originWidth = super.getRequestedScaleWidth(req);
-	if (!isBypassRequest(req) && originWidth == null) {
+	if (!isBypassRequest(req) && originWidth == null &&
+                super.getRequestedScaleHeight(req) == null) {
 	    if (req.getHeader(CH_RW) != null) {
 		Integer w = tryParseInt(req.getHeader(CH_RW), -1);
 		return w > -1 ? w : originWidth;
