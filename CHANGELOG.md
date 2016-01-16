@@ -2,6 +2,12 @@
 
 * I/O performance improvements.
 
+### 1.0.2.Final (2016-01-16)
+
+* Added missing webp-imageio lib (required to run intefration tests).
+* Removed unnecessary whitespace in cache control header.
+* Fixed broken links in documentation.
+
 ### 1.0.1.Final (2016-01-14)
 
 * Fixed missing filename suffix (content-disposition) in cases of ICO, PDF, CSS 
