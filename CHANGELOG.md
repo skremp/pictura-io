@@ -1,6 +1,7 @@
 ### 1.1.0.Final (TBD)
 
-* I/O performance improvements.
+* Added new saturation effect filter.
+* Improved I/O performance.
 * Reduced memory consumption.
 * Fixed issue with CH (client hint) width if the requested scale height is
   given explicitly.

@@ -504,7 +504,7 @@ public final class Pictura {
 		    gx -= minIndices[1];
 		    bx -= minIndices[2];
 
-		    int[] clipped = clipping(rx, gx, bx);
+		    int[] clipped = clamp(rx, gx, bx);
 
 		    pixels[i] = (ax << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 
@@ -575,7 +575,7 @@ public final class Pictura {
 		int gn = (int) (factors[2] * (g + factors[3] - 127.5) + 127.5);
 		int bn = (int) (factors[4] * (b + factors[5] - 127.5) + 127.5);
 
-		int[] clipped = clipping(rn, gn, bn);
+		int[] clipped = clamp(rn, gn, bn);
 
 		pixels[i] = (a << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 
@@ -622,7 +622,7 @@ public final class Pictura {
 		int gn = (int) (Y - 0.3441 * Cb - 0.7141 * Cr + 0.5);
 		int bn = (int) (Y + 1.772 * Cb + 0.5);
 
-		int[] clipped = clipping(rn, gn, bn);
+		int[] clipped = clamp(rn, gn, bn);
 
 		pixels[i] = (a << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 	    }
@@ -633,18 +633,40 @@ public final class Pictura {
 
     };
 
-    static final BufferedImageOp getOpRescale(final float f) {
-	return new RescaleOp(f, 0, null);
+    static final BufferedImageOp getOpRescale(final float scaleFactor) {
+	return new RescaleOp(scaleFactor, 0, null);
     }
 
-    static final BufferedImageOp getOpGamma(final float f) {
+    static final BufferedImageOp getOpGamma(final float value) {
 	byte[] table = new byte[256];
 	for (int i = 0; i < table.length; i++) {
-	    table[i] = (byte) (255 * Math.pow(i / 255.0, f));
+	    table[i] = (byte) (255 * Math.pow(i / 255.0, value));
 	}
 	return new LookupOp(new ByteLookupTable(0, table), null);
     }
 
+    static final BufferedImageOp getOpSaturation(final float value) {
+        return new PointImageOp() {
+            @Override
+            public int filterRGB(int x, int y, int rgb) {
+                if (value != 1) {
+                    int a = rgb & 0xff000000;
+                    int r = (rgb >> 16) & 0xff;
+                    int g = (rgb >> 8) & 0xff;
+                    int b = rgb & 0xff;
+                    int v = (r + g + b) / 3; // or a better brightness calculation if you prefer
+
+                    int[] rgb2 = clamp((int) (v + value * (r - v)),
+                            (int) (v + value * (g - v)),
+                            (int) (v + value * (b - v)));
+
+                    return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];
+                }
+                return rgb;
+            }
+        };
+    }
+    
     static final BufferedImageOp getOpPixelate(final int value) {
 	return new ImageOp() {
 	    
@@ -2199,7 +2221,7 @@ public final class Pictura {
 	    return d >= 0 ? (int) (d + .5) : (int) (d - .5);
 	}
 
-	protected static int[] clipping(int r, int g, int b) {
+	protected static int[] clamp(int r, int g, int b) {
 	    return new int[]{r > 255 ? 255 : r < 0 ? 0 : r,
 		g > 255 ? 255 : g < 0 ? 0 : g,
 		b > 255 ? 255 : b < 0 ? 0 : b};

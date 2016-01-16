@@ -1527,7 +1527,7 @@ public class ImageRequestProcessorTest {
 
     @Test
     public void testGetRequestedEffects_GAM_50() {
-	System.out.println("getRequestedEffects_GL");
+	System.out.println("getRequestedEffects_GAM_50");
 
 	HttpServletRequest req = mock(HttpServletRequest.class);
 
@@ -1542,6 +1542,22 @@ public class ImageRequestProcessorTest {
 	assertTrue(irp.getRequestedEffects(req)[0] instanceof LookupOp);
     }
 
+    @Test
+    public void testGetRequestedEffects_SAT_25() {
+	System.out.println("getRequestedEffects_SAT_25");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=sat(25)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(1, irp.getRequestedEffects(req).length);
+    }
+    
     @Test
     public void testGetRequestedEffects_S() {
 	System.out.println("getRequestedEffects_S");

@@ -339,5 +339,11 @@ public class PicturaTest {
 	BufferedImage bi = Pictura.apply(img, Pictura.getOpGamma(1.5f));
 	assertNotEquals(img.getRGB(120, 120), bi.getRGB(120, 120));
     }
+    
+    @Test
+    public void testSaturationFilter() {
+	BufferedImage bi = Pictura.apply(img, Pictura.getOpSaturation(1.5f));
+	assertNotEquals(img.getRGB(120, 120), bi.getRGB(120, 120));
+    }
 
 }

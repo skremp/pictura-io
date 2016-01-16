@@ -1035,10 +1035,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
     // Precompiled effect parameter patterns
     private static final Pattern P_EFFECT_BDT = Pattern.compile("^[bdt]{1,1}\\([0-9]{1,3}\\)$");
-    private static final Pattern P_EFFECT_GAM = Pattern.compile("^(gam){1,1}\\(\\-?[0-9]{1,3}\\)$");
+    private static final Pattern P_EFFECT_GAM_SAT = Pattern.compile("^(gam|sat){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_PX = Pattern.compile("^(px){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_BDT_NB = Pattern.compile("^[bdt]{1,1}[0-9]{1,3}$"); // no brackets style
-    private static final Pattern P_EFFECT_GAM_NB = Pattern.compile("^(gam){1,1}\\-?[0-9]{1,3}$"); // no brackets style
+    private static final Pattern P_EFFECT_GAM_SAT_NB = Pattern.compile("^(gam|sat){1,1}\\-?[0-9]{1,3}$"); // no brackets style
     private static final Pattern P_EFFECT_PX_NB = Pattern.compile("^(px){1,1}\\-?[0-9]{1,3}$"); // no brackets style
 
     /**
@@ -1168,20 +1168,27 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 			    }
 			    
 			    // Gamma correction
-			    else if (P_EFFECT_GAM.matcher(o).matches() 
-				    || (noBrackets = P_EFFECT_GAM_NB.matcher(o).matches())) {
+			    else if (P_EFFECT_GAM_SAT.matcher(o).matches() 
+				    || (noBrackets = P_EFFECT_GAM_SAT_NB.matcher(o).matches())) {
 
 				float f = tryParseFloat(noBrackets ? o.substring(3, o.length())
 					: o.substring(o.indexOf('(') + 1, o.length() - 1), Float.NaN);
-
-				if (!Float.isNaN(f)) {
-				    f = (f + 100) / 100;
-				    if (f < -100 || f > 100) {
-					throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
-				    }
-				    l.add(Pictura.getOpGamma(f));
+                                
+				if (!Float.isNaN(f)) {				    			    
+                                    f = (f + 100) / 100;
+                                    if (o.startsWith("gam")) {
+                                        if (f < -100 || f > 100) {
+                                            throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
+                                        }
+                                        l.add(Pictura.getOpGamma(f));
+                                    } else if (o.startsWith("sat")) {
+                                        if (f < -100 || f > 100) {
+                                            throw new IllegalArgumentException("Invalid effect: saturation must be between -100 and 100");
+                                        }
+                                        l.add(Pictura.getOpSaturation(f));
+                                    }
 				} else {
-				    throw new IllegalArgumentException("Invalid effect: the gamma correction must be a valid number");
+				    throw new IllegalArgumentException("Invalid effect: the effect argument must be a valid number");
 				}
 			    } 
 

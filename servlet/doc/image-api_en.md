@@ -667,6 +667,24 @@ to `100`. The default value is `0` which leaves the image unchanged.
 
 **[\[⬆\]](#table-of-contents)**
 
+### Saturation
+
+ `SAT({value})`
+ 
+Adjusts the saturation of the image. Valid values are in the range `-100`
+to `100`. The default value is `0` which leaves the image unchanged. A value of 
+`-100` will convert the image to grayscale.
+
+**Example**
+
+ `/E=SAT(60)/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_sat60.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
 ### Auto Contrast
 
  `AC`
