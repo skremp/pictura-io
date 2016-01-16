@@ -265,7 +265,7 @@ public class CSSColorPaletteRequestProcessor extends StrategyRequestProcessor {
 	    resp.setCharacterEncoding("UTF-8");
 	    resp.setContentLength(paletteData.length);
 
-	    doWrite(paletteData, req, resp);
+	    doWrite(paletteData, 0, paletteData.length, req, resp);
 	} else {
 	    doInterrupt(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	}

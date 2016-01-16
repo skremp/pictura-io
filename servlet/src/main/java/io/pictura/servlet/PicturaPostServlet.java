@@ -16,8 +16,6 @@
 package io.pictura.servlet;
 
 import io.pictura.servlet.PicturaConfig.ConfigParam;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -199,7 +197,7 @@ public class PicturaPostServlet extends PicturaServlet {
 		}
 
 		// Read the raw image data from the POST request
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(reqCL);
+		FastByteArrayOutputStream bos = new FastByteArrayOutputStream(reqCL);
 		try (InputStream is = new ContextInputStream(req, req.getInputStream())) {
 		    long received = 0L;
 
@@ -228,7 +226,7 @@ public class PicturaPostServlet extends PicturaServlet {
 		resp.setHeader(HEADER_ETAG, getETag(bos.toByteArray(), getRequestURI()));
 
 		// Process the image
-		irp.doProcessImage(new ByteArrayInputStream(bos.toByteArray()), req, resp);
+		irp.doProcessImage(new FastByteArrayInputStream(bos), req, resp);
 		return;
 	    } // Do not allow POST requests on other request processors than on
 	    // ImageRequestProcessor's

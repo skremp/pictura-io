@@ -16,8 +16,6 @@
 package io.pictura.servlet;
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -47,9 +45,15 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
         }
         return super.getRequestParameter(req, name);
     }
+
+    @Override
+    protected long doWrite(byte[] data, HttpServletRequest req, 
+            HttpServletResponse resp) throws ServletException, IOException {
+        return doWrite(data, 0, data.length, req, resp);
+    }        
     
     @Override
-    protected long doWrite(byte[] data, HttpServletRequest req,
+    protected long doWrite(byte[] data, int off, int len, HttpServletRequest req,
             HttpServletResponse resp) throws ServletException, IOException {
 	
 	if (!isPreferred(req)) {
@@ -59,7 +63,7 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
 	
 	org.apache.pdfbox.pdmodel.PDDocument document = null;
 	
-        long len;        
+        long outLen;        
         try {          
             document = new org.apache.pdfbox.pdmodel.PDDocument();
                         
@@ -69,7 +73,7 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
             document.setDocumentInformation(info);
             
             org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg img = new org.apache.pdfbox.pdmodel.graphics.xobject.PDJpeg(
-		    document, new ByteArrayInputStream(data));            
+		    document, new FastByteArrayInputStream(data, off, len));
             BufferedImage bimg = img.getRGBImage();
                         
             org.apache.pdfbox.pdmodel.PDPage page = new org.apache.pdfbox.pdmodel.PDPage(
@@ -81,12 +85,12 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
                 stream.drawImage(img, 0, 0);
             }
 
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            FastByteArrayOutputStream bos = new FastByteArrayOutputStream(len + 2048);
             document.save(bos);
                         
             resp.setContentType(PDF_CONTENT_TYPE);
             
-            len = super.doWrite(bos.toByteArray(), req, resp);
+            outLen = super.doWrite(bos.buf, 0, bos.count, req, resp);
             
         } catch (org.apache.pdfbox.exceptions.COSVisitorException e) {
             throw new ServletException(e);
@@ -95,7 +99,7 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
 		document.close();
 	    }
 	}
-        return len;
+        return outLen;
     }
 
     /**

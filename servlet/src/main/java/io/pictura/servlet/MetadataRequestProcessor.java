@@ -87,10 +87,10 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
 
             // Convert the memory tree to JSON
             com.google.gson.Gson gson = new com.google.gson.Gson();
-            String json = gson.toJson(tree);
+            byte[] json = gson.toJson(tree).getBytes();
 
             resp.setContentType("application/json");
-            doWrite(json.getBytes(), req, resp);
+            doWrite(json, 0, json.length, req, resp);
 
         } catch (com.drew.imaging.ImageProcessingException e) {
             throw new IOException(e);

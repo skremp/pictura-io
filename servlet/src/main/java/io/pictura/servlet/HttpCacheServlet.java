@@ -15,8 +15,6 @@
  */
 package io.pictura.servlet;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -369,10 +367,10 @@ public abstract class HttpCacheServlet extends HttpServlet {
 		    || "deflate".equalsIgnoreCase(contentEncoding)) {
 
 		InflaterInputStream iis = "gzip".equalsIgnoreCase(contentEncoding)
-			? new GZIPInputStream(new ByteArrayInputStream(content))
-			: new InflaterInputStream(new ByteArrayInputStream(content));
+			? new GZIPInputStream(new FastByteArrayInputStream(content))
+			: new InflaterInputStream(new FastByteArrayInputStream(content));
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 16);
 
 		int len;
 		byte[] buf = new byte[1024 * 16];
@@ -450,11 +448,11 @@ public abstract class HttpCacheServlet extends HttpServlet {
     private static final class ServletOutputStreamCopier extends ServletOutputStream {
 
 	private final OutputStream outputStream;
-	private final ByteArrayOutputStream copy;
+	private final FastByteArrayOutputStream copy;
 
 	private ServletOutputStreamCopier(OutputStream outputStream) {
 	    this.outputStream = outputStream;
-	    this.copy = new ByteArrayOutputStream(1024);
+	    this.copy = new FastByteArrayOutputStream(64 * 1024);
 	}
 
 	@Override

@@ -20,8 +20,6 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -2066,7 +2064,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		byte[] buf = new byte[1024 * 16]; // read in 16kB blocks
 		is = new BufferedInputStream(con.getInputStream());
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(1024 * 512);
+		FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 512);
 
 		while ((len = is.read(buf)) > -1) {
 		    bos.write(buf, 0, len);
@@ -2081,7 +2079,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		}
 
 		is.close();
-		is = new ByteArrayInputStream(bos.toByteArray());
+		is = new FastByteArrayInputStream(bos);
 		
 		req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", bytesRead);
 	    }
