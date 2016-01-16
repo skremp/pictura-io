@@ -47,6 +47,7 @@ public class PDFRequestProcessor extends StrategyRequestProcessor {
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     protected long doWrite(byte[] data, HttpServletRequest req, 
             HttpServletResponse resp) throws ServletException, IOException {
         return doWrite(data, 0, data.length, req, resp);
