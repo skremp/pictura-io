@@ -2,10 +2,12 @@
 
 * I/O performance improvements.
 * Reduced memory consumption.
+* Fixed issue with CH (client hint) width if the requested scale height is
+  given explicitly.
 
 ### 1.0.2.Final (2016-01-16)
 
-* Added missing webp-imageio lib (required to run intefration tests).
+* Added missing webp-imageio lib (required to run integration tests).
 * Removed unnecessary whitespace in cache control header.
 * Fixed broken links in documentation.
 
