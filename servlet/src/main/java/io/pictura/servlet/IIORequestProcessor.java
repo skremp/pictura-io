@@ -581,7 +581,7 @@ public abstract class IIORequestProcessor extends RequestProcessor {
 
         doIntercept(img, getImageInterceptor());
 
-        FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 256);
+        FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
         ImageWriter iw = null;
         ImageOutputStream ios = null;

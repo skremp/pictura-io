@@ -971,14 +971,14 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
 		if (acceptEncoding != null) {
 		    if (acceptEncoding.contains("gzip")) {
-			dos = new GZIPOutputStream(bos = new FastByteArrayOutputStream(1024 * 32)) {
+			dos = new GZIPOutputStream(bos = new FastByteArrayOutputStream()) {
 			    {
 				def.setLevel((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL"));
 			    }
 			};
 			resp.setHeader(HEADER_CONTENC, "gzip");
 		    } else if (acceptEncoding.contains("deflate")) {
-			dos = new DeflaterOutputStream(bos = new FastByteArrayOutputStream(1024 * 32)) {
+			dos = new DeflaterOutputStream(bos = new FastByteArrayOutputStream()) {
 			    {
 				def.setLevel((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL"));
 			    }

@@ -2071,7 +2071,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		byte[] buf = new byte[1024 * 16]; // read in 16kB blocks
 		is = new BufferedInputStream(con.getInputStream());
 
-		FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 512);
+		FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
 		while ((len = is.read(buf)) > -1) {
 		    bos.write(buf, 0, len);

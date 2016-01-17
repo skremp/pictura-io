@@ -453,7 +453,7 @@ final class PicturaImageIO {
 	    destinationRaster.setRect(0, img.getHeight(), sourceRaster);
 
 	    // save the new image to BMP format. 
-	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 32);
+	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 	    ImageIO.write(img2, "bmp", bos);
 
 	    // strip the first 14 bytes (contains the bitmap-file-header)

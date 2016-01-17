@@ -271,7 +271,7 @@ final class PlaceholderRequestProcessor extends ImageRequestProcessor {
 	g.dispose();
 
 	// Create a valid image data
-	FastByteArrayOutputStream bos = new FastByteArrayOutputStream(32 * 1024);
+	FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 	ImageIO.write(img, DEFAULT_FORMAT_NAME, bos);
 
 	// Release resources

@@ -452,7 +452,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
 
 	private ServletOutputStreamCopier(OutputStream outputStream) {
 	    this.outputStream = outputStream;
-	    this.copy = new FastByteArrayOutputStream(64 * 1024);
+	    this.copy = new FastByteArrayOutputStream();
 	}
 
 	@Override

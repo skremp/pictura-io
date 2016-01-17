@@ -91,7 +91,7 @@ final class ScriptRequestProcessor extends RequestProcessor {
 
     private byte[] getContent(URL u) throws IOException {
 	try (InputStream is = u.openStream()) {
-	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 16);
+	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
 	    int len;
 	    byte[] buf = new byte[1024 * 16];

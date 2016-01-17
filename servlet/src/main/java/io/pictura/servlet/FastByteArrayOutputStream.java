@@ -22,22 +22,39 @@ import java.util.Arrays;
 /**
  * A fast <code>ByteArrayOutputStream</code> with direct access to the stored
  * data and without any synchonization.
- * 
+ *
  * @author Steffen Kremp
- * 
+ *
  * @see FastByteArrayInputStream
  *
  * @since 1.1
  */
 final class FastByteArrayOutputStream extends OutputStream {
-    
+
     private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    private static int DEFAULT_BUFFER_SIZE ;
+
+    static {
+        final long maxMemory = Runtime.getRuntime().maxMemory();
+        if (maxMemory < 64 * 1024 * 1024) {
+            DEFAULT_BUFFER_SIZE = 1024 * 4;
+        } else if (maxMemory < 128 * 1024 * 1024) {
+            DEFAULT_BUFFER_SIZE = 1024 * 8;
+        } else if (maxMemory < 512 * 1024 * 1024) {
+            DEFAULT_BUFFER_SIZE = 1024 * 16;
+        } else if (maxMemory < 1024 * 1024 * 1024) {
+            DEFAULT_BUFFER_SIZE = 1024 * 64;
+        } else {
+            DEFAULT_BUFFER_SIZE = 1024 * 128;
+        }
+    }
 
     byte buf[];
     int count;
 
     public FastByteArrayOutputStream() {
-        this(1024 * 8);
+        this(DEFAULT_BUFFER_SIZE);
     }
 
     public FastByteArrayOutputStream(int size) {
@@ -99,5 +116,5 @@ final class FastByteArrayOutputStream extends OutputStream {
     public int size() {
         return count;
     }
-    
+
 }
