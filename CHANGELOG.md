@@ -1,8 +1,8 @@
 ### 1.1.0.Final (TBD)
 
 * Added new saturation effect filter.
+* Added new servlet parameter `useContainerPool`.
 * Improved I/O performance.
-* Reduced memory consumption.
 * Fixed issue with CH (client hint) width if the requested scale height is
   given explicitly.
 

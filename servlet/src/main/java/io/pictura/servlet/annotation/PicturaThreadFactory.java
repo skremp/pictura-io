@@ -26,6 +26,10 @@ import java.util.concurrent.ThreadFactory;
 /**
  * Annotation used to set a custom {@link ThreadFactory} for a 
  * {@link PicturaServlet} instance.
+ * <p>
+ * <b>Note</b>: this is ignored if the servlet is configured to use the
+ * container pool to execute requests.
+ * </p>
  * 
  * <p>Usage:</p>
  * <pre>

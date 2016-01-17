@@ -152,6 +152,32 @@ public class PicturaServletTest {
 	assertEquals(0, servlet.getCompletedTaskCount());
 	assertEquals(0, servlet.getRejectedTaskCount());
     }
+    
+    @Test
+    public void testInit_3() throws ServletException {
+	System.out.println("init_3");
+
+	PicturaServlet servlet = new PicturaServlet();
+	ServletConfig config = mock(ServletConfig.class);
+	ServletContext context = mock(ServletContext.class);
+
+	when(config.getServletContext()).thenReturn(context);
+	when(config.getInitParameter(PicturaServlet.IPARAM_RESOURCE_LOCATORS))
+		.thenReturn("io.pictura.servlet.HttpResourceLocator");
+        when(config.getInitParameter(PicturaServlet.IPARAM_USE_CONTAINER_POOL)).thenReturn("true");
+
+	servlet.init(config);
+	assertTrue(servlet.isAlive());
+
+	assertEquals(0, servlet.getCompletedTaskCount());
+	assertEquals(0, servlet.getRejectedTaskCount());
+        
+        assertEquals(-1, servlet.getQueueSize());
+        assertEquals(-1, servlet.getActiveCount());
+        assertEquals(-1, servlet.getPoolSize());
+        
+        assertTrue(servlet.useContainerPool());
+    }
 
     @Test
     public void testInit_FileResourceLocator() throws ServletException {

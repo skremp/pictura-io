@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2015, 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -229,15 +229,18 @@ final class StatsRequestProcessor extends RequestProcessor {
 	json.append("\t").append("\"alive\": ").append(servlet.isAlive()).append(",\n");
 	json.append("\t").append("\"async\": ").append(asyncSupported).append(",\n");
 	json.append("\t").append("\"contextPath\": \"").append(escapeString(servlet.getServletContext().getContextPath())).append("\",\n");
-	json.append("\t").append("\"executor\": ").append("{").append("\n");
-	json.append("\t\t").append("\"poolSize\": ").append(servlet.getPoolSize()).append(",\n");
-	json.append("\t\t").append("\"queueSize\": ").append(servlet.getQueueSize()).append(",\n");
-	json.append("\t\t").append("\"activeCount\": ").append(servlet.getActiveCount()).append(",\n");
-	json.append("\t\t").append("\"taskCount\": ").append(servlet.getTaskCount()).append(",\n");
-	json.append("\t\t").append("\"completedTaskCount\": ").append(servlet.getCompletedTaskCount()).append(",\n");
-	json.append("\t\t").append("\"rejectedTaskCount\": ").append(servlet.getRejectedTaskCount()).append(",\n");
-	json.append("\t\t").append("\"instanceHours\": ").append(servlet.getInstanceHours()).append("\n");
-	json.append("\t}").append(",\n");
+        
+        if (!servlet.useContainerPool()) {
+            json.append("\t").append("\"executor\": ").append("{").append("\n");
+            json.append("\t\t").append("\"poolSize\": ").append(servlet.getPoolSize()).append(",\n");
+            json.append("\t\t").append("\"queueSize\": ").append(servlet.getQueueSize()).append(",\n");
+            json.append("\t\t").append("\"activeCount\": ").append(servlet.getActiveCount()).append(",\n");
+            json.append("\t\t").append("\"taskCount\": ").append(servlet.getTaskCount()).append(",\n");
+            json.append("\t\t").append("\"completedTaskCount\": ").append(servlet.getCompletedTaskCount()).append(",\n");
+            json.append("\t\t").append("\"rejectedTaskCount\": ").append(servlet.getRejectedTaskCount()).append(",\n");
+            json.append("\t\t").append("\"instanceHours\": ").append(servlet.getInstanceHours()).append("\n");
+            json.append("\t}").append(",\n");
+        }
 	
 	if (servlet.getHttpCache() != null) {	    
 	    json.append("\t").append("\"cache\": ").append("{").append("\n");

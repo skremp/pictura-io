@@ -50,9 +50,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * A simple embedded unterdow servlet container to deploy and run the pictura 
+ * A simple embedded unterdow servlet container to deploy and run the pictura
  * servlet as standalone service on a specified port at localhost.
- * 
+ *
  * @author Steffen Kremp
  */
 public final class UndertowPicturaServer {
@@ -67,7 +67,7 @@ public final class UndertowPicturaServer {
     private static Undertow undertow;
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("java.util.logging.SimpleFormatter.format", 
+        System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$-7s [%2$s] %5$s%6$s%n");
 
         Locale.setDefault(Locale.ENGLISH);
@@ -92,8 +92,7 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_DEBUG, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_JMX_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HEADER_ADD_TRUE_CACHE_KEY, "true");
-        servletInfo.addInitParam(PicturaServlet.IPARAM_MAX_POOL_SIZE, "4");
-        servletInfo.addInitParam(PicturaServlet.IPARAM_WORKER_QUEUE_SIZE, "100");
+        servletInfo.addInitParam(PicturaServlet.IPARAM_USE_CONTAINER_POOL, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_STATS_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_PLACEHOLDER_PRODUCER_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HTTP_MAX_FORWARDS, "2");
@@ -127,7 +126,7 @@ public final class UndertowPicturaServer {
                 .setUrlEncoding("UTF-8")
                 .setResourceManager(rm)
                 .addListener(new ListenerInfo(IIOProviderContextListener.class))
-               .addInitParameter("io.pictura.servlet.LOG_LEVEL", "DEBUG")
+                .addInitParameter("io.pictura.servlet.LOG_LEVEL", "DEBUG")
                 .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
@@ -184,8 +183,8 @@ public final class UndertowPicturaServer {
                 return new DemoPageRequestProcessor();
             }
             return super.createRequestProcessor(req);
-        }       
-        
+        }
+
         @Override
         protected void doProcess(RequestProcessor rp) throws ServletException, IOException {
             if (rp instanceof IIORequestProcessor) {
@@ -297,13 +296,13 @@ public final class UndertowPicturaServer {
         public boolean isCacheable() {
             return false;
         }
-        
+
         @Override
-        protected void doProcess(HttpServletRequest req, HttpServletResponse resp) 
+        protected void doProcess(HttpServletRequest req, HttpServletResponse resp)
                 throws ServletException, IOException {
-            
+
             ByteArrayOutputStream bos = new ByteArrayOutputStream(1024 * 5);
-            
+
             int len;
             byte[] buf = new byte[1024 * 5];
 
@@ -312,13 +311,13 @@ public final class UndertowPicturaServer {
                     bos.write(buf, 0, len);
                 }
             }
-                        
+
             resp.setContentType("text/html");
             resp.setContentLength(bos.size());
-            
+
             bos.writeTo(resp.getOutputStream());
         }
-        
+
     }
-    
+
 }

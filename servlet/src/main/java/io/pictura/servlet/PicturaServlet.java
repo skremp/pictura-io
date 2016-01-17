@@ -85,6 +85,8 @@ import io.pictura.servlet.annotation.PicturaConfigFile;
 import io.pictura.servlet.annotation.PicturaParamsInterceptor;
 import io.pictura.servlet.annotation.PicturaThreadFactory;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
 /**
@@ -162,6 +164,16 @@ public class PicturaServlet extends HttpCacheServlet {
     @ConfigParam(xpath = "/pictura/jmx/enabled")
     public static final String IPARAM_JMX_ENABLED = "jmxEnabled";
 
+    /**
+     * Servlet parameter to decide to use the container pool to execute
+     * image requests.
+     * 
+     * @since 1.1
+     */
+    @InitParam
+    @ConfigParam(xpath = "/pictura/executor/useContainerPool")
+    public static final String IPARAM_USE_CONTAINER_POOL = "useContainerPool";
+    
     /**
      * Servlet parameter to set the core executor pool size.
      */
@@ -757,13 +769,18 @@ public class PicturaServlet extends HttpCacheServlet {
     private long workerTimeout;
 
     // Handler to set the HTTP response cache control header
-    private CacheControlHandler cacheControlHandler;
-
+    private CacheControlHandler cacheControlHandler;    
+    
     // Executor services to handle the requests in our own thread pool
     // independent from the sever thread pool
+    private boolean useContainerPool;
+    
     private ThreadPoolExecutor coreExecutor;
     private ThreadPoolExecutor statsExecutor;
+    private ExecutorService singleThreadExecutor;
 
+    private volatile long completedTaskCount;
+    
     // The number of all rejected tasks since servlet start
     private volatile long rejectedTaskCount;
 
@@ -903,7 +920,7 @@ public class PicturaServlet extends HttpCacheServlet {
         if (LOG.isInfoEnabled()) {
             LOG.info("PicturaIO Servlet Implementation Version " + Version.getVersionString());
         }
-	
+        
 	debug = Boolean.parseBoolean(config.getInitParameter(IPARAM_DEBUG));
 	xPoweredBy = tryParseBoolean(config.getInitParameter(IPARAM_X_POWERED_BY), true);
 
@@ -1154,14 +1171,22 @@ public class PicturaServlet extends HttpCacheServlet {
 	initCacheControlHandler(config.getInitParameter(IPARAM_CACHE_CONTROL_HANDLER));
 
 	// Create a new error counter for this servlet instance
-	errorCounter = new ConcurrentHashMap<>();
+	errorCounter = new ConcurrentHashMap<>();        
 
+	// Enable and initialize the HTTP cache if specified
+	if (Boolean.parseBoolean(config.getInitParameter(IPARAM_CACHE_ENABLED))) {
+	    initHttpCache(config.getInitParameter(IPARAM_CACHE_CLASS),
+		    tryParseInt(config.getInitParameter(IPARAM_CACHE_CAPACITY), DEFAULT_CACHE_CAPACITY),
+		    tryParseInt(config.getInitParameter(IPARAM_CACHE_MAX_ENTRY_SIZE), DEFAULT_CACHE_MAX_ENTRY_SIZE),
+		    config.getInitParameter(IPARAM_CACHE_FILE));
+	}
+
+        useContainerPool = Boolean.parseBoolean(config.getInitParameter(IPARAM_USE_CONTAINER_POOL));
+        
 	// Check whether statistics are enabled. If enabled we need to 
 	// create an own thread pool executor for statistic requests only, to
 	// separate statistic requests from normal image processing requests.
-	if (statsEnabled = Boolean.parseBoolean(
-		config.getInitParameter(IPARAM_STATS_ENABLED))) {
-
+	if (statsEnabled = Boolean.parseBoolean(config.getInitParameter(IPARAM_STATS_ENABLED))) {
 	    statsPath = config.getInitParameter(IPARAM_STATS_PATH);
 	    if (statsPath == null) {
 		statsPath = DEFAULT_STATS_PATH;
@@ -1176,46 +1201,42 @@ public class PicturaServlet extends HttpCacheServlet {
 		statsIpAddressMatch = LOCALHOST_IP_ADDRESSES;
 	    }
 
-	    statsExecutor = new ThreadPoolExecutor(1, 2, 60, TimeUnit.SECONDS,
-		    new ArrayBlockingQueue<Runnable>(10),
-		    new ServerThreadFactory(Thread.MIN_PRIORITY + 1));
+            if (!useContainerPool) {
+                statsExecutor = new ThreadPoolExecutor(1, 2, 60, TimeUnit.SECONDS,
+                        new ArrayBlockingQueue<Runnable>(10),
+                        new ServerThreadFactory(Thread.MIN_PRIORITY + 1));
+            }
 	}
-
-	// Enable and initialize the HTTP cache if specified
-	if (Boolean.parseBoolean(config.getInitParameter(IPARAM_CACHE_ENABLED))) {
-	    initHttpCache(config.getInitParameter(IPARAM_CACHE_CLASS),
-		    tryParseInt(config.getInitParameter(IPARAM_CACHE_CAPACITY), DEFAULT_CACHE_CAPACITY),
-		    tryParseInt(config.getInitParameter(IPARAM_CACHE_MAX_ENTRY_SIZE), DEFAULT_CACHE_MAX_ENTRY_SIZE),
-		    config.getInitParameter(IPARAM_CACHE_FILE));
-	}
-
+        
 	// Create the image processing executor for this pictura servlet
-	// instance.
-	try {
-	    int corePoolSize = tryParseInt(config.getInitParameter(
-		    IPARAM_CORE_POOL_SIZE), DEFAULT_CORE_POOL_SIZE);
-	    int maxPoolSize = tryParseInt(config.getInitParameter(
-		    IPARAM_MAX_POOL_SIZE), DEFAULT_MAXIMUM_POOL_SIZE);
-	    int keepAlive = tryParseInt(config.getInitParameter(
-		    IPARAM_KEEP_ALIVE_TIME), DEFAULT_KEEP_ALIVE_TIME);
+	// instance.        
+        if (!useContainerPool) {
+            try {
+                int corePoolSize = tryParseInt(config.getInitParameter(
+                        IPARAM_CORE_POOL_SIZE), DEFAULT_CORE_POOL_SIZE);
+                int maxPoolSize = tryParseInt(config.getInitParameter(
+                        IPARAM_MAX_POOL_SIZE), DEFAULT_MAXIMUM_POOL_SIZE);
+                int keepAlive = tryParseInt(config.getInitParameter(
+                        IPARAM_KEEP_ALIVE_TIME), DEFAULT_KEEP_ALIVE_TIME);
 
-	    BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(
-		    tryParseInt(config.getInitParameter(IPARAM_WORKER_QUEUE_SIZE),
-			    DEFAULT_WORKER_QUEUE_SIZE));
+                BlockingQueue<Runnable> queue = new ArrayBlockingQueue<>(
+                        tryParseInt(config.getInitParameter(IPARAM_WORKER_QUEUE_SIZE),
+                                DEFAULT_WORKER_QUEUE_SIZE));
 
-	    coreExecutor = new ThreadPoolExecutor(
-		    corePoolSize <= maxPoolSize ? corePoolSize : maxPoolSize,
-		    maxPoolSize, keepAlive, TimeUnit.MILLISECONDS,
-		    queue, createThreadFactory(), rejectedExecutionHandler);
+                coreExecutor = new ThreadPoolExecutor(
+                        corePoolSize <= maxPoolSize ? corePoolSize : maxPoolSize,
+                        maxPoolSize, keepAlive, TimeUnit.MILLISECONDS,
+                        queue, createThreadFactory(), rejectedExecutionHandler);
 
-	    coreExecutor.prestartCoreThread();
+                coreExecutor.prestartCoreThread();
 
-	    // Share the thread pool executor in the current context
-	    getServletContext().setAttribute("io.pictura.servlet."
-		    + getServletName() + ".threadPool", coreExecutor);
-	} catch (IllegalArgumentException | NullPointerException ex) {
-	    throw new ServletException(ex);
-	}
+                // Share the thread pool executor in the current context
+                getServletContext().setAttribute("io.pictura.servlet."
+                        + getServletName() + ".threadPool", coreExecutor);
+            } catch (IllegalArgumentException | NullPointerException ex) {
+                throw new ServletException(ex);
+            }
+        }
 
 	// Rescan for ImageIO plugins for "internal" mappings
 	PicturaImageIO.scanForPlugins();
@@ -1565,6 +1586,19 @@ public class PicturaServlet extends HttpCacheServlet {
     public final boolean isDebugEnabled() {
 	return debug;
     }
+    
+    /**
+     * Tests whether the servlet container pool is used to execute image
+     * requests or a internal private executor pool.
+     * 
+     * @return <code>true</code> if the container pool is used; otherwise
+     * <code>false</code>.
+     * 
+     * @since 1.1
+     */
+    public final boolean useContainerPool() {
+        return useContainerPool;
+    }
 
     /**
      * Returns the complete uptime (include non alive times) from this servlet
@@ -1605,7 +1639,7 @@ public class PicturaServlet extends HttpCacheServlet {
      */
     public final synchronized void setAlive(boolean alive) {
 	this.alive = alive;
-	if (!alive) {
+	if (!alive && !useContainerPool) {            
 	    final BlockingQueue<Runnable> queue = coreExecutor.getQueue();
 	    for (Runnable r : queue) {
 		if (r instanceof RequestProcessor) {
@@ -1692,7 +1726,9 @@ public class PicturaServlet extends HttpCacheServlet {
      * @return The number of tasks.
      */
     public final long getCompletedTaskCount() {
-	return coreExecutor.getCompletedTaskCount();
+	return coreExecutor != null 
+                ? coreExecutor.getCompletedTaskCount() 
+                : completedTaskCount;
     }
 
     /**
@@ -2133,11 +2169,14 @@ public class PicturaServlet extends HttpCacheServlet {
 		throw new IllegalStateException();
 	    }
 
-	    final ThreadPoolExecutor exec = getExecutor(crp);
-	    if (exec == null || exec.isShutdown()) {
-		crp.getResponse().sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-		throw new ServletException("Thread pool executor not initialized or shutdown.");
-	    }
+	    ExecutorService exec = null;
+            if (!useContainerPool) {
+                exec = getExecutor(crp);
+                if (exec == null || exec.isShutdown()) {
+                    crp.getResponse().sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    throw new ServletException("Thread pool executor not initialized or shutdown.");
+                }
+            }
 
 	    // If async servlet execution is supported by the servlet container
 	    // and it is enabled in the deployment descriptior we will execute
@@ -2161,7 +2200,7 @@ public class PicturaServlet extends HttpCacheServlet {
 			? crp.getRequest().getAsyncContext() : crp.getRequest().startAsync();
 		asyncCtx.setTimeout(workerTimeout);
 
-		if (exec != statsExecutor) {
+                if (!(crp instanceof StatsRequestProcessor)) {
 		    asyncCtx.addListener(new AsyncListener() {
 
 			@Override
@@ -2174,6 +2213,10 @@ public class PicturaServlet extends HttpCacheServlet {
 			    if (crp.getRequest().getAttribute("io.pictura.servlet.BYTES_WRITTEN") instanceof Long) {
 				outgoingBandwidth += (long) crp.getRequest().getAttribute("io.pictura.servlet.BYTES_WRITTEN");
 			    }
+                            
+                            if (useContainerPool) {
+                                completedTaskCount++;
+                            }
 			}
 
 			@Override
@@ -2192,13 +2235,17 @@ public class PicturaServlet extends HttpCacheServlet {
 
 		crp.setAsyncContext(asyncCtx);
 
-		exec.execute(crp);
+                if (useContainerPool) {
+                    asyncCtx.start(crp);
+                } else if (exec != null) {                
+                    exec.execute(crp);
+                }
 	    } // If no async is supported or enabled we will execute the image
 	    // processor concurrent (blocking mode).
 	    else {
-		Future<?> f = exec.submit(crp);
+		Future<?> f = getSingleThreadExecutor().submit(crp);
 		f.get(workerTimeout, TimeUnit.MILLISECONDS);
-		if (exec != statsExecutor) {
+		if (!(crp instanceof StatsRequestProcessor)) {
 		    instanceMillis += (crp.getDuration() > -1 ? crp.getDuration() : 0);
 		    responseMillis += System.currentTimeMillis() - crp.getTimestamp();
 		    if (crp.getRequest().getAttribute("io.pictura.servlet.BYTES_READ") instanceof Long) {
@@ -2207,6 +2254,10 @@ public class PicturaServlet extends HttpCacheServlet {
 		    if (crp.getRequest().getAttribute("io.pictura.servlet.BYTES_WRITTEN") instanceof Long) {
 			outgoingBandwidth += (long) crp.getRequest().getAttribute("io.pictura.servlet.BYTES_WRITTEN");
 		    }
+                    
+                    if (useContainerPool) {
+                        completedTaskCount++;
+                    }
 		}
 	    }
 
@@ -2317,11 +2368,18 @@ public class PicturaServlet extends HttpCacheServlet {
      * @see RequestProcessor
      * @see ThreadPoolExecutor
      */
-    private ThreadPoolExecutor getExecutor(RequestProcessor rp) {
-	if (rp instanceof StatsRequestProcessor) {
+    private ExecutorService getExecutor(RequestProcessor rp) {
+	if (rp instanceof StatsRequestProcessor && statsExecutor != null) {
 	    return statsExecutor;
 	}
-	return coreExecutor;
+        return coreExecutor;
+    }
+    
+    private ExecutorService getSingleThreadExecutor() {
+        if (singleThreadExecutor == null) {
+            singleThreadExecutor = Executors.newSingleThreadExecutor();
+        }
+        return singleThreadExecutor;
     }
 
     private ThreadFactory createThreadFactory() throws ServletException {
