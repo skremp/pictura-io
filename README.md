@@ -38,6 +38,14 @@ the source image:
 
 That's all!
 
+## Latest
+
+PicturaIO **1.0.3.Final** is released (Jan. 19th, 2016).
+
+Master branch build status:
+
+![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
+
 ## Build
 
 Download the project (using [Git](http://git-scm.com/downloads)):
