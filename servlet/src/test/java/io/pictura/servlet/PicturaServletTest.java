@@ -43,7 +43,7 @@ public class PicturaServletTest {
 
     @Test
     public void testServletVersion() {
-	assertEquals("1.0", (new PicturaServlet()).getServletVersion());
+	assertEquals("1.1", (new PicturaServlet()).getServletVersion());
     }
 
     @Test

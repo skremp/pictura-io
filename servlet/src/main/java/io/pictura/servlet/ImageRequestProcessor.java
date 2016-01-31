@@ -513,7 +513,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      * will return <code>false</code>.
      */
     public boolean ignoreSourceContentType() {
-	return false;
+	return true; //false;
     }
     
     @Override
@@ -1103,6 +1103,9 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 			case "px":
 			    l.add(Pictura.OP_PIXELATE);
 			    break;
+                        case "m":
+                            l.add(Pictura.OP_MEDIAN);
+                            break;
 			case "n":
 			    l.add(Pictura.OP_NOISE);
 			    break;
@@ -2244,7 +2247,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      */
     protected void doProcessImage(InputStream is, HttpServletRequest req,
 	    HttpServletResponse resp) throws ServletException, IOException {
-
+       
 	if (is == null || req == null || resp == null) {
 	    doInterrupt(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	    return;

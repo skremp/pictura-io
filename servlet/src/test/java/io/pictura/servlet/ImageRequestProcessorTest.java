@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -1389,6 +1390,23 @@ public class ImageRequestProcessorTest {
 	irp.getRequestedEffects(req);
     }
 
+    @Test
+    public void testGetRequestedEffects_M() {
+	System.out.println("getRequestedEffects_M");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=m/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(1, irp.getRequestedEffects(req).length);
+	assertSame(Pictura.OP_MEDIAN, irp.getRequestedEffects(req)[0]);
+    }
+    
     @Test
     public void testGetRequestedEffects_N() {
 	System.out.println("getRequestedEffects_N");

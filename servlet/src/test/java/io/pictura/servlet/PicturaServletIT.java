@@ -281,7 +281,8 @@ public abstract class PicturaServletIT {
 		new File(path.getAbsolutePath() + File.separator + "lenna.psd"),
 		new File(path.getAbsolutePath() + File.separator + "loader.gif"),
 		new File(path.getAbsolutePath() + File.separator + "lenna-trim.jpg"),
-		new File(path.getAbsolutePath() + File.separator + "cmyk-jpeg.jpg")
+		new File(path.getAbsolutePath() + File.separator + "cmyk-jpeg.jpg"),
+                new File(path.getAbsolutePath() + File.separator + "example.pdf")
 	    };
 	    for (File f : tmp) {
 		if (!f.exists()) {

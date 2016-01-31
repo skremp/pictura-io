@@ -281,6 +281,12 @@ public class PicturaTest {
     }
 
     @Test
+    public void testMedianFilter() {
+	BufferedImage bi = Pictura.apply(img, Pictura.OP_MEDIAN);
+	assertNotEquals(img.getRGB(120, 120), bi.getRGB(120, 120));
+    }
+    
+    @Test
     public void testNoiseFilter() {
 	BufferedImage bi = Pictura.apply(img, Pictura.OP_NOISE);
 	assertNotEquals(img.getRGB(120, 120), bi.getRGB(120, 120));
