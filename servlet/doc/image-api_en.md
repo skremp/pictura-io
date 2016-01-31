@@ -634,6 +634,22 @@ range `10 - 100`. The default value is `10`.
 
 **[\[⬆\]](#table-of-contents)**
 
+### Median
+
+ `M`
+
+Applies a median (noise reduction) effect to the image.
+
+**Example**
+
+ `/E=M/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_m.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
 ### Noise
 
  `N`
