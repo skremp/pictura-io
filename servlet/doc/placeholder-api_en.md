@@ -7,7 +7,7 @@ operations like rotation or cropping.
 
 <p align="center">
     <img src="misc/placeholder_300x60.gif" alt=""/>
-    <p style="font-size: 0.9em; margin-top: 2px;"><i>Example placeholder image</i></p>
+    <p align="center"><i>Example placeholder image</i></p>
 </p>
 
 > The placeholder image producer is disabled by default. To enable this feature,

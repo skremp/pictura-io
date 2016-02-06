@@ -143,6 +143,23 @@ public class PicturaServletEffectIT extends PicturaServletIT {
 	BufferedImage image = doGetImage(new URL("http://" + getHost() + "/e=gam(1a)/lenna.jpg"), HttpURLConnection.HTTP_BAD_REQUEST, null);
 	assertNull(image);
     }
+    
+    @Test
+    public void testEffect_SAT_50() throws Exception {
+	System.out.println("effect_SAT_50");
+
+	BufferedImage image = doGetImage(new URL("http://" + getHost() + "/e=sat(50)/lenna.jpg"), HttpURLConnection.HTTP_OK, "image/jpeg");
+	assertEquals(400, image.getWidth());
+	assertEquals(225, image.getHeight());
+    }
+
+    @Test
+    public void testEffect_SAT_InvalidNumber() throws Exception {
+	System.out.println("effect_SAT_InvalidNumber");
+
+	BufferedImage image = doGetImage(new URL("http://" + getHost() + "/e=sat(1a)/lenna.jpg"), HttpURLConnection.HTTP_BAD_REQUEST, null);
+	assertNull(image);
+    }
 
     @Test
     public void testEffect_B_50() throws Exception {

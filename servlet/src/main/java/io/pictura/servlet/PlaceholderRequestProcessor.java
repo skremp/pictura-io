@@ -25,8 +25,6 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Locale;
 import javax.imageio.ImageIO;
@@ -273,7 +271,7 @@ final class PlaceholderRequestProcessor extends ImageRequestProcessor {
 	g.dispose();
 
 	// Create a valid image data
-	ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 	ImageIO.write(img, DEFAULT_FORMAT_NAME, bos);
 
 	// Release resources
@@ -281,7 +279,7 @@ final class PlaceholderRequestProcessor extends ImageRequestProcessor {
 
 	// Continue with the image processing (scaling, cropping, ...) if
 	// also requested or if not write the response to the client
-	doProcessImage(new ByteArrayInputStream(bos.toByteArray()), req, resp);
+	doProcessImage(new FastByteArrayInputStream(bos), req, resp);
     }
 
     private Color getForegroundColor(Color bgColor) {

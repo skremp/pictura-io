@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.1.0.Final
+
+_2016-02-06_
+
+* Added new saturation and median effect filters.
+* Added new servlet parameter `useContainerPool` for throughput optimization
+  if there is no dedicated thread pool executor is required. By default, this
+  option is not automatically enabled.
+* Improved I/O performance by replacing `FileInputStream`'s with `MappedByteBuffer`'s
+  (NIO) and replacing the default JDK `ByteArrayInputStream` and `ByteArrayOutputStream`
+  with a more efficiently and memory optimized variant.
+
 ## 1.0.3.Final
 
 _2016-01-19_

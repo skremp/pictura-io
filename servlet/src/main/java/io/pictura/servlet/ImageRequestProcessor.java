@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2015, 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,8 +20,6 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,6 +33,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -1036,10 +1035,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
     // Precompiled effect parameter patterns
     private static final Pattern P_EFFECT_BDT = Pattern.compile("^[bdt]{1,1}\\([0-9]{1,3}\\)$");
-    private static final Pattern P_EFFECT_GAM = Pattern.compile("^(gam){1,1}\\(\\-?[0-9]{1,3}\\)$");
+    private static final Pattern P_EFFECT_GAM_SAT = Pattern.compile("^(gam|sat){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_PX = Pattern.compile("^(px){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_BDT_NB = Pattern.compile("^[bdt]{1,1}[0-9]{1,3}$"); // no brackets style
-    private static final Pattern P_EFFECT_GAM_NB = Pattern.compile("^(gam){1,1}\\-?[0-9]{1,3}$"); // no brackets style
+    private static final Pattern P_EFFECT_GAM_SAT_NB = Pattern.compile("^(gam|sat){1,1}\\-?[0-9]{1,3}$"); // no brackets style
     private static final Pattern P_EFFECT_PX_NB = Pattern.compile("^(px){1,1}\\-?[0-9]{1,3}$"); // no brackets style
 
     /**
@@ -1104,6 +1103,9 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 			case "px":
 			    l.add(Pictura.OP_PIXELATE);
 			    break;
+                        case "m":
+                            l.add(Pictura.OP_MEDIAN);
+                            break;
 			case "n":
 			    l.add(Pictura.OP_NOISE);
 			    break;
@@ -1169,20 +1171,27 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 			    }
 			    
 			    // Gamma correction
-			    else if (P_EFFECT_GAM.matcher(o).matches() 
-				    || (noBrackets = P_EFFECT_GAM_NB.matcher(o).matches())) {
+			    else if (P_EFFECT_GAM_SAT.matcher(o).matches() 
+				    || (noBrackets = P_EFFECT_GAM_SAT_NB.matcher(o).matches())) {
 
 				float f = tryParseFloat(noBrackets ? o.substring(3, o.length())
 					: o.substring(o.indexOf('(') + 1, o.length() - 1), Float.NaN);
-
-				if (!Float.isNaN(f)) {
-				    f = (f + 100) / 100;
-				    if (f < -100 || f > 100) {
-					throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
-				    }
-				    l.add(Pictura.getOpGamma(f));
+                                
+				if (!Float.isNaN(f)) {				    			    
+                                    f = (f + 100) / 100;
+                                    if (o.startsWith("gam")) {
+                                        if (f < -100 || f > 100) {
+                                            throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
+                                        }
+                                        l.add(Pictura.getOpGamma(f));
+                                    } else if (o.startsWith("sat")) {
+                                        if (f < -100 || f > 100) {
+                                            throw new IllegalArgumentException("Invalid effect: saturation must be between -100 and 100");
+                                        }
+                                        l.add(Pictura.getOpSaturation(f));
+                                    }
 				} else {
-				    throw new IllegalArgumentException("Invalid effect: the gamma correction must be a valid number");
+				    throw new IllegalArgumentException("Invalid effect: the effect argument must be a valid number");
 				}
 			    } 
 
@@ -1884,10 +1893,13 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	if (isProxyRequest(req)) {
 	    doProcessFileProxy(f, req, resp);
 	} else {
-	    try (InputStream is = new FileInputStream(f)) {
-		req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", f.length());
-		doProcessImage(is, req, resp);
-	    }
+	    // Use NIO byte buffer
+            try (FileChannel ch = new FileInputStream(f).getChannel()) {
+                long length = f.length();
+                req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", length);
+		doProcessImage(new ByteBufferInputStream(ch.map(
+                        FileChannel.MapMode.READ_ONLY, 0, length)), req, resp);
+            }
 	}
     }
     
@@ -1912,13 +1924,20 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	resp.setContentLength((int) f.length());
 
 	OutputStream os = new ContextOutputStream(req, resp.getOutputStream());
-	try (InputStream is = new FileInputStream(f)) {
+	
+        // Use NIO byte buffer
+        try (FileChannel ch = new FileInputStream(f).getChannel()) {
+            
+            InputStream is = new ByteBufferInputStream(ch.map(
+                    FileChannel.MapMode.READ_ONLY, 0, f.length()));
+            
 	    int len;
 	    byte[] buf = new byte[1024 * 16];
+            
 	    while ((len = is.read(buf)) > -1) {
 		os.write(buf, 0, len);
 	    }
-	}
+        }
     }
 
     /**
@@ -2055,7 +2074,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		byte[] buf = new byte[1024 * 16]; // read in 16kB blocks
 		is = new BufferedInputStream(con.getInputStream());
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(1024 * 512);
+		FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
 		while ((len = is.read(buf)) > -1) {
 		    bos.write(buf, 0, len);
@@ -2070,7 +2089,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		}
 
 		is.close();
-		is = new ByteArrayInputStream(bos.toByteArray());
+		is = new FastByteArrayInputStream(bos);
 		
 		req.setAttribute("io.pictura.servlet.SRC_IMAGE_SIZE", bytesRead);
 	    }
@@ -2228,7 +2247,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      */
     protected void doProcessImage(InputStream is, HttpServletRequest req,
 	    HttpServletResponse resp) throws ServletException, IOException {
-
+       
 	if (is == null || req == null || resp == null) {
 	    doInterrupt(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	    return;

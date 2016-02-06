@@ -445,6 +445,86 @@ public final class Pictura {
 	    return x < 0 ? 0 : x > 0xff ? 0xff : x;
 	}
     };
+
+    // https://github.com/ajmas/JH-Labs-Java-Image-Filters/blob/master/src/com/jhlabs/image/WholeImageFilter.java
+    // https://github.com/ajmas/JH-Labs-Java-Image-Filters/blob/master/src/com/jhlabs/image/MedianFilter.java
+    static final BufferedImageOp OP_MEDIAN = new ImageOp() {
+        
+        @Override
+        public BufferedImage filter(BufferedImage src, BufferedImage dest) {
+            int width = src.getWidth();
+            int height = src.getHeight();
+
+            Rectangle transformedSpace = new Rectangle(0, 0, width, height);
+
+            if (dest == null) {
+                ColorModel dstCM = src.getColorModel();
+                dest = new BufferedImage(dstCM, dstCM.createCompatibleWritableRaster(
+                        transformedSpace.width, transformedSpace.height), 
+                        dstCM.isAlphaPremultiplied(), null);
+            }
+
+            int index = 0;
+            
+            int[] argb = new int[9];
+            int[] r = new int[9];
+            int[] g = new int[9];
+            int[] b = new int[9];
+            
+            int[] inPixels = getRGB(src, 0, 0, width, height, null);
+            int[] outPixels = new int[width * height];
+            
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int k = 0;
+                    for (int dy = -1; dy <= 1; dy++) {
+                        int iy = y + dy;
+                        if (0 <= iy && iy < height) {
+                            int ioffset = iy * width;
+                            for (int dx = -1; dx <= 1; dx++) {
+                                int ix = x + dx;
+                                if (0 <= ix && ix < width) {
+                                    int rgb = inPixels[ioffset + ix];
+                                    argb[k] = rgb;
+                                    r[k] = (rgb >> 16) & 0xff;
+                                    g[k] = (rgb >> 8) & 0xff;
+                                    b[k] = rgb & 0xff;
+                                    k++;
+                                }
+                            }
+                        }
+                    }
+                    while (k < 9) {
+                        argb[k] = 0xff000000;
+                        r[k] = g[k] = b[k] = 0;
+                        k++;
+                    }
+                    outPixels[index++] = argb[rgbMedian(r, g, b)];
+                }
+            }
+            
+            setRGB(dest, 0, 0, transformedSpace.width, transformedSpace.height, outPixels);
+            return dest;
+        }        
+        
+        private int rgbMedian(int[] r, int[] g, int[] b) {
+            int sum, index = 0, min = Integer.MAX_VALUE;
+
+            for (int i = 0; i < 9; i++) {
+                sum = 0;
+                for (int j = 0; j < 9; j++) {
+                    sum += Math.abs(r[i] - r[j]);
+                    sum += Math.abs(g[i] - g[j]);
+                    sum += Math.abs(b[i] - b[j]);
+                }
+                if (sum < min) {
+                    min = sum;
+                    index = i;
+                }
+            }
+            return index;
+        }
+    };
     
     // https://code.google.com/p/jalbum-autocorrect/source/browse/AutoCorrection/src/net/jalbum/filters/auto/AutoCorrectionFilter.java?r=6
     static final BufferedImageOp OP_AUTO_COLOR = new ImageOp() {
@@ -504,7 +584,7 @@ public final class Pictura {
 		    gx -= minIndices[1];
 		    bx -= minIndices[2];
 
-		    int[] clipped = clipping(rx, gx, bx);
+		    int[] clipped = clamp(rx, gx, bx);
 
 		    pixels[i] = (ax << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 
@@ -575,7 +655,7 @@ public final class Pictura {
 		int gn = (int) (factors[2] * (g + factors[3] - 127.5) + 127.5);
 		int bn = (int) (factors[4] * (b + factors[5] - 127.5) + 127.5);
 
-		int[] clipped = clipping(rn, gn, bn);
+		int[] clipped = clamp(rn, gn, bn);
 
 		pixels[i] = (a << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 
@@ -622,7 +702,7 @@ public final class Pictura {
 		int gn = (int) (Y - 0.3441 * Cb - 0.7141 * Cr + 0.5);
 		int bn = (int) (Y + 1.772 * Cb + 0.5);
 
-		int[] clipped = clipping(rn, gn, bn);
+		int[] clipped = clamp(rn, gn, bn);
 
 		pixels[i] = (a << 24) | (clipped[0] << 16) | (clipped[1] << 8) | clipped[2];
 	    }
@@ -633,18 +713,40 @@ public final class Pictura {
 
     };
 
-    static final BufferedImageOp getOpRescale(final float f) {
-	return new RescaleOp(f, 0, null);
+    static final BufferedImageOp getOpRescale(final float scaleFactor) {
+	return new RescaleOp(scaleFactor, 0, null);
     }
 
-    static final BufferedImageOp getOpGamma(final float f) {
+    static final BufferedImageOp getOpGamma(final float value) {
 	byte[] table = new byte[256];
 	for (int i = 0; i < table.length; i++) {
-	    table[i] = (byte) (255 * Math.pow(i / 255.0, f));
+	    table[i] = (byte) (255 * Math.pow(i / 255.0, value));
 	}
 	return new LookupOp(new ByteLookupTable(0, table), null);
     }
 
+    static final BufferedImageOp getOpSaturation(final float value) {
+        return new PointImageOp() {
+            @Override
+            public int filterRGB(int x, int y, int rgb) {
+                if (value != 1) {
+                    int a = rgb & 0xff000000;
+                    int r = (rgb >> 16) & 0xff;
+                    int g = (rgb >> 8) & 0xff;
+                    int b = rgb & 0xff;
+                    int v = (r + g + b) / 3; // or a better brightness calculation if you prefer
+
+                    int[] rgb2 = clamp((int) (v + value * (r - v)),
+                            (int) (v + value * (g - v)),
+                            (int) (v + value * (b - v)));
+
+                    return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];
+                }
+                return rgb;
+            }
+        };
+    }
+    
     static final BufferedImageOp getOpPixelate(final int value) {
 	return new ImageOp() {
 	    
@@ -1182,34 +1284,6 @@ public final class Pictura {
 
 	return result;
     }
-
-//    public static BufferedImage blend(BufferedImage img1, BufferedImage img2,
-//	    float weight, BufferedImageOp... ops)
-//	    throws IllegalArgumentException, ImagingOpException {
-//
-//	if (img1.getWidth() != img2.getWidth() || img1.getHeight() != img2.getHeight()) {
-//	    // TODO
-//	    throw new IllegalArgumentException();
-//	}
-//
-//	BufferedImage result = new BufferedImage(img1.getWidth(), img1.getHeight(),
-//		BufferedImage.TYPE_INT_RGB);
-//
-//	Graphics2D g2d = result.createGraphics();
-//	g2d.drawImage(img1, null, 0, 0);
-//
-//	g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (1.0f - weight)));
-//	g2d.drawImage(img2, null, 0, 0);
-//
-//	g2d.dispose();
-//
-//	// Apply any optional operations (if specified).
-//	if (ops != null && ops.length > 0) {
-//	    result = apply(result, ops);
-//	}
-//
-//	return result;
-//    }
 
     private static boolean colorWithinTolerance(int a, int b, double tol) {
 	int distance = 0;
@@ -2199,7 +2273,7 @@ public final class Pictura {
 	    return d >= 0 ? (int) (d + .5) : (int) (d - .5);
 	}
 
-	protected static int[] clipping(int r, int g, int b) {
+	protected static int[] clamp(int r, int g, int b) {
 	    return new int[]{r > 255 ? 255 : r < 0 ? 0 : r,
 		g > 255 ? 255 : g < 0 ? 0 : g,
 		b > 255 ? 255 : b < 0 ? 0 : b};

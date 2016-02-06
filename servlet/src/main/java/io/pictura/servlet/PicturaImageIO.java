@@ -19,7 +19,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorConvertOp;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -454,14 +453,13 @@ final class PicturaImageIO {
 	    destinationRaster.setRect(0, img.getHeight(), sourceRaster);
 
 	    // save the new image to BMP format. 
-	    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 	    ImageIO.write(img2, "bmp", bos);
 
 	    // strip the first 14 bytes (contains the bitmap-file-header)
 	    // the next 40 bytes contains the DIB header which we still need.
 	    // the pixel data follows until the end of the file.
-	    byte[] bytes = bos.toByteArray();
-	    return Arrays.copyOfRange(bytes, 14, bytes.length);
+	    return Arrays.copyOfRange(bos.buf, 14, bos.count);
 	}
 
     }

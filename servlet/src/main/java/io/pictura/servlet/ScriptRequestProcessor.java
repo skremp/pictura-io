@@ -15,7 +15,6 @@
  */
 package io.pictura.servlet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -92,7 +91,7 @@ final class ScriptRequestProcessor extends RequestProcessor {
 
     private byte[] getContent(URL u) throws IOException {
 	try (InputStream is = u.openStream()) {
-	    ByteArrayOutputStream bos = new ByteArrayOutputStream(1024 * 16);
+	    FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
 	    int len;
 	    byte[] buf = new byte[1024 * 16];

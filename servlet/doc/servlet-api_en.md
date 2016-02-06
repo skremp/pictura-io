@@ -131,6 +131,16 @@ value is `/stats`.
 Sets the statistics monitor access control. Multiple IP addresses are separated
 by comma. The default value is `127.0.0.1,::1`.
 
+### useContainerPool
+
+Flag to decide to use the servlet container pool to execute image requests if
+set to `true`. If this is set to `true` the servlet will not create his own
+executor pool to handle image requests. Also in this case the init parameters
+`corePoolSize`, `maxPoolSize`, `keepAliveTime` and `workerQueueSize` are
+ignored. The default value is `false`.
+
+***@since 1.1***
+
 **[\[⬆\]](#table-of-contents)**
 
 ### corePoolSize
@@ -704,7 +714,7 @@ default this value is not set.
 </pictura>
 ```
 
-> See `/META-INF/resources/dtd/pictura-config-1.0.dtd` for the document type
+> See `/META-INF/resources/dtd/pictura-config-1.1.dtd` for the document type
 > definition.
 
 *Properties Format*

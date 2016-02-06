@@ -40,7 +40,7 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.0.3.Final** is released (Jan. 19th, 2016).
+PicturaIO **1.1.0.Final** is released (Feb. 6th, 2016).
 
 Master branch build status:
 

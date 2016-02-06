@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2015, 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,6 @@
  */
 package io.pictura.servlet;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -820,8 +819,10 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 			if (e instanceof IllegalArgumentException) {
 			    doInterrupt(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 			} else {
+                            LOG.error("Internal server error. See nested exception for more details.", e);
 			    doInterrupt(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 				    "The request processor was not able to fullfill the request.", e);
+                            
 			    throw new RuntimeException(e);
 			}
 		    } catch (IOException e2) {
@@ -829,6 +830,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 		    }
 		    return;
 		}
+                LOG.error("Internal server error. See nested exception for more details.", e);
 		throw new RuntimeException(e);
 	    }
 	} finally {
@@ -911,10 +913,46 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      * @throws ServletException if an input or output error is detected when the
      * servlet handles the request.
      * @throws IOException if the request for could not be handled.
+     *
+     * @see #doWrite(byte[], int, int, javax.servlet.http.HttpServletRequest,
+     * javax.servlet.http.HttpServletResponse)
      */
     protected long doWrite(final byte[] data, final HttpServletRequest req,
-	    final HttpServletResponse resp) throws ServletException, IOException {
+            final HttpServletResponse resp) throws ServletException, IOException {
+        return doWrite(data, 0, data.length, req, resp);
+    }
+    
+    /**
+     * Writes the specified range of the given output data to the output stream
+     * which is defined by the given servlet response.
+     * <p>
+     * If the response is text based (not binary), e.g. the content type starts
+     * with <code>text/</code> and the data length is larger than 1k bytes and
+     * the client accepts <i>gzip</i> or <i>deflate</i>, the response content is
+     * automatically compressed and the content length header field will be
+     * correct.
+     *  
+     * @param data The encoded image data.
+     * @param off The start offset in the data.
+     * @param len The number of bytes to write.
+     * @param req The request object.
+     * @param resp The respnse object.
+     *
+     * @return Bytes sent or -1L if the process was already interrupted. Will
+     * return "0" in cases of "HEAD" requests.
+     *
+     * @throws ServletException if an input or output error is detected when the
+     * servlet handles the request.
+     * @throws IOException if the request for could not be handled.
+     * 
+     * @since 1.1
+     */
+    protected long doWrite(final byte[] data, final int off, final int len, 
+            final HttpServletRequest req, final HttpServletResponse resp) 
+            throws ServletException, IOException {
 
+        final int length = len - off;
+        
 	if (!isInterrupted()) {
 	    if (!isCacheable()) {
 		resp.setHeader(HEADER_CACHECONTROL, "no-cache");
@@ -925,25 +963,25 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 	    // Do not compress resources <= 1kB
 	    if (!"gzip".equalsIgnoreCase(resp.getHeader(HEADER_CONTENC))
 		    && !"deflate".equalsIgnoreCase(resp.getHeader(HEADER_CONTENC))
-		    && data.length > ((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_MIN_SIZE"))
+		    && length > ((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_MIN_SIZE"))
 		    && resp.getContentType() != null
 		    && isGZipAllowed(resp.getContentType())) {
 
 		String acceptEncoding = req.getHeader("Accept-Encoding");
 
-		ByteArrayOutputStream bos = null;
+		FastByteArrayOutputStream bos = null;
 		DeflaterOutputStream dos = null;
 
 		if (acceptEncoding != null) {
 		    if (acceptEncoding.contains("gzip")) {
-			dos = new GZIPOutputStream(bos = new ByteArrayOutputStream(1024 * 256)) {
+			dos = new GZIPOutputStream(bos = new FastByteArrayOutputStream()) {
 			    {
 				def.setLevel((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL"));
 			    }
 			};
 			resp.setHeader(HEADER_CONTENC, "gzip");
 		    } else if (acceptEncoding.contains("deflate")) {
-			dos = new DeflaterOutputStream(bos = new ByteArrayOutputStream(1024 * 256)) {
+			dos = new DeflaterOutputStream(bos = new FastByteArrayOutputStream()) {
 			    {
 				def.setLevel((int) req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_LEVEL"));
 			    }
@@ -957,7 +995,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 			return 0L;
 		    }
 
-		    dos.write(data);
+		    dos.write(data, off, len);
 		    dos.finish();
 
 		    resp.setContentLength(bos.size());
@@ -967,16 +1005,15 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 		}
 	    }
 
-	    resp.setContentLength(data.length);
-                                    
+	    resp.setContentLength(length);
+
 	    if ("HEAD".equalsIgnoreCase(req.getMethod())) {
 		return 0L;
 	    }
 
 	    OutputStream os = new ContextOutputStream(req, resp.getOutputStream());
-	    os.write(data);
-            
-	    return data.length;
+	    os.write(data, off, len);
+	    return length;
 	}
 
 	return -1L;

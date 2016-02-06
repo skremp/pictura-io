@@ -634,6 +634,22 @@ range `10 - 100`. The default value is `10`.
 
 **[\[⬆\]](#table-of-contents)**
 
+### Median
+
+ `M`
+
+Applies a median (noise reduction) effect to the image.
+
+**Example**
+
+ `/E=M/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_m.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
 ### Noise
 
  `N`
@@ -664,6 +680,24 @@ to `100`. The default value is `0` which leaves the image unchanged.
 |Source|Destination|
 |------|-----------|
 |![A](misc/lenna.jpg)|![A](misc/lenna_effect_gam25.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
+### Saturation
+
+ `SAT({value})`
+ 
+Adjusts the saturation of the image. Valid values are in the range `-100`
+to `100`. The default value is `0` which leaves the image unchanged. A value of 
+`-100` will convert the image to grayscale.
+
+**Example**
+
+ `/E=SAT(60)/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_sat60.jpg)|
 
 **[\[⬆\]](#table-of-contents)**
 
