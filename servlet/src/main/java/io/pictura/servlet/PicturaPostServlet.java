@@ -56,12 +56,7 @@ public class PicturaPostServlet extends PicturaServlet {
     public static final String IPARAM_MAX_IMAGE_POST_CONTENT_LENGTH = "maxImagePostContentLength";
 
     // The max allowed content length
-    private int maxImagePostContentLength = -1;
-
-    @Override
-    public String getServletVersion() {
-	return "1.0";
-    }
+    private int maxImagePostContentLength = -1;    
 
     @Override
     public void init(ServletConfig config) throws ServletException {

@@ -26,7 +26,7 @@ public class PicturaPostServletTest {
 
     @Test
     public void testServletVersion() {
-	assertEquals("1.0", (new PicturaPostServlet()).getServletVersion());
+	assertEquals("1.1", (new PicturaPostServlet()).getServletVersion());
     }
 
     @Test

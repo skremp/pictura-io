@@ -893,7 +893,7 @@ public class PicturaServlet extends HttpCacheServlet {
      * @return The servlet implementation version string.
      */
     public String getServletVersion() {
-	return "1.0";
+	return "1.1";
     }
 
     /**
