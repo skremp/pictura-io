@@ -513,7 +513,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      * will return <code>false</code>.
      */
     public boolean ignoreSourceContentType() {
-	return true; //false;
+	return false;
     }
     
     @Override
