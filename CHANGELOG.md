@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.2.0.Final
+
+_TBD_
+
 ## 1.1.0.Final
 
 _2016-02-06_
