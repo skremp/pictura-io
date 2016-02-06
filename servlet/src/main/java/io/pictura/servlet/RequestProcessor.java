@@ -819,8 +819,10 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 			if (e instanceof IllegalArgumentException) {
 			    doInterrupt(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 			} else {
+                            LOG.error("Internal server error. See nested exception for more details.", e);
 			    doInterrupt(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 				    "The request processor was not able to fullfill the request.", e);
+                            
 			    throw new RuntimeException(e);
 			}
 		    } catch (IOException e2) {
@@ -828,6 +830,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 		    }
 		    return;
 		}
+                LOG.error("Internal server error. See nested exception for more details.", e);
 		throw new RuntimeException(e);
 	    }
 	} finally {
