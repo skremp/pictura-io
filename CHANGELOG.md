@@ -2,7 +2,7 @@
 
 ## 1.2.0.Final
 
-_TBD_
+* Added new resize mode *CROP*.
 
 ## 1.1.0.Final
 

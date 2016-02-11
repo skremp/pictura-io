@@ -39,10 +39,13 @@
        auto/AutoCorrectionFilter.java?r=6
        Sarah Schölzel - Apache License 2.0
 
-     - one ore more source files from https://github.com/haraldk/TwelveMonkeys/
+     - one or more source files from https://github.com/haraldk/TwelveMonkeys/
        blob/master/servlet/src/main/java/com/twelvemonkeys/servlet/image/
        IIOProviderContextListener.java
        Harald Kuhr - BSD License
 
-     - one ore more source file from the Jakarta Commons HTTP Client,
+     - one or more source files from the Jakarta Commons HTTP Client,
        Apache License 2.0 - http://hc.apache.org/httpclient-3.x
+
+     - one or more source files from https://github.com/leon/imgscalr
+       

@@ -1397,6 +1397,9 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		case "4":
 		case "h":
 		    return Pictura.Mode.FIT_TO_HEIGHT;
+                case "5":
+                case "c":
+                    return Pictura.Mode.CROP;
 		default:
 		    throw new IllegalArgumentException(
 			    "Invalid scale mode: \"" + s + "\"");
@@ -1647,7 +1650,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     private static final Pattern P_SCALE_DPR = Pattern.compile("^dpr[0-9]{1,1}((\\.|d)[0-9]{1,2})?$");
     private static final Pattern P_SCALE_U = Pattern.compile("^u$");
     private static final Pattern P_SCALE_Q = Pattern.compile("^q[0-4]{1,1}");
-    private static final Pattern P_SCALE_M = Pattern.compile("^m[0-4]{1,1}");
+    private static final Pattern P_SCALE_M = Pattern.compile("^m[0-5]{1,1}");
 
     private void parseRequestParamScale(Map<String, String> map) {
 	String s = map.get(QPARAM_NAME_SCALE);

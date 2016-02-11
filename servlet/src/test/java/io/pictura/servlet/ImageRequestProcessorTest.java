@@ -787,7 +787,7 @@ public class ImageRequestProcessorTest {
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertTrue(irp.getRequestedScaleForceUpscale(req));
     }
-
+    
     @Test
     public void testGetRequestedScaleForceUpscale_Null() {
 	System.out.println("getRequestedScaleForceUpscale_Null");
@@ -803,7 +803,7 @@ public class ImageRequestProcessorTest {
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertFalse(irp.getRequestedScaleForceUpscale(req));
     }
-
+    
     @Test
     public void testGetRequestedRotation_L() {
 	System.out.println("getRequestedRotation_L");

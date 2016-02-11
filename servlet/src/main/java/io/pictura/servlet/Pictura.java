@@ -904,7 +904,13 @@ public final class Pictura {
 	 * dimensions for the resultant image that best-fit within the given
 	 * height, regardless of the orientation of the image.
 	 */
-	FIT_TO_HEIGHT;
+        FIT_TO_HEIGHT,
+        /**
+         * Used to indicate that the scaling implementation should calculate
+         * dimensions for the resultant image that best-fit within the given
+         * height and width, and then crop it to fit within the bounding box.
+         */
+        CROP;
     }
 
     /**
@@ -1468,7 +1474,7 @@ public final class Pictura {
 	// <= 1 is a square or landscape-oriented image, > 1 is a portrait.
 	float ratio = ((float) currentHeight / (float) currentWidth);
 
-	/*
+        /*
 	 * First determine if ANY size calculation needs to be done, in the case
 	 * of FIT_EXACT, ignore image proportions and orientation and just use
 	 * what the user sent in, otherwise the proportion of the picture must
@@ -1484,62 +1490,89 @@ public final class Pictura {
 	 * pre-compute proportional dimensions before calling the API, they can
 	 * just specify the dimensions they would like the image to roughly fit
 	 * within and it will do the right thing without mangling the result.
-	 */
-	if (resizeMode == Mode.BEST_FIT_BOTH) {
-	    float requestedHeightScaling = ((float) targetHeight / (float) currentHeight);
-	    float requestedWidthScaling = ((float) targetWidth / (float) currentWidth);
-	    float actualScaling = Math.min(requestedHeightScaling, requestedWidthScaling);
+         */
+        if (resizeMode == Mode.BEST_FIT_BOTH) {
+            float requestedHeightScaling = ((float) targetHeight / (float) currentHeight);
+            float requestedWidthScaling = ((float) targetWidth / (float) currentWidth);
+            float actualScaling = Math.min(requestedHeightScaling, requestedWidthScaling);
 
-	    targetHeight = Math.round((float) currentHeight * actualScaling);
-	    targetWidth = Math.round((float) currentWidth * actualScaling);
+            targetHeight = Math.round((float) currentHeight * actualScaling);
+            targetWidth = Math.round((float) currentWidth * actualScaling);
 
-	    if (targetHeight == currentHeight && targetWidth == currentWidth) {
-		return src;
-	    }
-	} else if (resizeMode != Mode.FIT_EXACT) {
-	    if ((ratio <= 1 && resizeMode == Mode.AUTOMATIC)
-		    || (resizeMode == Mode.FIT_TO_WIDTH)) {
-		// First make sure we need to do any work in the first place
-		if (targetWidth == src.getWidth()) {
-		    return src;
-		}
+            if (targetHeight == currentHeight && targetWidth == currentWidth) {
+                return src;
+            }
+        } else if (resizeMode != Mode.FIT_EXACT) {
+            if ((ratio <= 1 && resizeMode == Mode.AUTOMATIC) || (resizeMode == Mode.FIT_TO_WIDTH)) {
+                // First make sure we need to do any work in the first place
+                if (targetWidth == currentWidth) {
+                    return src;
+                }
 
-		/*
+                /*
 		 * Landscape or Square Orientation: Ignore the given height and
 		 * re-calculate a proportionally correct value based on the
 		 * targetWidth.
-		 */
-		targetHeight = Math.round((float) targetWidth * ratio);
-	    } else {
-		// First make sure we need to do any work in the first place
-		if (targetHeight == src.getHeight()) {
-		    return src;
-		}
+                 */
+                targetHeight = Math.round((float) targetWidth * ratio);
+            } else if (resizeMode == Mode.CROP) {
+                
+                // https://github.com/leon/imgscalr/commit/c71bbc991481c43aed4b0e56a06bd8553e62cd72
+                
+                // If already right size return
+                if (targetWidth == currentWidth && targetHeight == currentHeight) {
+                    return src;
+                }
 
-		/*
+                int originalTargetWidth = targetWidth;
+                int originalTargetHeight = targetHeight;
+
+                // Calculate ratio that will fit within the targetWidth and height
+                ratio = Math.max((float) targetWidth / currentWidth, (float) targetHeight / currentHeight);
+
+                targetWidth = Math.round((float) currentWidth * ratio);
+                targetHeight = Math.round((float) currentHeight * ratio);
+
+                // Calculate the offset for the crop
+                int xOffset = (int) ((targetWidth - originalTargetWidth) / 2D);
+                int yOffset = (int) ((targetHeight - originalTargetHeight) / 2D);
+
+                // If the calculated size is bigger than what was sent in, return what was sent in instead.
+                targetWidth = (int) Math.ceil(targetWidth > originalTargetWidth ? originalTargetWidth : targetWidth);
+                targetHeight = (int) Math.ceil(targetHeight > originalTargetHeight ? originalTargetHeight : targetHeight);
+
+                // Crop to fit within the target height and width
+                src = crop(src, xOffset, yOffset, targetWidth, targetHeight);
+            } else {
+                // First make sure we need to do any work in the first place
+                if (targetHeight == currentHeight) {
+                    return src;
+                }
+
+                /*
 		 * Portrait Orientation: Ignore the given width and re-calculate
 		 * a proportionally correct value based on the targetHeight.
-		 */
-		targetWidth = Math.round((float) targetHeight / ratio);
-	    }
-	}
+                 */
+                targetWidth = Math.round((float) targetHeight / ratio);
+            }
+        }
 
-	// If AUTOMATIC was specified, determine the real scaling method.
-	if (scalingMethod == Method.AUTOMATIC) {
-	    scalingMethod = determineScalingMethod(targetWidth, targetHeight,
-		    ratio);
-	}
+        // If AUTOMATIC was specified, determine the real scaling method.
+        if (scalingMethod == Method.AUTOMATIC) {
+            scalingMethod = determineScalingMethod(targetWidth, targetHeight,
+                    ratio);
+        }
 
-	// Now we scale the image
-	if (scalingMethod == Method.SPEED) {
-	    result = scaleImage(src, targetWidth, targetHeight,
-		    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-	} else if (scalingMethod == Method.BALANCED) {
-	    result = scaleImage(src, targetWidth, targetHeight,
-		    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-	} else if (scalingMethod == Method.QUALITY
-		|| scalingMethod == Method.ULTRA_QUALITY) {
-	    /*
+        // Now we scale the image
+        if (scalingMethod == Method.SPEED) {
+            result = scaleImage(src, targetWidth, targetHeight,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        } else if (scalingMethod == Method.BALANCED) {
+            result = scaleImage(src, targetWidth, targetHeight,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        } else if (scalingMethod == Method.QUALITY
+                || scalingMethod == Method.ULTRA_QUALITY) {
+            /*
 	     * If we are scaling up (in either width or height - since we know
 	     * the image will stay proportional we just check if either are
 	     * being scaled up), directly using a single BICUBIC will give us
@@ -1548,20 +1581,20 @@ public final class Pictura {
 	     * 
 	     * If we are scaling down, we must use the incremental scaling
 	     * algorithm for the best result.
-	     */
-	    if (targetWidth > currentWidth || targetHeight > currentHeight) {
-		/*
+             */
+            if (targetWidth > currentWidth || targetHeight > currentHeight) {
+                /*
 		 * BILINEAR and BICUBIC look similar the smaller the scale jump
 		 * upwards is, if the scale is larger BICUBIC looks sharper and
 		 * less fuzzy. But most importantly we have to use BICUBIC to
 		 * match the contract of the QUALITY rendering scalingMethod.
 		 * This note is just here for anyone reading the code and
 		 * wondering how they can speed their own calls up.
-		 */
-		result = scaleImage(src, targetWidth, targetHeight,
-			RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	    } else {
-		/*
+                 */
+                result = scaleImage(src, targetWidth, targetHeight,
+                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            } else {
+                /*
 		 * Originally we wanted to use BILINEAR interpolation here
 		 * because it takes 1/3rd the time that the BICUBIC
 		 * interpolation does, however, when scaling large images down
@@ -1570,19 +1603,19 @@ public final class Pictura {
 		 * be unexpectedly annoying to a user expecting a "QUALITY"
 		 * scale of their original image. Instead BICUBIC was chosen to
 		 * honor the contract of a QUALITY scale of the original image.
-		 */
-		result = scaleImageIncrementally(src, targetWidth,
-			targetHeight, scalingMethod,
-			RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	    }
-	}
+                 */
+                result = scaleImageIncrementally(src, targetWidth,
+                        targetHeight, scalingMethod,
+                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            }
+        }
 
-	// Apply any optional operations (if specified).
-	if (ops != null && ops.length > 0) {
-	    result = apply(result, ops);
-	}
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
 
-	return result;
+        return result;
     }
 
     /**

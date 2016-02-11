@@ -61,8 +61,12 @@ public class PicturaTest {
 	img2 = Pictura.resize(img, Pictura.Method.AUTOMATIC, Pictura.Mode.FIT_TO_WIDTH, 100, 60);
 	assertEquals(100, img2.getWidth());
 
-	img2 = Pictura.resize(img, Pictura.Method.AUTOMATIC, Pictura.Mode.FIT_TO_HEIGHT, 100, 60);
-	assertEquals(60, img2.getHeight());
+        img2 = Pictura.resize(img, Pictura.Method.AUTOMATIC, Pictura.Mode.FIT_TO_HEIGHT, 100, 60);
+        assertEquals(60, img2.getHeight());
+        
+        img2 = Pictura.resize(img, Pictura.Method.AUTOMATIC, Pictura.Mode.CROP, 102, 60);
+        assertEquals(60, img2.getHeight());
+        assertEquals(102, img2.getWidth());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -252,6 +252,10 @@ image.
 that best-fit within the given height, regardless of the orientation of the 
 image.
 
+`5` (crop) is used to indicate that the scaling implementation should calculate
+dimensions for the resultant image that best-fit within the given height and 
+width, and then crop it to fit within the bounding box.
+
 You must specify either a width, a height, or both for this parameter to work.
 
 **Examples**
