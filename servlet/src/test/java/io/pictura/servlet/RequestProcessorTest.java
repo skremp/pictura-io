@@ -624,6 +624,22 @@ public class RequestProcessorTest {
 	assertTrue(eTag.length() > 3);
 	assertTrue(eTag.startsWith("W/\""));
     }
+    
+    @Test
+    public void testGetETagByFile_Null() throws Exception {
+        System.out.println("getETagByFile_Null");
+
+	RequestProcessor rp = new RequestProcessorImpl();
+	assertNull(rp.getETagByFile(null));
+    }
+    
+    @Test
+    public void testGetETagByDate_Null() throws Exception {
+        System.out.println("getETagByFile_Null");
+
+	RequestProcessor rp = new RequestProcessorImpl();
+	assertNull(rp.getETagByDate(0));
+    }
 
     @Test
     public void testGetETag_Null() {
