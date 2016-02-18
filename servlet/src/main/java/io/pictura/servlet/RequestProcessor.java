@@ -814,6 +814,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 		    doProcess(request, response);
 		}
 	    } catch (Exception | Error e) {
+                request.setAttribute("io.pictura.servlet.REQUEST_PROCESSOR_THROWABLE", e);
 		if (!response.isCommitted()) {
 		    try {
 			if (e instanceof IllegalArgumentException) {
