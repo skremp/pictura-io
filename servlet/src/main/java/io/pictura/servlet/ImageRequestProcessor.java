@@ -417,6 +417,28 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     protected static final String QPARAM_NAME_BGCOLOR = "bg";
 
     /**
+     * The image padding parameter name.
+     * 
+     * @see #getRequestedPaddingSize(javax.servlet.http.HttpServletRequest) 
+     * @see #getRequestedPaddingColor(javax.servlet.http.HttpServletRequest) 
+     */
+    protected static final String QPARAM_NAME_PAD = "p";
+    
+    /**
+     * The image padding size parameter name.
+     * 
+     * @see #getRequestedPaddingSize(javax.servlet.http.HttpServletRequest) 
+     */
+    protected static final String QPARAM_NAME_PAD_COLOR = "pc";
+    
+    /**
+     * The image padding color parameter name.
+     * 
+     * @see #getRequestedPaddingColor(javax.servlet.http.HttpServletRequest) 
+     */
+    protected static final String QPARAM_NAME_PAD_SIZE = "ps";
+        
+    /**
      * The name of the image quality parameter. This is an optional parameter to
      * request an image in an pre-defined image quality. As quality the
      * <code>ImageRequestProcessor</code> supports 5 different modes.
@@ -555,6 +577,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		&& (getRequestedScalePixelRatio(req) == null
 		|| getRequestedScalePixelRatio(req) == 1.0f)
 		&& getRequestedTrimTolerance(req) == null
+                && getRequestedPaddingSize(req) == null
 		&& getRequestedCropX(req) == null
 		&& getRequestedCropY(req) == null
 		&& getRequestedCropWidth(req) == null
@@ -1032,6 +1055,38 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	}
 	return f;
     }
+    
+    /**
+     * Gets the padding color.
+     *
+     * @param req The related request object.
+     * @return The padding color or <code>null</code> if there was no padding
+     * color specified by the request.
+     */
+    protected Color getRequestedPaddingColor(HttpServletRequest req) {
+        String str = req != null ? getRequestParameter(req,
+		QPARAM_NAME_PAD_COLOR) : null;
+	if (str != null && !str.isEmpty()) {
+	    try {
+		return Color.decode(str.startsWith("#") ? str : ("#" + str));
+	    } catch (NumberFormatException e) {
+		throw new IllegalArgumentException("Invalid padding color: " + str);
+	    }
+	}
+	return null;
+    }
+    
+    /**
+     * Gets the padding size in px.
+     * 
+     * @param req The related request object.
+     * @return The padding size in px or <code>null</code> if there was no 
+     * padding size specified by the request.
+     */
+    protected Integer getRequestedPaddingSize(HttpServletRequest req) {
+        return tryParseInt(req != null ? getRequestParameter(req,
+                QPARAM_NAME_PAD_SIZE) : null, null);
+    }
 
     // Precompiled effect parameter patterns
     private static final Pattern P_EFFECT_BDT = Pattern.compile("^[bdt]{1,1}\\([0-9]{1,3}\\)$");
@@ -1221,6 +1276,14 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		QPARAM_NAME_BGCOLOR) : null;
 	if (str != null && !str.isEmpty()) {
 	    try {
+                if (str.length() == 3) {
+                    String shortColor = str.startsWith("#") ? str.substring(1) : str;
+                    String newColor = "#";
+                    for (char c : shortColor.toCharArray()) {
+                        newColor += Character.toString(c) + Character.toString(c);
+                    }
+                    return Color.decode(newColor);
+                }                
 		return Color.decode(str.startsWith("#") ? str : ("#" + str));
 	    } catch (NumberFormatException e) {
 		throw new IllegalArgumentException("Invalid background color: " + str);
@@ -1571,6 +1634,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	parseRequestParamCompression(map);
 	parseRequestParamScale(map);
 	parseRequestParamCrop(map);
+        parseRequestParamPad(map);
 		
 	return (parameterMap = !hasParamsInterceptor() ? map : 
 		getParamsInterceptor().intercept(map, req));
@@ -1774,6 +1838,40 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		throw new IllegalArgumentException("Invalid crop: incomplete crop coords");
 	    }
 	}
+    }
+    
+    // Precompiled pad parameter patterns
+    private static final Pattern P_PAD_SIZE_COLOR = Pattern.compile("^[0-9]{1,2}\\,[0-9a-f]{3,6}$");
+    
+    private void parseRequestParamPad(Map<String, String> map) {
+        String s = map.get(QPARAM_NAME_PAD);
+	if (s != null && !s.isEmpty()) {
+            if (P_PAD_SIZE_COLOR.matcher(s).matches()) {
+                String[] sizeColor = s.split(",");
+                int size = tryParseInt(sizeColor[0], -1);
+                if (size < 1 || size > 99) {
+                    throw new IllegalArgumentException("Inavlid padding: size must be between 1 and 99");
+                }
+                map.put(QPARAM_NAME_PAD_SIZE, sizeColor[0]);
+                
+                if (sizeColor[1].length() == 6) {
+                    map.put(QPARAM_NAME_PAD_COLOR, sizeColor[1]);
+                } else if (sizeColor[1].length() == 3) {
+                    String shortColor = sizeColor[1];
+                    String newColor = "#";
+                    for (char c : shortColor.toCharArray()) {
+                        newColor += Character.toString(c) + Character.toString(c);
+                    }
+                    map.put(QPARAM_NAME_PAD_COLOR, newColor);
+                } else {
+                    throw new IllegalArgumentException(
+                            "Invalid padding: wrong color value \"" + sizeColor[1] + "\"");
+                }
+            } else {
+		throw new IllegalArgumentException(
+			"Invalid padding: unknown or wrong argument \"" + s + "\"");
+	    }
+        }
     }
     
     @Override
@@ -2627,6 +2725,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		}
 	    }
 
+            // Padding
+            Integer padSize = getRequestedPaddingSize(req);
+            Color padColor = padSize != null ? getRequestedPaddingColor(req) : null;
+            
             // Process the image as specified by the client
             long startProcessImageFrames = -1L;
             if (LOG.isTraceEnabled()) {
@@ -2636,7 +2738,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	    BufferedImage[] tmp = doProcessImageFrames(new BufferedImage[]{src},
 		    trimWhiteSpaces, cropX, cropY, cropWidth, cropHeight, 
 		    scaleWidth, scaleHeight, scalePixelRatio, scaleMethod, 
-		    scaleMode, scaleForceUpscale, rotation, ops);
+		    scaleMode, scaleForceUpscale, rotation, padSize, padColor, ops);
 
 	    out = tmp.length > 0 ? tmp[0] : null;
 
@@ -2672,7 +2774,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		BufferedImage[] outSequence = doProcessImageFrames(srcSequence,
 			trimWhiteSpaces, cropX, cropY, cropWidth, cropHeight,
 			scaleWidth, scaleHeight, scalePixelRatio, scaleMethod,
-			scaleMode, scaleForceUpscale, rotation, ops);
+			scaleMode, scaleForceUpscale, rotation, padSize, 
+                        padColor, ops);
 
 		outFrames.addAll(Arrays.asList(outSequence));
                 if (LOG.isTraceEnabled()) {
@@ -2712,7 +2815,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	    Integer cropHeight, Integer scaleWidth, Integer scaleHeight, 
 	    Float scalePixelRatio, Pictura.Method scaleMethod, 
 	    Pictura.Mode scaleMode, Boolean scaleForceUpscale,
-	    Pictura.Rotation rotation, BufferedImageOp[] effects) {
+	    Pictura.Rotation rotation, Integer padSize, Color padColor,
+            BufferedImageOp[] effects) {
 
 	BufferedImage[] outS = new BufferedImage[frames.length];
 
@@ -2733,13 +2837,17 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 					srcS, cropX, cropY, cropWidth, cropHeight) : srcSTrim;
 		srcSTrim.flush();
 
+                // Add a colorized padding to the current frame
+                BufferedImage srcSPadded = padImage(srcSCropped, padSize != null ? padSize : -1, padColor);
+                srcSCropped.flush();
+                
 		// Scale the current frame
-		BufferedImage srcSScaled = scaleImage(srcSCropped, scaleWidth != null ? scaleWidth : -1,
+		BufferedImage srcSScaled = scaleImage(srcSPadded, scaleWidth != null ? scaleWidth : -1,
 			scaleHeight != null ? scaleHeight : -1, scalePixelRatio != null ? scalePixelRatio : 1.f,
 			scaleMethod != null ? scaleMethod : Pictura.Method.AUTOMATIC,
 			scaleMode != null ? scaleMode : Pictura.Mode.AUTOMATIC,
 			scaleForceUpscale);
-		srcSCropped.flush();
+		srcSPadded.flush();
 
 		// Rotate the current frame
 		BufferedImage srcSRotated = rotateImage(srcSScaled, rotation);
@@ -2825,6 +2933,13 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 	return src;
     }
 
+    private BufferedImage padImage(BufferedImage src, int padding, Color color) {
+        if (padding > 0 && padding < 100 && color != null) {
+            return Pictura.pad(src, padding, color);
+        }
+        return src;
+    }
+    
     private BufferedImage filterImage(BufferedImage src, BufferedImageOp... ops) {
 	if (ops != null && ops.length > 0) {
 	    return Pictura.apply(src, ops);

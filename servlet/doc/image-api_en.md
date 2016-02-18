@@ -40,6 +40,7 @@ or with an optional query string as
   1. [Crop](#crop)
   1. [Trim](#trim)
   1. [Rotation](#rotation)
+  1. [Padding](#padding)
   1. [Effects](#effects)
   1. [Background](#background)
 
@@ -423,6 +424,21 @@ vertically are `H` or `V`. To change the orientation you can set the value to
  `/R=R/image.jpg`
 
 **[\[⬆\]](#table-of-contents)**
+
+## Padding
+
+ `P={value}`
+
+Used to apply padding around the edges of an image using the given color
+to fill the extra padded space. The value is specified by `{size,color}` where
+the size unit are pixels and the color must be a 6 digit or 3 didget hex color 
+value. Valid sizes are in the range `1 - 99`.
+
+**Examples**
+
+ `/P=5,232323/image.jpg`
+
+ `/P=10,444/image.jpg`
  
 ## Effects
 
