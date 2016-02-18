@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2015, 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
@@ -67,7 +68,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
     // Cache statistics
     private volatile long cacheHitCount;
     private volatile long cacheMissCount;
-    
+
     /**
      * Sets the response cache for this servlet instance. Normally, the cache is
      * set while servlet's initialization ({@link #init()} or
@@ -80,22 +81,22 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @see HttpCache
      */
     public synchronized void setHttpCache(HttpCache cache) {
-	this.cache = cache;
-	if (cache instanceof DefaultHttpCache) {
-	    LOG.warn("Using PicturaIO built-in HttpCache (not for production use!)");
+        this.cache = cache;
+        if (cache instanceof DefaultHttpCache) {
+            LOG.warn("Using PicturaIO built-in HttpCache (not for production use!)");
             DefaultHttpCache dhc = (DefaultHttpCache) cache;
-            
+
             if (dhc.maxEntrySize > 0) {
                 long maxHeap = Runtime.getRuntime().maxMemory();
                 long maxSize = (long) dhc.capacity * (long) dhc.maxEntrySize;
-                
+
                 if (LOG.isWarnEnabled() && (maxSize > (maxHeap / 2))) {
-                    LOG.warn("Estimated cache size (" + (maxSize/1024/1024) 
-                            + "m) is greater than the half heap size (Xmx" 
-                            + (maxHeap/1024/1024) + "m)");
+                    LOG.warn("Estimated cache size (" + (maxSize / 1024 / 1024)
+                            + "m) is greater than the half heap size (Xmx"
+                            + (maxHeap / 1024 / 1024) + "m)");
                 }
             }
-	}
+        }
     }
 
     /**
@@ -104,7 +105,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @return The current used cache.
      */
     public synchronized HttpCache getHttpCache() {
-	return this.cache;
+        return this.cache;
     }
 
     /**
@@ -114,11 +115,11 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @return Cache hit rate or <code>-1</code> if caching is not enabled.
      */
     public synchronized float getHttpCacheHitRate() {
-	if (cache == null) {
-	    return -1f;
-	}
-	final long sum = cacheHitCount + cacheMissCount;
-	return sum > 0 ? ((100f / sum) * cacheHitCount) / 100f : 0f;
+        if (cache == null) {
+            return -1f;
+        }
+        final long sum = cacheHitCount + cacheMissCount;
+        return sum > 0 ? ((100f / sum) * cacheHitCount) / 100f : 0f;
     }
 
     /**
@@ -129,7 +130,7 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * no cache active.
      */
     public synchronized int getHttpCacheSize() {
-	return getHttpCache() != null ? getHttpCache().keySet().size() : -1;
+        return getHttpCache() != null ? getHttpCache().keySet().size() : -1;
     }
 
     /**
@@ -147,323 +148,323 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @see RequestProcessor
      */
     protected RequestProcessor createCacheRequestProcessor(RequestProcessor rp) {
-	if (rp == null || cache == null || !rp.isCacheable()
-		|| rp.getTrueCacheKey() == null || rp.getTrueCacheKey().isEmpty()) {
+        if (rp == null || cache == null || !rp.isCacheable()
+                || rp.getTrueCacheKey() == null || rp.getTrueCacheKey().isEmpty()) {
 
-	    if (rp != null) {
-		cacheMissCount++;
-	    }
-	    return rp;
-	}
-	return new CacheRequestProcessor(rp);
+            if (rp != null) {
+                cacheMissCount++;
+            }
+            return rp;
+        }
+        return new CacheRequestProcessor(rp);
     }
 
     // Request processor wrapper
     private final class CacheRequestProcessor extends RequestProcessor {
 
-	private final RequestProcessor rp;
-	private final CacheServletResponse cResp;
+        private final RequestProcessor rp;
+        private final CacheServletResponse cResp;
 
-	private final Runnable pp;
-	
-	private final long timestamp;
+        private final Runnable pp;
 
-	private CacheRequestProcessor(RequestProcessor rp) {
-	    super(rp);
+        private final long timestamp;
 
-	    this.rp = rp;
-	    this.pp = rp.getPreProcessor();
+        private CacheRequestProcessor(RequestProcessor rp) {
+            super(rp);
 
-	    this.cResp = new CacheServletResponse(super.getResponse());
-	    injectResponse();
-	    
-	    timestamp = System.currentTimeMillis();
-	}
-	
-	private void injectResponse() {
-	    setResponse(cResp);
-	    rp.setResponse(cResp);
-	}
+            this.rp = rp;
+            this.pp = rp.getPreProcessor();
 
-	@Override
-	Runnable getPreProcessor() {
-	    return null;
-	}
+            this.cResp = new CacheServletResponse(super.getResponse());
+            injectResponse();
 
-	@Override
-	public boolean isCacheable() {
-	    return true;
-	}
+            timestamp = System.currentTimeMillis();
+        }
 
-	@Override
-	public String getTrueCacheKey() {
-	    return rp.getTrueCacheKey();
-	}
+        private void injectResponse() {
+            setResponse(cResp);
+            rp.setResponse(cResp);
+        }
 
-	@Override
-	protected void doProcess(HttpServletRequest req, HttpServletResponse resp)
-		throws ServletException, IOException {
-	    
-	    HttpCache hc = getHttpCache();
-	    String cacheKey = rp.getTrueCacheKey();
+        @Override
+        Runnable getPreProcessor() {
+            return null;
+        }
 
-	    if (hc != null) {
-		HttpCacheEntry cacheEntry = hc.get(cacheKey);
+        @Override
+        public boolean isCacheable() {
+            return true;
+        }
 
-		if ("DELETE".equalsIgnoreCase(req.getMethod())) {
-		    doDelete(cacheEntry, resp);
-		    return;
-		}
+        @Override
+        public String getTrueCacheKey() {
+            return rp.getTrueCacheKey();
+        }
 
-		if (cacheEntry != null) {
+        @Override
+        protected void doProcess(HttpServletRequest req, HttpServletResponse resp)
+                throws ServletException, IOException {
+
+            HttpCache hc = getHttpCache();
+            String cacheKey = rp.getTrueCacheKey();
+
+            if (hc != null) {
+                HttpCacheEntry cacheEntry = hc.get(cacheKey);
+
+                if ("DELETE".equalsIgnoreCase(req.getMethod())) {
+                    doDelete(cacheEntry, resp);
+                    return;
+                }
+
+                if (cacheEntry != null) {
                     // TODO: Maybe reuse expired entry in cases of origin host errors?
-		    if (!cacheEntry.isExpired()) {			
-			doSend(cacheEntry, req, cResp);
-			return;
-		    } else {
-			doRemove(cacheEntry);
-		    }
-		}
-	    }
+                    if (!cacheEntry.isExpired()) {
+                        doSend(cacheEntry, req, cResp);
+                        return;
+                    } else {
+                        doRemove(cacheEntry);
+                    }
+                }
+            }
 
-	    if (pp != null) {
-		pp.run();
-	    }
+            if (pp != null) {
+                pp.run();
+            }
 
-	    cacheMissCount++;
-	    cResp.setHeader("X-Pictura-Cache", "Miss");
+            cacheMissCount++;
+            cResp.setHeader("X-Pictura-Cache", "Miss");
 
-	    rp.doProcess(req, cResp);
-	    if (cResp != null && cResp.getStatus() == HttpServletResponse.SC_OK) {
-		if ("GET".equalsIgnoreCase(req.getMethod())) {
-		    doCache(new HttpCacheEntry(cacheKey, cResp.getCopy(), req, cResp));
-		}
-	    }
-	}	
-	
-	private void doSend(HttpCacheEntry entry, HttpServletRequest req,
-		HttpServletResponse resp) throws ServletException, IOException {
-	    
-	    cacheHitCount++;
-	    entry.hitCount++;
-	    resp.setHeader("X-Pictura-Cache", "Hit");
+            rp.doProcess(req, cResp);
+            if (cResp != null && cResp.getStatus() == HttpServletResponse.SC_OK) {
+                if ("GET".equalsIgnoreCase(req.getMethod())) {
+                    doCache(new HttpCacheEntry(cacheKey, cResp.getCopy(), req, cResp));
+                }
+            }
+        }
 
-	    Collection<String> headerNames = entry.getHeaderNames();
-	    for (String name : headerNames) {
-		switch (name) {
+        private void doSend(HttpCacheEntry entry, HttpServletRequest req,
+                HttpServletResponse resp) throws ServletException, IOException {
 
-		    // Update the date header
-		    case HEADER_DATE:
-			resp.setDateHeader(HEADER_DATE, System.currentTimeMillis());
-			break;
+            cacheHitCount++;
+            entry.hitCount++;
+            resp.setHeader("X-Pictura-Cache", "Hit");
 
-		    // Calculate a new max-age based on the old and the current
-		    // server time
-		    case HEADER_CACHECONTROL:
-			String[] cacheControl = entry.getHeader(HEADER_CACHECONTROL).split(",");
-			StringBuilder newCacheControl = new StringBuilder();
+            Collection<String> headerNames = entry.getHeaderNames();
+            for (String name : headerNames) {
+                switch (name) {
 
-			String sep = "";
-			for (String s : cacheControl) {
-			    newCacheControl.append(sep);
-			    if (s.toLowerCase(Locale.ENGLISH).trim().startsWith("max-age=")) {
-				newCacheControl.append("max-age=")
-					.append((entry.getExpires()
-						- System.currentTimeMillis()) / 1000);
-			    } else {
-				newCacheControl.append(" ").append(s);
-			    }
-			    sep = ", ";
-			}
+                    // Update the date header
+                    case HEADER_DATE:
+                        resp.setDateHeader(HEADER_DATE, System.currentTimeMillis());
+                        break;
 
-			resp.setHeader(HEADER_CACHECONTROL, newCacheControl.toString());
-			break;
+                    // Calculate a new max-age based on the old and the current
+                    // server time
+                    case HEADER_CACHECONTROL:
+                        String[] cacheControl = entry.getHeader(HEADER_CACHECONTROL).split(",");
+                        StringBuilder newCacheControl = new StringBuilder();
 
-		    // Do not set previouse values
-		    case HEADER_PRAGMA:
-		    case HEADER_CONTLEN:
-		    case HEADER_CONNECTION:
-		    case HEADER_COOKIE:
-		    case "X-Pictura-Cache":
-		    case "X-Pictura-Lookup":
-			break;
+                        String sep = "";
+                        for (String s : cacheControl) {
+                            newCacheControl.append(sep);
+                            if (s.toLowerCase(Locale.ENGLISH).trim().startsWith("max-age=")) {
+                                newCacheControl.append("max-age=")
+                                        .append((entry.getExpires()
+                                                - System.currentTimeMillis()) / 1000);
+                            } else {
+                                newCacheControl.append(" ").append(s);
+                            }
+                            sep = ", ";
+                        }
 
-		    case "X-Pictura-RequestId":
-			resp.setHeader("X-Pictura-RequestId", rp.getRequestId().toString());
-			break;
+                        resp.setHeader(HEADER_CACHECONTROL, newCacheControl.toString());
+                        break;
 
-		    default:
-			resp.setHeader(name, entry.getHeader(name));
-		}
-	    }
+                    // Do not set previouse values
+                    case HEADER_PRAGMA:
+                    case HEADER_CONTLEN:
+                    case HEADER_CONNECTION:
+                    case HEADER_COOKIE:
+                    case "X-Pictura-Cache":
+                    case "X-Pictura-Lookup":
+                        break;
 
-	    if (isDebugEnabled()) {
-		resp.setHeader("X-Pictura-CacheLookup", 
-			String.valueOf(System.currentTimeMillis() - timestamp) + "ms");
-	    }
-	    
-	    if (req.getHeader(HEADER_IFMODSINCE) != null
-		    || req.getHeader(HEADER_IFNONMATCH) != null) {
+                    case "X-Pictura-RequestId":
+                        resp.setHeader("X-Pictura-RequestId", rp.getRequestId().toString());
+                        break;
 
-		doInterrupt(HttpServletResponse.SC_NOT_MODIFIED);
-		return;
-	    }
+                    default:
+                        resp.setHeader(name, entry.getHeader(name));
+                }
+            }
 
-	    resp.setStatus(entry.getStatus());
-	    resp.setContentType(entry.getContentType());
+            if (isDebugEnabled()) {
+                resp.setHeader("X-Pictura-CacheLookup",
+                        String.valueOf(System.currentTimeMillis() - timestamp) + "ms");
+            }
 
-	    String acceptEncoding = req.getHeader(HEADER_ACCEPTENC);
-	    acceptEncoding = acceptEncoding != null ? acceptEncoding.toLowerCase(Locale.ENGLISH) : "";
+            if (req.getHeader(HEADER_IFMODSINCE) != null
+                    || req.getHeader(HEADER_IFNONMATCH) != null) {
 
-	    if (("gzip".equalsIgnoreCase(entry.getContentEncoding())
-		    && !acceptEncoding.contains("gzip"))
-		    || ("deflate".equalsIgnoreCase(entry.getContentEncoding())
-		    && !acceptEncoding.contains("deflate"))) {
+                doInterrupt(HttpServletResponse.SC_NOT_MODIFIED);
+                return;
+            }
 
-		byte[] tmp = getInflaterContent(entry.getContent(), entry.getContentEncoding());
+            resp.setStatus(entry.getStatus());
+            resp.setContentType(entry.getContentType());
 
-		resp.setHeader(HEADER_CONTENC, null);
-		resp.setContentLength(tmp.length);
-		doWrite(tmp, getRequest(), resp);
-		return;
-	    }
+            String acceptEncoding = req.getHeader(HEADER_ACCEPTENC);
+            acceptEncoding = acceptEncoding != null ? acceptEncoding.toLowerCase(Locale.ENGLISH) : "";
 
-	    resp.setContentLength(entry.getContentLength());
-	    doWrite(entry.getContent(), getRequest(), resp);
-	}
+            if (("gzip".equalsIgnoreCase(entry.getContentEncoding())
+                    && !acceptEncoding.contains("gzip"))
+                    || ("deflate".equalsIgnoreCase(entry.getContentEncoding())
+                    && !acceptEncoding.contains("deflate"))) {
 
-	private void doDelete(HttpCacheEntry entry, HttpServletResponse resp)
-		throws ServletException, IOException {
+                byte[] tmp = getInflaterContent(entry.getContent(), entry.getContentEncoding());
 
-	    HttpCache hc = getHttpCache();
-	    if (hc != null && entry != null && hc.remove(entry.getKey())) {
-		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-		return;
-	    }
-	    resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-	}
+                resp.setHeader(HEADER_CONTENC, null);
+                resp.setContentLength(tmp.length);
+                doWrite(tmp, getRequest(), resp);
+                return;
+            }
 
-	private void doCache(HttpCacheEntry entry) {
-	    if (entry != null) {
-		HttpCache hc = getHttpCache();
-		if (hc != null && !entry.isExpired()) {
-		    entry.setUserProperty("__producer", rp.getClass().getName());
-		    hc.put(rp.getTrueCacheKey(), entry);
-		}
-	    }
-	}
+            resp.setContentLength(entry.getContentLength());
+            doWrite(entry.getContent(), getRequest(), resp);
+        }
 
-	private void doRemove(HttpCacheEntry entry) {
-	    if (entry != null) {
-		HttpCache hc = getHttpCache();
-		if (hc != null) {
-		    hc.remove(entry.getKey());
-		}
-	    }
-	}
+        private void doDelete(HttpCacheEntry entry, HttpServletResponse resp)
+                throws ServletException, IOException {
 
-	private byte[] getInflaterContent(byte[] content, String contentEncoding) throws IOException {
-	    if ("gzip".equalsIgnoreCase(contentEncoding)
-		    || "deflate".equalsIgnoreCase(contentEncoding)) {
+            HttpCache hc = getHttpCache();
+            if (hc != null && entry != null && hc.remove(entry.getKey())) {
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                return;
+            }
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
 
-		InflaterInputStream iis = "gzip".equalsIgnoreCase(contentEncoding)
-			? new GZIPInputStream(new FastByteArrayInputStream(content))
-			: new InflaterInputStream(new FastByteArrayInputStream(content));
+        private void doCache(HttpCacheEntry entry) {
+            if (entry != null) {
+                HttpCache hc = getHttpCache();
+                if (hc != null && !entry.isExpired()) {
+                    entry.setUserProperty("__producer", rp.getClass().getName());
+                    hc.put(rp.getTrueCacheKey(), entry);
+                }
+            }
+        }
 
-		FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 16);
+        private void doRemove(HttpCacheEntry entry) {
+            if (entry != null) {
+                HttpCache hc = getHttpCache();
+                if (hc != null) {
+                    hc.remove(entry.getKey());
+                }
+            }
+        }
 
-		int len;
-		byte[] buf = new byte[1024 * 16];
+        private byte[] getInflaterContent(byte[] content, String contentEncoding) throws IOException {
+            if ("gzip".equalsIgnoreCase(contentEncoding)
+                    || "deflate".equalsIgnoreCase(contentEncoding)) {
 
-		while ((len = iis.read(buf)) > -1) {
-		    bos.write(buf, 0, len);
-		}
+                InflaterInputStream iis = "gzip".equalsIgnoreCase(contentEncoding)
+                        ? new GZIPInputStream(new FastByteArrayInputStream(content))
+                        : new InflaterInputStream(new FastByteArrayInputStream(content));
 
-		return bos.toByteArray();
-	    }
-	    return content;
-	}
+                FastByteArrayOutputStream bos = new FastByteArrayOutputStream(1024 * 16);
+
+                int len;
+                byte[] buf = new byte[1024 * 16];
+
+                while ((len = iis.read(buf)) > -1) {
+                    bos.write(buf, 0, len);
+                }
+
+                return bos.toByteArray();
+            }
+            return content;
+        }
 
     }
 
     // Helper class to wrap the servlet response
     private static final class CacheServletResponse extends HttpServletResponseWrapper {
 
-	private ServletOutputStream outputStream;
-	private PrintWriter writer;
-	private ServletOutputStreamCopier copier;
+        private ServletOutputStream outputStream;
+        private PrintWriter writer;
+        private ServletOutputStreamCopier copier;
 
-	private CacheServletResponse(HttpServletResponse response) {
-	    super(response);
-	}
+        private CacheServletResponse(HttpServletResponse response) {
+            super(response);
+        }
 
-	@Override
-	public ServletOutputStream getOutputStream() throws IOException {
-	    if (writer != null) {
-		throw new IllegalStateException("getWriter() has already been called on this response.");
-	    }
+        @Override
+        public ServletOutputStream getOutputStream() throws IOException {
+            if (writer != null) {
+                throw new IllegalStateException("getWriter() has already been called on this response.");
+            }
 
-	    if (outputStream == null) {
-		outputStream = getResponse().getOutputStream();
-		copier = new ServletOutputStreamCopier(outputStream);
-	    }
+            if (outputStream == null) {
+                outputStream = getResponse().getOutputStream();
+                copier = new ServletOutputStreamCopier(outputStream);
+            }
 
-	    return copier;
-	}
+            return copier;
+        }
 
-	@Override
-	public PrintWriter getWriter() throws IOException {
-	    if (outputStream != null) {
-		throw new IllegalStateException("getOutputStream() has already been called on this response.");
-	    }
+        @Override
+        public PrintWriter getWriter() throws IOException {
+            if (outputStream != null) {
+                throw new IllegalStateException("getOutputStream() has already been called on this response.");
+            }
 
-	    if (writer == null) {
-		copier = new ServletOutputStreamCopier(getResponse().getOutputStream());
-		writer = new PrintWriter(new OutputStreamWriter(copier, getResponse().getCharacterEncoding()), true);
-	    }
+            if (writer == null) {
+                copier = new ServletOutputStreamCopier(getResponse().getOutputStream());
+                writer = new PrintWriter(new OutputStreamWriter(copier, getResponse().getCharacterEncoding()), true);
+            }
 
-	    return writer;
-	}
+            return writer;
+        }
 
-	@Override
-	public void flushBuffer() throws IOException {
-	    if (writer != null) {
-		writer.flush();
-	    } else if (outputStream != null) {
-		copier.flush();
-	    }
-	}
+        @Override
+        public void flushBuffer() throws IOException {
+            if (writer != null) {
+                writer.flush();
+            } else if (outputStream != null) {
+                copier.flush();
+            }
+        }
 
-	byte[] getCopy() {
-	    if (copier != null) {
-		return copier.getCopy();
-	    } else {
-		return new byte[0];
-	    }
-	}
+        byte[] getCopy() {
+            if (copier != null) {
+                return copier.getCopy();
+            } else {
+                return new byte[0];
+            }
+        }
 
     }
 
     // Helper class to get a copy of the data written to the output stream 
     private static final class ServletOutputStreamCopier extends ServletOutputStream {
 
-	private final OutputStream outputStream;
-	private final FastByteArrayOutputStream copy;
+        private final OutputStream outputStream;
+        private final FastByteArrayOutputStream copy;
 
-	private ServletOutputStreamCopier(OutputStream outputStream) {
-	    this.outputStream = outputStream;
-	    this.copy = new FastByteArrayOutputStream();
-	}
+        private ServletOutputStreamCopier(OutputStream outputStream) {
+            this.outputStream = outputStream;
+            this.copy = new FastByteArrayOutputStream();
+        }
 
-	@Override
-	public void write(int b) throws IOException {
-	    outputStream.write(b);
-	    copy.write(b);
-	}
+        @Override
+        public void write(int b) throws IOException {
+            outputStream.write(b);
+            copy.write(b);
+        }
 
-	byte[] getCopy() {
-	    return copy.toByteArray();
-	}
+        byte[] getCopy() {
+            return copy.toByteArray();
+        }
 
     }
 
@@ -477,9 +478,9 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @return A new cache instance with the specified cache settings.
      */
     public static HttpCache createDefaultHttpCache(int capacity, int maxEntrySize)
-	    throws IllegalArgumentException {
+            throws IllegalArgumentException {
 
-	return new DefaultHttpCache(capacity, 1f, maxEntrySize);
+        return new DefaultHttpCache(capacity, 1f, maxEntrySize);
     }
 
     /**
@@ -490,49 +491,80 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * @param cache Cache instance to store.
      *
      * @throws IllegalArgumentException if the given cache is <code>null</code>.
-     * @throws IOException if an I/O error occurs while writing stream header
+     * @throws IOException if an I/O error occurs while writing stream header.
+     *
+     * @see #saveHttpCacheToStream(java.io.OutputStream,
+     * io.pictura.servlet.HttpCache)
      */
     public static void saveHttpCacheToFile(File file, HttpCache cache)
-	    throws IllegalArgumentException, IOException {
+            throws IllegalArgumentException, IOException {
 
-	if (cache == null) {
-	    throw new IllegalArgumentException("Cache must be not null");
-	}
-
-	if (file == null) {
-	    throw new IllegalArgumentException("Cache file must be not null");
-	}
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Store cache entries to \"" + file.getAbsolutePath() + "\"");
+        if (cache == null) {
+            throw new IllegalArgumentException("Cache must be not null");
         }
 
-	if (!file.exists()) {
-	    File dir = file.getParentFile();
-	    if (!dir.exists()) {
-		dir.mkdirs();
-	    }
-	    if (!file.createNewFile()) {
-		throw new IOException("Can't create file at \"" + file.getAbsolutePath() + "\"");
-	    }
-	}
+        if (file == null) {
+            throw new IllegalArgumentException("Cache file must be not null");
+        }
 
-	ArrayList<HttpCacheEntry> entryList = new ArrayList<>();
 
-	Collection<String> cacheKeys = cache.keySet();
-	for (String key : cacheKeys) {
-	    HttpCacheEntry entry = cache.get(key);
-	    if (entry != null && !entry.isExpired()) {
-		entryList.add(entry);
+        if (!file.exists()) {
+            File dir = file.getParentFile();
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            if (!file.createNewFile()) {
+                throw new IOException("Can't create file at \"" + file.getAbsolutePath() + "\"");
+            }
+        }
+
+        saveHttpCacheToStream(new FileOutputStream(file), cache);
+    }
+
+    /**
+     * Saves the current state of the given cache (entries) to the specified
+     * output stream.
+     *
+     * @param os The data output stream.
+     * @param cache Cache instance to store.
+     * @throws IllegalArgumentException if the given output steam or cache is
+     * <code>null</code>.
+     * @throws IOException if an I/O error occurs while writing stream header.
+     *
+     * @see #saveHttpCacheToFile(java.io.File, io.pictura.servlet.HttpCache)
+     *
+     * @since 1.2
+     */
+    public static void saveHttpCacheToStream(OutputStream os, HttpCache cache)
+            throws IllegalArgumentException, IOException {
+
+        if (os == null) {
+            throw new IllegalArgumentException("Output stream must be not null");
+        }
+        if (cache == null) {
+            throw new IllegalArgumentException("Cache must be not null");
+        }
+
+        ArrayList<HttpCacheEntry> entryList = new ArrayList<>();
+
+        Collection<String> cacheKeys = cache.keySet();
+        for (String key : cacheKeys) {
+            HttpCacheEntry entry = cache.get(key);
+            if (entry != null) {
+                if (entry.isExpired()) {
+                    LOG.info("Cached entry \"" + entry.getKey() + "\" is obsolete and will be removed");
+                    continue;
+                }
+                entryList.add(entry);
                 if (LOG.isTraceEnabled()) {
                     LOG.trace("Submitted cache entry with key[" + entry.getKey() + "]");
                 }
-	    }
-	}
+            }
+        }
 
-	try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
-	    oos.writeObject(entryList);
-	}
+        try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+            oos.writeObject(entryList);
+        }
     }
 
     /**
@@ -545,106 +577,134 @@ public abstract class HttpCacheServlet extends HttpServlet {
      * <code>null</code>.
      * @throws IOException if an I/O error occurs while reading stream header or
      * the file is corrupt.
-     */
-    @SuppressWarnings("unchecked")
+     *
+     * @see #loadHttpCacheFromStream(java.io.InputStream,
+     * io.pictura.servlet.HttpCache)
+     */    
     public static void loadHttpCacheFromFile(File file, HttpCache cache)
-	    throws IllegalArgumentException, IOException {
+            throws IllegalArgumentException, IOException {
 
-	if (cache == null) {
-	    throw new IllegalArgumentException("Destination cache to restore persisted entries must be not null");
-	}
-
-	if (file == null) {
-	    throw new IllegalArgumentException("Cache file must be not null");
-	}
-
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Load cache entries from \"" + file.getAbsolutePath() + "\"");
+        if (cache == null) {
+            throw new IllegalArgumentException("Destination cache to restore persisted entries must be not null");
         }
 
-	if (file.length() > 0) {
-	    try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
-		Object o = ois.readObject();
-		if (!(o instanceof ArrayList)) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Invalid cache format (serialized array list expected)");
-                    }
-		    throw new IOException("Corrupted cache persistence file");
-		}
+        if (file == null) {
+            throw new IllegalArgumentException("Cache file must be not null");
+        }
 
-		ArrayList<HttpCacheEntry> entryList = (ArrayList<HttpCacheEntry>) o;
-
-		for (HttpCacheEntry entry : entryList) {
-		    if (entry.isExpired()) {
-			continue;
-		    }
-		    cache.put(entry.getKey(), entry);
-                    if (LOG.isTraceEnabled()) {
-                        LOG.trace("Restored cache entry with key[" + entry.getKey() + "]");
-                    }
-		}
-
-	    } catch (ClassNotFoundException ex) {
-		throw new IOException("Invalid cache data file", ex);
-	    }
-	}
+        if (file.length() > 0) {
+            loadHttpCacheFromStream(new FileInputStream(file), cache);
+        }
     }
-    
+
+    /**
+     * Loads a previousely saved cache instance from the specified stream.
+     *
+     * @param is The data input stream.
+     * @param cache Cache instance to put the loaded entries to.
+     *
+     * @throws IllegalArgumentException if the given cache or stream is
+     * <code>null</code>.
+     * @throws IOException if an I/O error occurs while reading stream header or
+     * the file is corrupt.
+     *
+     * @see #loadHttpCacheFromFile(java.io.File, io.pictura.servlet.HttpCache)
+     *
+     * @since 1.2
+     */
+    @SuppressWarnings("unchecked")
+    public static void loadHttpCacheFromStream(InputStream is, HttpCache cache)
+            throws IllegalArgumentException, IOException {
+
+        if (is == null) {
+            throw new IllegalArgumentException("Input stream must be not null");
+        } 
+        if (cache == null) {
+            throw new IllegalArgumentException("Destination cache to restore persisted entries must be not null");
+        }
+
+        try (ObjectInputStream ois = new ObjectInputStream(is)) {
+            Object o = ois.readObject();
+            if (!(o instanceof ArrayList)) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Invalid cache format (serialized array list expected)");
+                }
+                throw new IOException("Corrupted cache persistence file");
+            }
+
+            ArrayList<HttpCacheEntry> entryList = (ArrayList<HttpCacheEntry>) o;
+
+            for (HttpCacheEntry entry : entryList) {
+                if (entry.isExpired()) {
+                    LOG.info("Cached entry \"" + entry.getKey() + "\" is obsolete and will be removed");
+                    continue;
+                }
+                cache.put(entry.getKey(), entry);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Restored cache entry with key[" + entry.getKey() + "]");
+                }
+            }
+
+        } catch (ClassNotFoundException ex) {
+            throw new IOException("Invalid cache data", ex);
+        }
+    }
+
     // Default (built-in) LRU in-memory cache implementation
     private static final class DefaultHttpCache implements HttpCache {
 
-	private final int maxEntrySize;
+        private final int maxEntrySize;
         private final int capacity;
-	private final Map<String, SoftReference<HttpCacheEntry>> cache;
+        private final Map<String, SoftReference<HttpCacheEntry>> cache;
 
-	private DefaultHttpCache(final int capacity, final float loadFactor,
-		final int maxEntrySize) throws IllegalArgumentException {
+        private DefaultHttpCache(final int capacity, final float loadFactor,
+                final int maxEntrySize) throws IllegalArgumentException {
 
-	    this.maxEntrySize = maxEntrySize;
+            this.maxEntrySize = maxEntrySize;
             this.capacity = capacity;
-	    this.cache = Collections.synchronizedMap(new LinkedHashMap<String, SoftReference<HttpCacheEntry>>(
-		    capacity, loadFactor, true) {
+            this.cache = Collections.synchronizedMap(new LinkedHashMap<String, SoftReference<HttpCacheEntry>>(
+                    capacity, loadFactor, true) {
 
-			private static final long serialVersionUID = 3421111110521406377L;
+                private static final long serialVersionUID = 3421111110521406377L;
 
-			@Override
-			protected boolean removeEldestEntry(Map.Entry<String, SoftReference<HttpCacheEntry>> eldest) {
-			    return size() > capacity;
-			}
-		    });
-	}
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, SoftReference<HttpCacheEntry>> eldest) {
+                    return size() > capacity;
+                }
+            });
+        }
 
-	@Override
-	public HttpCacheEntry get(String key) {
-	    SoftReference<HttpCacheEntry> ref = cache.get(key);
-	    return ref != null ? ref.get() : null;
-	}
+        @Override
+        public HttpCacheEntry get(String key) {
+            SoftReference<HttpCacheEntry> ref = cache.get(key);
+            return ref != null ? ref.get() : null;
+        }
 
-	@Override
-	public void put(String key, HttpCacheEntry entry) {
-	    // Do not cache if the entry content size is larger than the maximum
-	    // allowed content length per entry
-	    if (maxEntrySize > 0 && entry != null && entry.getContentLength() > maxEntrySize) {
-		return;
-	    }
+        @Override
+        public void put(String key, HttpCacheEntry entry) {
+            // Do not cache if the entry content size is larger than the maximum
+            // allowed content length per entry
+            if (maxEntrySize > 0 && entry != null && entry.getContentLength() > maxEntrySize) {
+                return;
+            }
 
-	    // Remove if the value is null
-	    if (entry == null) {
-		remove(key);
-	    } else {
-		cache.put(key, new SoftReference<>(entry));
-	    }
-	}
+            // Remove if the value is null
+            if (entry == null) {
+                remove(key);
+            } else {
+                cache.put(key, new SoftReference<>(entry));
+            }
+        }
 
-	@Override
-	public boolean remove(String key) {
-	    return cache.remove(key) != null;
-	}
+        @Override
+        public boolean remove(String key) {
+            return cache.remove(key) != null;
+        }
 
-	@Override
-	public Set<String> keySet() {
-	    return Collections.unmodifiableSet(new ConcurrentSkipListSet<>(cache.keySet()));
-	}
+        @Override
+        public Set<String> keySet() {
+            return Collections.unmodifiableSet(new ConcurrentSkipListSet<>(cache.keySet()));
+        }
     }
 
 }
