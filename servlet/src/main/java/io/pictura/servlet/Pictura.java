@@ -1766,6 +1766,116 @@ public final class Pictura {
     }
 
     /**
+     * Used to apply padding around the edges of an image using the given color
+     * to fill the extra padded space and then return the result. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * <p>
+     * The amount of <code>padding</code> specified is applied to all sides;
+     * more specifically, a <code>padding</code> of <code>2</code> would add 2
+     * extra pixels of space (filled by the given <code>color</code>) on the
+     * top, bottom, left and right sides of the resulting image causing the
+     * result to be 4 pixels wider and 4 pixels taller than the <code>src</code>
+     * image.
+     * </p>
+     * <p>
+     * <strong>TIP</strong>: This operation leaves the original <code>src</code>
+     * image unmodified. If the caller is done with the <code>src</code> image
+     * after getting the result of this operation, remember to call
+     * {@link BufferedImage#flush()} on the <code>src</code> to free up native
+     * resources and make it easier for the GC to collect the unused image.
+     * </p>
+     * @param src The image the padding will be added to.
+     * @param padding The number of pixels of padding to add to each side in the
+     * resulting image. If this value is <code>0</code> then <code>src</code> is
+     * returned unmodified.
+     * @param color The color to fill the padded space with. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * @param ops <code>0</code> or more ops to apply to the image. If
+     * <code>null</code> or empty then <code>src</code> is return unmodified.
+     *
+     * @return a new {@link BufferedImage} representing <code>src</code> with
+     * the given padding applied to it.
+     *
+     * @throws IllegalArgumentException if <code>src</code> is
+     * <code>null</code>.
+     * @throws IllegalArgumentException if <code>padding</code> is &lt;
+     * <code>1</code>.
+     * @throws IllegalArgumentException if <code>color</code> is
+     * <code>null</code>.
+     * @throws ImagingOpException if one of the given {@link BufferedImageOp}s
+     * fails to apply. These exceptions bubble up from the inside of most of the
+     * {@link BufferedImageOp} implementations and are explicitly defined on the
+     * imgscalr API to make it easier for callers to catch the exception (if
+     * they are passing along optional ops to be applied). imgscalr takes
+     * detailed steps to avoid the most common pitfalls that will cause
+     * {@link BufferedImageOp}s to fail, even when using straight forward
+     * JDK-image operations.
+     */
+    public static BufferedImage pad(BufferedImage src, int padding,
+            Color color, BufferedImageOp... ops)
+            throws IllegalArgumentException, ImagingOpException {
+
+        if (src == null) {
+            throw new IllegalArgumentException("src cannot be null");
+        }
+        if (padding < 1) {
+            throw new IllegalArgumentException("padding [" + padding
+                    + "] must be > 0");
+        }
+        if (color == null) {
+            throw new IllegalArgumentException("color cannot be null");
+        }
+
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+
+        /*
+         * Double the padding to account for all sides of the image. More
+         * specifically, if padding is "1" we add 2 pixels to width and 2 to
+         * height, so we have 1 new pixel of padding all the way around our
+         * image.
+         */
+        int sizeDiff = (padding * 2);
+        int newWidth = srcWidth + sizeDiff;
+        int newHeight = srcHeight + sizeDiff;
+
+        boolean colorHasAlpha = (color.getAlpha() != 255);
+        boolean imageHasAlpha = (src.getTransparency() != BufferedImage.OPAQUE);
+
+        BufferedImage result;
+
+        /*
+         * We need to make sure our resulting image that we render into contains
+         * alpha if either our original image OR the padding color we are using
+         * contain it.
+         */
+        if (colorHasAlpha || imageHasAlpha) {
+            result = new BufferedImage(newWidth, newHeight,
+                    BufferedImage.TYPE_INT_ARGB);
+        } else {
+            result = new BufferedImage(newWidth, newHeight,
+                    BufferedImage.TYPE_INT_RGB);
+        }
+
+        Graphics g = result.getGraphics();
+
+        // "Clear" the background of the new image with our padding color first.
+        g.setColor(color);
+        g.fillRect(0, 0, newWidth, newHeight);
+
+        // Draw the image into the center of the new padded image.
+        g.drawImage(src, padding, padding, null);
+        g.dispose();
+
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
+
+        return result;
+    }
+    
+    /**
      * Used to create a {@link BufferedImage} with the given dimensions and the
      * most optimal RGB TYPE ( {@link BufferedImage#TYPE_INT_RGB} or
      * {@link BufferedImage#TYPE_INT_ARGB} ) capable of being rendered into from
