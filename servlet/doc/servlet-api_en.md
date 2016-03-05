@@ -196,6 +196,7 @@ Default Resource Locators:
 
   1. `io.pictura.servlet.FileResourceLocator`
   1. `io.pictura.servlet.HttpResourceLocator`
+  1. `io.pictura.servlet.FtpResourceLocator`
   1. `io.pictura.servlet.EmptyResourceLocator`
  
 **Example**
