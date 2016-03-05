@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * public class ImageServlet extends PicturaServlet {
  * }
  * </pre>
-* 
+ * 
  * @author Steffen Kremp
  * 
  * @since 1.0
