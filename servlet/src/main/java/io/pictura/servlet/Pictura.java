@@ -18,6 +18,7 @@
  */
 package io.pictura.servlet;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -1766,6 +1767,98 @@ public final class Pictura {
     }
 
     /**
+     * Used to apply a border around the edges of an image using the given color
+     * to draw the border space and then return the result. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * <p>
+     * <strong>TIP</strong>: This operation leaves the original <code>src</code>
+     * image unmodified. If the caller is done with the <code>src</code> image
+     * after getting the result of this operation, remember to call
+     * {@link BufferedImage#flush()} on the <code>src</code> to free up native
+     * resources and make it easier for the GC to collect the unused image.
+     * </p>
+     * @param src The image the border will be added to.
+     * @param thickness The number of pixels of border to add to each side in the
+     * resulting image.
+     * @param color The color to draw the border space with. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * @param ops <code>0</code> or more ops to apply to the image. If
+     * <code>null</code> or empty then <code>src</code> is return unmodified.
+     *
+     * @return a new {@link BufferedImage} representing <code>src</code> with
+     * the given border applied to it.
+     *
+     * @throws IllegalArgumentException if <code>src</code> is
+     * <code>null</code>.
+     * @throws IllegalArgumentException if <code>thickness</code> is &lt;
+     * <code>1</code>.
+     * @throws IllegalArgumentException if <code>color</code> is
+     * <code>null</code>.
+     * @throws ImagingOpException if one of the given {@link BufferedImageOp}s
+     * fails to apply. These exceptions bubble up from the inside of most of the
+     * {@link BufferedImageOp} implementations and are explicitly defined on the
+     * imgscalr API to make it easier for callers to catch the exception (if
+     * they are passing along optional ops to be applied). imgscalr takes
+     * detailed steps to avoid the most common pitfalls that will cause
+     * {@link BufferedImageOp}s to fail, even when using straight forward
+     * JDK-image operations.
+     */
+    public static BufferedImage border(BufferedImage src, int thickness,
+            Color color, BufferedImageOp... ops)
+            throws IllegalArgumentException, ImagingOpException {
+        
+        if (src == null) {
+            throw new IllegalArgumentException("src cannot be null");
+        }
+        if (thickness < 1) {
+            throw new IllegalArgumentException("thickness [" + thickness
+                    + "] must be > 0");
+        }
+        if (color == null) {
+            throw new IllegalArgumentException("color cannot be null");
+        }
+        
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+        
+        boolean colorHasAlpha = (color.getAlpha() != 255);
+        boolean imageHasAlpha = (src.getTransparency() != BufferedImage.OPAQUE);
+
+        BufferedImage result;
+        
+        /*
+         * We need to make sure our resulting image that we render into contains
+         * alpha if either our original image OR the padding color we are using
+         * contain it.
+         */
+        if (colorHasAlpha || imageHasAlpha) {
+            result = new BufferedImage(srcWidth, srcHeight,
+                    BufferedImage.TYPE_INT_ARGB);
+        } else {
+            result = new BufferedImage(srcWidth, srcHeight,
+                    BufferedImage.TYPE_INT_RGB);
+        }
+
+        Graphics2D g = (Graphics2D) result.getGraphics();
+        
+        // Draw the image
+        g.drawImage(src, 0, 0, null);
+        
+        // "Clear" the background of the new image with our padding color first.
+        g.setColor(color);
+        g.setStroke(new BasicStroke(thickness));
+        g.drawRect(0, 0, srcWidth, srcHeight);
+        g.dispose();
+
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
+
+        return result;
+    }
+    
+    /**
      * Used to apply padding around the edges of an image using the given color
      * to fill the extra padded space and then return the result. {@link Color}s
      * using an alpha channel (i.e. transparency) are supported.
@@ -1786,8 +1879,7 @@ public final class Pictura {
      * </p>
      * @param src The image the padding will be added to.
      * @param padding The number of pixels of padding to add to each side in the
-     * resulting image. If this value is <code>0</code> then <code>src</code> is
-     * returned unmodified.
+     * resulting image.
      * @param color The color to fill the padded space with. {@link Color}s
      * using an alpha channel (i.e. transparency) are supported.
      * @param ops <code>0</code> or more ops to apply to the image. If

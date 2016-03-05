@@ -167,6 +167,38 @@ public class PicturaTest {
     public void testPad_IllegalArgumentException2() throws Exception {
         Pictura.pad(img, 1, null);
     }
+    
+    @Test
+    public void testBorder() {
+        BufferedImage img2 = Pictura.border(img, 10, Color.yellow);
+        assertEquals(400, img2.getWidth());
+        assertEquals(225, img2.getHeight());
+        assertEquals(Color.yellow.getRGB(), img2.getRGB(0, 0));
+        assertEquals(Color.yellow.getRGB(), img2.getRGB(4, 4));
+        assertEquals(Color.yellow.getRGB(), img2.getRGB(399, 224));
+        
+        BufferedImage img3 = Pictura.border(img, 10, Color.green);
+        assertEquals(400, img3.getWidth());
+        assertEquals(225, img3.getHeight());
+        assertEquals(Color.green.getRGB(), img3.getRGB(0, 0));
+        assertEquals(Color.green.getRGB(), img3.getRGB(1, 1));
+        assertEquals(Color.green.getRGB(), img3.getRGB(399, 224));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testBorder_IllegalArgumentException0() throws Exception {
+        Pictura.border(null, 10, Color.yellow);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testBorder_IllegalArgumentException1() throws Exception {
+        Pictura.border(img, 0, Color.yellow);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testBorder_IllegalArgumentException2() throws Exception {
+        Pictura.border(img, 1, null);
+    }
 
     @Test
     public void testCrop() {
