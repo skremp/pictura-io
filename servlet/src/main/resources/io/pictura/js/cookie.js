@@ -29,11 +29,6 @@ if (!window['__PicturaIO_Cookie__']) {
 
     (function (window, document) {
 
-        /**
-         * The current PicturaIO client side Cookie JavaScript implementation version.
-         */
-        PicturaIO.Cookie.version = "${script.version}";
-
         var con = '__picturaio__',
             pfx = ';expires=0;path=/',
             val = 'dpr=' + (window.devicePixelRatio || 1) +
