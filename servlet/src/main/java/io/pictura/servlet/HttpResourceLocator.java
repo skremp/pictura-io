@@ -25,6 +25,7 @@ import java.util.Locale;
  *
  * @see ResourceLocator
  * @see FileResourceLocator
+ * @see FtpResourceLocator
  *
  * @author Steffen Kremp
  *
