@@ -42,6 +42,8 @@ import javax.servlet.http.HttpServletResponse;
 public class AutoFormatRequestProcessor extends ImageRequestProcessor
 	implements ImageRequestStrategy, ContentNegotiation {
 
+    private static final Log LOG = Log.getLog(AutoFormatRequestProcessor.class);
+    
     // The default compression ratio by this image processor
     private static final float DEFAULT_AUTO_COMPRESSION_QUALITY = 0.8f; // 80%
 
@@ -82,7 +84,12 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
     protected String getRequestedFormatName(HttpServletRequest req) {
 	String format = super.getRequestedFormatName(req);
 	if (format == null && !isBypassRequest(req)) {
-	    return getAutoFormatName(req);
+	    String fn = getAutoFormatName(req);
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Detect format \"" + fn + "\" for request \"" + getRequestId().toString() + 
+                        "with client \"" + req.getHeader(HEADER_USERAGENT) + "\"");
+            }
+            return fn;
 	}
 	return format;
     }
@@ -150,6 +157,10 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
 			    DEFAULT_COMPRESSION_FACTOR;
 		    break;
 	    }
+            
+            if (LOG.isTraceEnabled()) {
+                
+            }
 	}
 	return o;
     }
