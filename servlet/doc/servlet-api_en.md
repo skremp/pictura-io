@@ -1273,6 +1273,7 @@ and `GIF`.
 | Mozilla Firefox       | YES  |           |      | YES | YES |
 | Microsoft IE          | YES  |           |      | YES | YES |
 | Microsoft Edge        | YES  |           |      | YES | YES |
+| Vivalid               | YES  |           | YES  | YES | YES |
 
 > Implements the `io.pictura.servlet.ImageRequestStrategy` interface.
 
