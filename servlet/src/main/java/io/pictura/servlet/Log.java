@@ -354,7 +354,7 @@ final class Log {
             if (jclLog != null) {
                 return isJCLLogLevelEnabled(l);
             } else if (slf4jLog != null) {
-		isSLF4JLogLevelEnabled(l);
+		return isSLF4JLogLevelEnabled(l);
 	    }
             return true;
         }
