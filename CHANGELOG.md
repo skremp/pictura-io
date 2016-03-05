@@ -2,7 +2,19 @@
 
 ## 1.2.0.Final
 
+_TBD_
+
+* Added support for auto image rotation depending on the source image
+  orientation provided by Exif metadata.
+* Added new image parameter *P* and *B* to apply padding and border around the 
+  edges of an image.
 * Added new resize mode *CROP*.
+* Added new convenience methods to load and save the current http image cache.
+  Among the existing methods, now it is also possible to load and save cache 
+  entries within I/O streams.
+* Added new FTP resource locator.
+* Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
+  8-digit values, to handle RGB and ARGB color values, are supported.
 
 ## 1.1.0.Final
 
