@@ -48,7 +48,7 @@ public class PicturaServletTest {
 
     @Test
     public void testServletVendor() {
-	assertEquals("PicturaIO", (new PicturaServlet()).getServletVendor());
+	assertEquals("", (new PicturaServlet()).getServletVendor());
     }
 
     @Test
