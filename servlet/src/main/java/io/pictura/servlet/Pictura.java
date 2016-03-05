@@ -1846,7 +1846,7 @@ public final class Pictura {
         
         // "Clear" the background of the new image with our padding color first.
         g.setColor(color);
-        g.setStroke(new BasicStroke(thickness));
+        g.setStroke(new BasicStroke(2 * thickness));
         g.drawRect(0, 0, srcWidth, srcHeight);
         g.dispose();
 
