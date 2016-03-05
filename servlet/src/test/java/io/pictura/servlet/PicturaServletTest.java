@@ -43,12 +43,12 @@ public class PicturaServletTest {
 
     @Test
     public void testServletVersion() {
-	assertEquals("1.1", (new PicturaServlet()).getServletVersion());
+	assertEquals(Version.getVersionString(), (new PicturaServlet()).getServletVersion());
     }
 
     @Test
     public void testServletVendor() {
-	assertEquals("", (new PicturaServlet()).getServletVendor());
+	assertEquals("PicturaIO", (new PicturaServlet()).getServletVendor());
     }
 
     @Test

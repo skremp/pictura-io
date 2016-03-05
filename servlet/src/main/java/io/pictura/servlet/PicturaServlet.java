@@ -865,6 +865,9 @@ public class PicturaServlet extends HttpCacheServlet {
     // URL connection factory to fetch external resources
     private URLConnectionFactory urlConnectionFactory;
 
+    // Custom image processing parameter name mapping
+    private Map<String, String> qNameParamMap;
+    
     // MXBean registration
     private ObjectName mxBeanServletObjName;
     private ObjectName mxBeanCacheObjName;
@@ -893,7 +896,7 @@ public class PicturaServlet extends HttpCacheServlet {
      * @return The servlet implementation version string.
      */
     public String getServletVersion() {
-	return "1.1";
+	return Version.getVersionString();
     }
 
     /**
@@ -1236,8 +1239,8 @@ public class PicturaServlet extends HttpCacheServlet {
             } catch (IllegalArgumentException | NullPointerException ex) {
                 throw new ServletException(ex);
             }
-        }
-
+        }       
+        
 	// Rescan for ImageIO plugins for "internal" mappings
 	PicturaImageIO.scanForPlugins();
 
@@ -1266,8 +1269,8 @@ public class PicturaServlet extends HttpCacheServlet {
         if (debug) {
             LOG.warn("PicturaIO is running in DEBUG MODE (to disable set init param \"debug\" to \"false\"!)");
         }
-    }    
-
+    }        
+    
     private void initImageStrategy(String strategy) throws ServletException {
 	final String[] clazzes = strategy.split(",");
 	final ImageRequestStrategy[] strategies = new ImageRequestStrategy[clazzes.length];
@@ -1511,7 +1514,7 @@ public class PicturaServlet extends HttpCacheServlet {
 	    throw new RuntimeException(ex);
 	}
     }
-
+    
     @Override
     public void destroy() {
 	super.destroy();
@@ -2048,7 +2051,7 @@ public class PicturaServlet extends HttpCacheServlet {
 		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLED_INPUT_IMAGE_FORMATS", enabledInputImageFormats);
 		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLED_OUTPUT_IMAGE_FORMATS", enabledOutputImageFormats);
 		pReq.setAttributeIfAbsent("io.pictura.servlet.ENABLE_BASE64_IMAGE_ENCODING", enableBase64ImageEncoding);
-
+                
 		// HTTP client attributes
 		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_AGENT", httpAgent);
 		pReq.setAttributeIfAbsent("io.pictura.servlet.HTTP_CONNECT_TIMEOUT", httpConnectTimeout);
