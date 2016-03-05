@@ -78,6 +78,9 @@ Optionally, you can install the project in your local Maven repository using:
 
 ## Usage
 
+> **Note**: at first, you need to download or clone the project and build it 
+> with `mvn install`!
+
 To use the servlet in your web application project, include the `pictura-servlet-{VERSION}.jar`
 in your web-application's classpath (`WEB-INF/lib`) or if your project is a 
 Maven based project, append the dependency
@@ -301,6 +304,7 @@ available at `http://localhost:8084/`. For example:
  * `http://localhost:8084/ip/D=320x480/`
  * `http://localhost:8084/ip/D=320x480/BG=ORANGE/R=L`
  * `http://localhost:8084/js/pictura.js`
+ * `http://localhost:8084/demo.html`
 
 ## Related Documentation
 
