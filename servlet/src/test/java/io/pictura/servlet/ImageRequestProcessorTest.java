@@ -75,6 +75,15 @@ public class ImageRequestProcessorTest {
 	assertEquals(new Float(Float.NaN), ImageRequestProcessor.tryParseFloat("foobar", Float.NaN));
     }
 
+    public void testTryParseColor() {
+        System.out.println("tryParseColor");
+        
+        assertEquals(Color.decode("#123456"), ImageRequestProcessor.tryParseColor("123456", null));
+        assertEquals(Color.decode("#123456"), ImageRequestProcessor.tryParseColor("#123456", null));
+        assertEquals(Color.decode("#334455"), ImageRequestProcessor.tryParseColor("345", null));        
+        assertEquals(Color.decode("#334455"), ImageRequestProcessor.tryParseColor("#345", null));
+    }
+    
     @Test
     public void testCanReadFormat() {
 	System.out.println("canReadFormat");
