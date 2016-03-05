@@ -577,10 +577,15 @@ public abstract class IIORequestProcessor extends RequestProcessor {
      */
     protected void doWriteImage(BufferedImage[] img, IIOWriteParam param,
             HttpServletRequest req, HttpServletResponse resp) throws
-            ServletException, IOException {
-
+            ServletException, IOException {               
+        
         doIntercept(img, getImageInterceptor());
-
+        
+        long startEncodeImage = -1L;
+        if (LOG.isTraceEnabled()) {
+            startEncodeImage = System.currentTimeMillis();
+        }
+        
         FastByteArrayOutputStream bos = new FastByteArrayOutputStream();
 
         ImageWriter iw = null;
@@ -625,6 +630,11 @@ public abstract class IIORequestProcessor extends RequestProcessor {
                     img[0].flush();
                 }
             }
+            
+            if (LOG.isTraceEnabled()) {
+                LOG.trace("Transformed image encoded in " + (System.currentTimeMillis() - startEncodeImage) + "ms");
+            }
+            
         } finally {
             if (iw != null) {
                 iw.dispose();
@@ -635,8 +645,8 @@ public abstract class IIORequestProcessor extends RequestProcessor {
                 } catch (IOException ex) {
                 }
             }
-        }
-
+        }       
+        
         doWriteImage0(bos.buf, 0, bos.count, param, req, resp);
     }
 
@@ -655,8 +665,8 @@ public abstract class IIORequestProcessor extends RequestProcessor {
             resp.setCharacterEncoding("utf-8");
         } else {
             resp.setContentType(PicturaImageIO.getImageWriterFormats().get(param.formatName));
-        }
-
+        }                
+        
         req.setAttribute("io.pictura.servlet.DST_IMAGE_SIZE", (long) data.length);
         doWrite(data, off, len, req, resp);
     }
