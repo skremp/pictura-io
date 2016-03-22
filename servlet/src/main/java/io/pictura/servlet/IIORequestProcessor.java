@@ -31,6 +31,8 @@ import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
+import javax.imageio.event.IIOReadWarningListener;
+import javax.imageio.event.IIOWriteWarningListener;
 import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.plugins.jpeg.JPEGImageWriteParam;
 import javax.imageio.spi.ImageReaderSpi;
@@ -287,12 +289,22 @@ public abstract class IIORequestProcessor extends RequestProcessor {
                 if (spi.canDecodeInput(iis)) {
                     if (canReadFormat(spi.getFormatNames()[0])
                             || canReadMimeType(spi.getMIMETypes()[0])) {
-                        return spi.createReaderInstance();
+                        ImageReader ir = spi.createReaderInstance();
+                        if (LOG.isTraceEnabled()) {
+                            ir.addIIOReadWarningListener(new IIOReadWarningListener() {
+                                @Override
+                                public void warningOccurred(ImageReader source, String warning) {
+                                    if (warning != null && !warning.isEmpty()) {
+                                        LOG.trace("IIO read[" + getRequestURI() + "]: " + warning);
+                                    }
+                                }
+                            });
+                        }
+                        return ir;
                     }
                 }
             }
         }
-
         return null;
     }
 
@@ -597,6 +609,17 @@ public abstract class IIORequestProcessor extends RequestProcessor {
             } else {
                 iw = createImageWriter(img[0], param.formatName);
                 iw.setOutput(ios = createImageOutputStream(bos));
+                
+                if (LOG.isTraceEnabled()) {
+                    iw.addIIOWriteWarningListener(new IIOWriteWarningListener() {
+                        @Override
+                        public void warningOccurred(ImageWriter source, int imageIndex, String warning) {
+                            if (warning != null && !warning.isEmpty()) {
+                                LOG.trace("IIO write[" + getRequestURI() + "][" + imageIndex + "]: " + warning);
+                            }
+                        }
+                    });
+                }
 
                 // At first, let us check if we can write the sequence with
                 // this image writer. If not, we will continue as usual.
@@ -632,11 +655,13 @@ public abstract class IIORequestProcessor extends RequestProcessor {
             }
             
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Transformed image encoded in " + (System.currentTimeMillis() - startEncodeImage) + "ms");
+                LOG.trace("Target image encoded in " + (System.currentTimeMillis() - startEncodeImage) 
+                        + "ms [" + getRequestURI() + "]");
             }
             
         } finally {
             if (iw != null) {
+                iw.removeAllIIOWriteWarningListeners();
                 iw.dispose();
             }
             if (ios != null) {
@@ -905,5 +930,5 @@ public abstract class IIORequestProcessor extends RequestProcessor {
         }
 
     }
-
+    
 }
