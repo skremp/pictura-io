@@ -374,7 +374,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      *
      * @see #getRequestedCropSquare(javax.servlet.http.HttpServletRequest)
      */
-    protected static final String QPARAM_NAME_CROP_SQUARE = "cs";
+    protected static final String QPARAM_NAME_CROP_SQUARE = "csq";
 
     /**
      * The image crop aspect ratio x parameter name.
@@ -488,7 +488,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      *
      * @see #getRequestedQuality(javax.servlet.http.HttpServletRequest)
      */
-    protected static final String QPARAM_NAME_QUALITY = "q";
+    protected static final String QPARAM_NAME_QUALITY = "q";   
 
     /**
      * Defines the default compression quality if nothing else is defined.
@@ -528,7 +528,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
          */
         LOW;
     }
-
+    
     // Limitations
     long maxImageFileSize;
     long maxImageResolution;
@@ -1144,7 +1144,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     protected Integer getRequestedBorderSize(HttpServletRequest req) {
         return tryParseInt(req != null ? getRequestParameter(req,
                 QPARAM_NAME_BORDER_SIZE) : null, null);
-    }
+    }    
     
     // Precompiled effect parameter patterns
     private static final Pattern P_EFFECT_BDT = Pattern.compile("^[bdt]{1,1}\\([0-9]{1,3}\\)$");
@@ -2696,7 +2696,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                     }
 
                     if (LOG.isTraceEnabled()) {
-                        LOG.trace("Source image decoded in " + (System.currentTimeMillis() - startDecodeImage) + "ms");
+                        LOG.trace("Source image decoded in " + (System.currentTimeMillis() - startDecodeImage) 
+                                + "ms [" + getRequestURI() + "]");
                     }
 
                     // TODO: Prevent image meta data (IIOMetadata) if the user
@@ -2873,7 +2874,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             // Border
             Integer borderSize = getRequestedBorderSize(req);
             Color borderColor = borderSize != null ? getRequestedBorderColor(req) : null;
-
+            
             // Process the image as specified by the client
             long startProcessImageFrames = -1L;
             if (LOG.isTraceEnabled()) {
@@ -2925,12 +2926,14 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
                 outFrames.addAll(Arrays.asList(outSequence));
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Image processed in " + (System.currentTimeMillis() - startProcessImageFrames) + "ms");
+                    LOG.trace("Image processed in " + (System.currentTimeMillis() - startProcessImageFrames) 
+                            + "ms [" + getRequestURI() + "]");
                 }
                 doWriteImage(outFrames.toArray(new BufferedImage[outFrames.size()]), writeParams, req, resp);
             } else {
                 if (LOG.isTraceEnabled()) {
-                    LOG.trace("Image processed in " + (System.currentTimeMillis() - startProcessImageFrames) + "ms");
+                    LOG.trace("Image processed in " + (System.currentTimeMillis() - startProcessImageFrames) 
+                            + "ms [" + getRequestURI() + "]");
                 }
                 doWriteImage(out, writeParams, req, resp);
             }
@@ -2955,15 +2958,14 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             }
         }
     }
-
+    
     private BufferedImage[] doProcessImageFrames(BufferedImage[] frames,
             Float trim, Integer cropX, Integer cropY, Integer cropWidth,
             Integer cropHeight, Integer scaleWidth, Integer scaleHeight,
             Float scalePixelRatio, Pictura.Method scaleMethod,
             Pictura.Mode scaleMode, Boolean scaleForceUpscale,
             Pictura.Rotation rotation, Integer padSize, Color padColor,
-            Integer borderSize, Color borderColor,
-            BufferedImageOp[] effects) {
+            Integer borderSize, Color borderColor, BufferedImageOp[] effects) {
 
         BufferedImage[] outS = new BufferedImage[frames.length];
 
@@ -3006,8 +3008,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                 
                 // Add colorized border to the current frame
                 BufferedImage srcSBorder = borderImage(srcSPadded, borderSize != null ? borderSize : -1, borderColor);
-                srcSPadded.flush();
-
+                srcSPadded.flush();                
+                
                 // Store the result in the output sequence buffer
                 outS[i] = srcSBorder;
             }
@@ -3154,10 +3156,13 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     }   
 
     /**
+     * Parses the specified color value.
      * 
-     * @param s
-     * @param defaultValue
-     * @return 
+     * @param s RGB or ARGB color value to parse.
+     * @param defaultValue A default value.
+     * 
+     * @return The parsed string as {@link Color} value or the default fallback
+     * value in any case of an error.
      * 
      * @since 1.2
      */
