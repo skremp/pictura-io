@@ -86,8 +86,7 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
 	if (format == null && !isBypassRequest(req)) {
 	    String fn = getAutoFormatName(req);
             if (LOG.isTraceEnabled()) {
-                LOG.trace("Detect format \"" + fn + "\" for request \"" + getRequestId().toString() + 
-                        "with client \"" + req.getHeader(HEADER_USERAGENT) + "\"");
+                LOG.trace("Detect format \"" + fn + "\" [" + getRequestURI() + "]");
             }
             return fn;
 	}
