@@ -211,8 +211,8 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      * whether the optional debug query parameter (URL) is set to
      * <code>true</code>.
      *
-     * @return <code>true</code> if debugging is enabled; otherwise
-     * <code>false</code>.
+     * @return <code>true</code> if debugging for this request is enabled; 
+     * otherwise <code>false</code>.
      */
     public final boolean isDebugEnabled() {
 	return req != null && req.getParameter("debug") != null
@@ -960,6 +960,13 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 		resp.setHeader(HEADER_PRAGMA, "no-cache");
 		resp.setHeader(HEADER_EXPIRES, null);
 	    }
+            
+            if (isDebugEnabled()) {
+                if (getAttribute("io.pictura.servlet.BYTES_READ") instanceof Long) {
+                    long clIn = (long) getAttribute("io.pictura.servlet.BYTES_READ");
+                    resp.setHeader("X-Pictura-SavedData", String.valueOf(clIn - length));
+                }
+            }
 
 	    // Do not compress resources <= 1kB
 	    if (!"gzip".equalsIgnoreCase(resp.getHeader(HEADER_CONTENC))
