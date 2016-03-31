@@ -714,10 +714,10 @@ public final class Pictura {
 
     };
 
-    static final BufferedImageOp getOpRescale(final float scaleFactor) {
-	return new RescaleOp(scaleFactor, 0, null);
-    }
-
+    static final BufferedImageOp getOpRescale(final float value) {
+	return new RescaleOp(value, 0, null);
+    }    
+    
     static final BufferedImageOp getOpGamma(final float value) {
 	byte[] table = new byte[256];
 	for (int i = 0; i < table.length; i++) {
@@ -744,6 +744,49 @@ public final class Pictura {
                     return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];
                 }
                 return rgb;
+            }
+        };
+    }
+    
+    static final BufferedImageOp getOpVibrance(final float value) {
+        
+        final float arg = value * -1;
+        
+        return new PointImageOp() {
+            @Override
+            public int filterRGB(int x, int y, int rgb) {
+                int a = rgb & 0xff000000;
+                int r = (rgb >> 16) & 0xff;
+                int g = (rgb >> 8) & 0xff;
+                int b = rgb & 0xff;
+                
+                // https://github.com/meltingice/CamanJ/blob/master/src/com/meltingice/caman/filters/Vibrance.java
+                
+                int max = Math.max(r, Math.max(g, b));
+                
+		double avg = (r + g + b) / 3;
+		double amt = ((Math.abs(max - avg) * 2.0 / 255.0) * arg) / 100.0;
+
+		int diff;
+		
+                if (r != max) {
+                    diff = max - r;
+                    r += diff * amt;
+                }
+                
+                if (g != max) {
+                    diff = max - g;
+                    g += diff * amt;
+                }
+		
+                if (b != max) {
+                    diff = max - b;
+                    b += diff * amt;
+                }
+
+                int[] rgb2 = clamp(r, g, b);
+                
+		return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];                
             }
         };
     }

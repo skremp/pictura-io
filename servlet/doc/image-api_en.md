@@ -754,6 +754,25 @@ to `100`. The default value is `0` which leaves the image unchanged. A value of
 
 **[\[⬆\]](#table-of-contents)**
 
+### Vibrance
+
+***@since 1.2***
+
+ `VIB({value})`
+ 
+Adjusts the vibrance of the image. Valid values are in the range `-100`
+to `100`. The default value is `0` which leaves the image unchanged.
+
+**Example**
+
+ `/E=VIB(-30)/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_vib20.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
 ### Auto Contrast
 
  `AC`

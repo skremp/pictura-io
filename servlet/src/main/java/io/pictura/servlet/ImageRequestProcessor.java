@@ -1148,10 +1148,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     
     // Precompiled effect parameter patterns
     private static final Pattern P_EFFECT_BDT = Pattern.compile("^[bdt]{1,1}\\([0-9]{1,3}\\)$");
-    private static final Pattern P_EFFECT_GAM_SAT = Pattern.compile("^(gam|sat){1,1}\\(\\-?[0-9]{1,3}\\)$");
+    private static final Pattern P_EFFECT_GAM_SAT_VIB = Pattern.compile("^(gam|sat|vib){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_PX = Pattern.compile("^(px){1,1}\\(\\-?[0-9]{1,3}\\)$");
     private static final Pattern P_EFFECT_BDT_NB = Pattern.compile("^[bdt]{1,1}[0-9]{1,3}$"); // no brackets style
-    private static final Pattern P_EFFECT_GAM_SAT_NB = Pattern.compile("^(gam|sat){1,1}\\-?[0-9]{1,3}$"); // no brackets style
+    private static final Pattern P_EFFECT_GAM_SAT_VIB_NB = Pattern.compile("^(gam|sat|vib){1,1}\\-?[0-9]{1,3}$"); // no brackets style
     private static final Pattern P_EFFECT_PX_NB = Pattern.compile("^(px){1,1}\\-?[0-9]{1,3}$"); // no brackets style
 
     /**
@@ -1268,7 +1268,9 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                                 } else {
                                     throw new IllegalArgumentException("Invalid effect: argument must be a valid number");
                                 }
-                            } // Pixelate
+                            } 
+
+                            // Pixelate
                             else if (P_EFFECT_PX.matcher(o).matches()
                                     || (noBrackets = P_EFFECT_PX_NB.matcher(o).matches())) {
 
@@ -1279,30 +1281,38 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                                     throw new IllegalArgumentException("Invalid effect: argument of \"px\" must be between 10 and 100");
                                 }
                                 l.add(Pictura.getOpPixelate(s));
-                            } // Gamma correction
-                            else if (P_EFFECT_GAM_SAT.matcher(o).matches()
-                                    || (noBrackets = P_EFFECT_GAM_SAT_NB.matcher(o).matches())) {
+                            } 
+
+                            // Gamma, Saturation, Vibrance
+                            else if (P_EFFECT_GAM_SAT_VIB.matcher(o).matches()
+                                    || (noBrackets = P_EFFECT_GAM_SAT_VIB_NB.matcher(o).matches())) {
 
                                 float f = tryParseFloat(noBrackets ? o.substring(3, o.length())
                                         : o.substring(o.indexOf('(') + 1, o.length() - 1), Float.NaN);
 
                                 if (!Float.isNaN(f)) {
-                                    f = (f + 100) / 100;
                                     if (o.startsWith("gam")) {
                                         if (f < -100 || f > 100) {
                                             throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
                                         }
-                                        l.add(Pictura.getOpGamma(f));
+                                        l.add(Pictura.getOpGamma(((f + 100) / 100)));
                                     } else if (o.startsWith("sat")) {
                                         if (f < -100 || f > 100) {
                                             throw new IllegalArgumentException("Invalid effect: saturation must be between -100 and 100");
                                         }
-                                        l.add(Pictura.getOpSaturation(f));
+                                        l.add(Pictura.getOpSaturation(((f + 100) / 100)));
+                                    } else if (o.startsWith("vib")) {
+                                        if (f < -100 || f > 100) {
+                                            throw new IllegalArgumentException("Invalid effect: vibrance must be between -100 and 100");
+                                        }
+                                        l.add(Pictura.getOpVibrance(f));
                                     }
                                 } else {
                                     throw new IllegalArgumentException("Invalid effect: the effect argument must be a valid number");
                                 }
-                            } // Bad parameters
+                            } 
+
+                            // Bad parameters
                             else {
                                 throw new IllegalArgumentException("Invalid effect: unknown effect type or wrong arguments \"" + o + "\"");
                             }
