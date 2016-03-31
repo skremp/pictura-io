@@ -2630,6 +2630,9 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             // decode the specified source image object
             ImageInputStream iis = null;
             ImageReader ir = null;
+            
+            int srcW = 1;
+            int srcH = 1;
 
             // We will try to read the image based on a new image input stream.
             // The image reader instance is detected by the service provider
@@ -2657,7 +2660,11 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                         }
                     }
 
-                    final long dim = ir.getWidth(0) * ir.getHeight(0);
+                    // The source image dimension in px
+                    srcW = ir.getWidth(0);
+                    srcH = ir.getHeight(0);
+                    
+                    final long dim = srcW * srcH;
 
                     // Check whether we are able to process the image
                     if (maxImageResolution > -1L && (dim > maxImageResolution)) {
@@ -2666,6 +2673,42 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                                 + "[max: " + maxImageResolution + "].");
                         return;
                     }
+                    
+                    // Scale percentage
+                    Integer scaleWidthP = getRequestedScaleWidthPercentage(req);
+                    if (scaleWidth == null && scaleWidthP != null) {
+                        scaleWidth = (int) (srcW * (scaleWidthP / 100.f));
+                    }
+                    Integer scaleHeightP = getRequestedScaleHeightPercentage(req);
+                    if (scaleHeight == null && scaleHeightP != null) {
+                        scaleHeight = (int) (srcH * (scaleHeightP / 100.f));
+                    }
+
+                    // Bounds check for ICO output format
+                    if ("ico".equals(formatName)) {
+                        if ((scaleWidth != null && scaleWidth > 256)
+                                || (scaleHeight != null && scaleHeight > 256)) {
+                            doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
+                                    "Invalid scale: the max image width and height "
+                                    + "for the requested format are 256 px");
+                            return;
+                        } else if (scaleWidth == null && scaleHeight == null
+                                && (srcW > 256 || srcH > 256)) {
+                            if (srcW > srcH) {
+                                scaleWidth = 256;
+                            } else {
+                                scaleHeight = 256;
+                            }
+                            
+                            if (scalePixelRatio != null && scalePixelRatio > 1f) {
+                                scalePixelRatio = 1f;
+                            }
+                        }
+                    }
+                    
+                    // TODO: Check output image size to prevent DoS
+                    //if (scaleForceUpscale) {
+                    //}
 
                     final long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
@@ -2746,38 +2789,6 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                     doInterrupt(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                             "The server is not able to encode the image.");
                     return;
-                }
-            }
-
-            // The source image dimension in px
-            int srcW = src.getWidth();
-            int srcH = src.getHeight();
-
-            // Scale percentage
-            Integer scaleWidthP = getRequestedScaleWidthPercentage(req);
-            if (scaleWidth == null && scaleWidthP != null) {
-                scaleWidth = (int) (srcW * (scaleWidthP / 100.f));
-            }
-            Integer scaleHeightP = getRequestedScaleHeightPercentage(req);
-            if (scaleHeight == null && scaleHeightP != null) {
-                scaleHeight = (int) (srcH * (scaleHeightP / 100.f));
-            }
-
-            // Bounds check for ICO output format
-            if ("ico".equals(formatName)) {
-                if ((scaleWidth != null && scaleWidth > 256)
-                        || (scaleHeight != null && scaleHeight > 256)) {
-                    doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
-                            "Invalid scale: the max image width and height "
-                            + "for the requested format are 256 px");
-                    return;
-                } else if (scaleWidth == null && scaleHeight == null
-                        && (srcW > 256 || srcH > 256)) {
-                    if (srcW > srcH) {
-                        scaleWidth = 256;
-                    } else {
-                        scaleHeight = 256;
-                    }
                 }
             }
 
