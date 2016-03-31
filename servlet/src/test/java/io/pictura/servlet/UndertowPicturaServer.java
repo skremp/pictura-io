@@ -23,6 +23,7 @@ import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import java.awt.AlphaComposite;
@@ -44,8 +45,14 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LoggingMXBean;
 import javax.imageio.ImageIO;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,11 +69,14 @@ public final class UndertowPicturaServer {
     private static final String HOST = "localhost";
     private static final int PORT = 8084;
 
-    private static final Level LOG_LEVEL = Level.FINER;
+    private static final Level LOG_LEVEL = Level.FINEST;
 
     private static Undertow undertow;
 
     public static void main(String[] args) throws Exception {
+        
+        final long start = System.currentTimeMillis();
+        
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$-7s [%2$s] %5$s%6$s%n");
 
@@ -104,7 +114,8 @@ public final class UndertowPicturaServer {
                 "com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi");
         servletInfo.addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
                 "io.pictura.servlet.FileResourceLocator,"
-                + "io.pictura.servlet.HttpResourceLocator");
+                + "io.pictura.servlet.HttpResourceLocator,"
+                + "io.pictura.servlet.FtpResourceLocator");
         servletInfo.addInitParam(PicturaServlet.IPARAM_REQUEST_PROCESSOR_STRATEGY,
                 "io.pictura.servlet.MetadataRequestProcessor,"
                 + "io.pictura.servlet.PDFRequestProcessor,"
@@ -118,7 +129,7 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_CAPACITY, "50");
         servletInfo.addMapping("/*");
-
+       
         DeploymentInfo deploymentInfo = deployment()
                 .setClassLoader(UndertowPicturaServer.class.getClassLoader())
                 .setDeploymentName("pictura.war")
@@ -126,7 +137,9 @@ public final class UndertowPicturaServer {
                 .setUrlEncoding("UTF-8")
                 .setResourceManager(rm)
                 .addListener(new ListenerInfo(IIOProviderContextListener.class))
-                .addInitParameter("io.pictura.servlet.LOG_LEVEL", "DEBUG")
+                .addInitParameter("io.pictura.servlet.LOG_LEVEL", "TRACE")
+                .addFilter(new FilterInfo("pictura-reques-filter", DemoServletFilter.class))
+                .addFilterUrlMapping("pictura-reques-filter", "/*", DispatcherType.REQUEST)
                 .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
@@ -157,6 +170,8 @@ public final class UndertowPicturaServer {
                 ((ConsoleHandler) handler).setLevel(LOG_LEVEL);
             }
         }
+        
+        LOG.info("PicturaIO embedded servlet started in " + (System.currentTimeMillis() - start) + " ms");
     }
 
     public static class InterceptableServlet extends PicturaPostServlet {
@@ -320,4 +335,25 @@ public final class UndertowPicturaServer {
 
     }
 
+    public static class DemoServletFilter implements Filter {
+        
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+            LOG.info("PicturaIO servlet filter initialized");
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response, 
+                FilterChain chain) throws IOException, ServletException {
+                        
+            chain.doFilter(request, response);
+        }
+
+        @Override
+        public void destroy() {
+            LOG.info("PicturaIO servlet filter destroyed");
+        }
+        
+    }
+    
 }
