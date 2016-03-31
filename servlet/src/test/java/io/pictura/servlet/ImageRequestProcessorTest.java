@@ -1616,6 +1616,22 @@ public class ImageRequestProcessorTest {
 	assertEquals(1, irp.getRequestedEffects(req).length);
 	assertTrue(irp.getRequestedEffects(req)[0] instanceof LookupOp);
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_GAM_150() {
+	System.out.println("getRequestedEffects_GAM_150");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=gam(150)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
+    }
 
     @Test
     public void testGetRequestedEffects_SAT_25() {
@@ -1631,6 +1647,54 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertEquals(1, irp.getRequestedEffects(req).length);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_SAT_125() {
+	System.out.println("getRequestedEffects_SAT_125");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=sat(125)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
+    }
+    
+    @Test
+    public void testGetRequestedEffects_VIB_25() {
+	System.out.println("getRequestedEffects_VIB_25");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=vib(25)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(1, irp.getRequestedEffects(req).length);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_VIB_125() {
+	System.out.println("getRequestedEffects_VIB_125");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=vib(125)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
     }
     
     @Test
