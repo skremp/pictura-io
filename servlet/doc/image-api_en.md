@@ -42,6 +42,7 @@ or with an optional query string as
   1. [Rotation](#rotation)
   1. [Padding](#padding)
   1. [Border](#border)
+  1. [Page](#page)
   1. [Effects](#effects)
   1. [Background](#background)
 
@@ -466,6 +467,22 @@ sizes are in the range `1 - 99`.
  `/B=5,232323/image.jpg`
 
  `/B=10,444/image.jpg`
+
+**[\[⬆\]](#table-of-contents)**
+
+## Page (Frame Index)
+
+***@since 1.2***
+
+ `N={value}`
+
+Used to extract the specified image frame from the source image (e.g. in cases
+of Animated-GIFs). Valid values are positive integers including `0`. The default 
+value is `0`.
+
+**Example**
+
+ `/N=3/image.gif`
 
 **[\[⬆\]](#table-of-contents)**
  
