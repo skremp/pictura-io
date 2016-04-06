@@ -17,6 +17,7 @@ package io.pictura.servlet;
 
 import io.pictura.servlet.URLConnectionFactory.DefaultURLConnectionFactory;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.io.BufferedInputStream;
@@ -190,6 +191,11 @@ public class ImageRequestProcessor extends IIORequestProcessor {
      */
     protected static final String QPARAM_NAME_IMAGE = "i";
 
+    /**
+     * The image frame index parameter name. 
+     */
+    protected static final String QPARAM_NAME_PAGE = "n";
+    
     /**
      * The image format parameter name. This parameter is a multi-part
      * parameter. With the image format it is possible to specify the format
@@ -622,7 +628,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                 && (getRequestedEffects(req) == null
                 || getRequestedEffects(req).length == 0)
                 && (getRequestedQuality(req) == null
-                || getRequestedQuality(req) == Quality.AUTO);
+                || getRequestedQuality(req) == Quality.AUTO)
+                && getRequestedPage(req) == null;
     }
 
     /**
@@ -682,6 +689,18 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             return str;
         }
         return null;
+    }
+    
+    /**
+     * Gets the requested image frame index (page).
+     * 
+     * @param req The related request object.
+     * @return The image frame index or <code>null</code> if the request
+     * parameter for this is not given or empty.
+     */
+    protected Integer getRequestedPage(HttpServletRequest req) {
+        return tryParseInt(req != null ? getRequestParameter(req,
+                QPARAM_NAME_PAGE) : null, null);
     }
 
     /**
@@ -2643,6 +2662,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             
             int srcW = 1;
             int srcH = 1;
+            
+            // The requested image frame index
+            Integer index = getRequestedPage(req);
+            Dimension scaleTargetSize = null;
 
             // We will try to read the image based on a new image input stream.
             // The image reader instance is detected by the service provider
@@ -2658,7 +2681,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
                     boolean gif = false;
 
-                    if ("gif".equalsIgnoreCase(ir.getFormatName())
+                    if (index != null && "gif".equalsIgnoreCase(ir.getFormatName())
                             && (formatName == null || "gif".equalsIgnoreCase(formatName))) {
                         ir.setInput(iis);
                         gif = true;
@@ -2670,9 +2693,20 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                         }
                     }
 
+                    final int numImages = ir.getNumImages(!ir.isSeekForwardOnly());
+                    
+                    if (index != null && (index < ir.getMinIndex() || 
+                            (numImages > -1 && index > numImages -1))) {                        
+                        doInterrupt(HttpServletResponse.SC_BAD_REQUEST, 
+                                "Requested frame index out of bounds");
+                        return;
+                    } else if (index == null) {
+                        index = 0;
+                    }
+                    
                     // The source image dimension in px
-                    srcW = ir.getWidth(0);
-                    srcH = ir.getHeight(0);
+                    srcW = ir.getWidth(index);
+                    srcH = ir.getHeight(index);
                     
                     final long dim = srcW * srcH;
 
@@ -2680,7 +2714,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                     if (maxImageResolution > -1L && (dim > maxImageResolution)) {
                         doInterrupt(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
                                 "The source image raw resolution (width x height) is too large "
-                                + "[max: " + maxImageResolution + "].");
+                                + "[max: " + maxImageResolution + "]");
                         return;
                     }
                     
@@ -2698,27 +2732,48 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                     if ("ico".equals(formatName)) {
                         if ((scaleWidth != null && scaleWidth > 256)
                                 || (scaleHeight != null && scaleHeight > 256)) {
+                            
                             doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
                                     "Invalid scale: the max image width and height "
                                     + "for the requested format are 256 px");
                             return;
+                            
                         } else if (scaleWidth == null && scaleHeight == null
                                 && (srcW > 256 || srcH > 256)) {
                             if (srcW > srcH) {
                                 scaleWidth = 256;
                             } else {
                                 scaleHeight = 256;
+                            }                            
+                        }
+                        
+                        // Bounds check in combination with DPR
+                        if (scalePixelRatio != null && scalePixelRatio > 1f) {
+                            if (scaleWidth != null && (scaleWidth * scalePixelRatio) > 256) {
+                                scaleWidth = 256;
                             }
-                            
-                            if (scalePixelRatio != null && scalePixelRatio > 1f) {
-                                scalePixelRatio = 1f;
+                            if (scaleHeight != null && (scaleHeight * scalePixelRatio) > 256) {
+                                scaleHeight = 256;
                             }
                         }
                     }
                     
-                    // TODO: Check output image size to prevent DoS
-                    //if (scaleForceUpscale) {
-                    //}
+                    scaleTargetSize = calculateTargetDimension(srcW, srcH, 
+                            scaleWidth != null ? scaleWidth : -1, 
+                            scaleHeight != null ? scaleHeight : -1, 
+                            scalePixelRatio != null ? scalePixelRatio : 1f, 
+                            scaleForceUpscale != null ? scaleForceUpscale : false);
+                    
+                    // Prevent us from DoS by requesting big image dimensions in cases
+                    // of force upscale
+                    if (scaleForceUpscale && scaleTargetSize != null && 
+                            ((long)scaleTargetSize.width * (long)scaleTargetSize.height > maxImageResolution)) {
+                        
+                        doInterrupt(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE,
+                                "The target image resolution (width x height) is too large "
+                                + "[max: " + maxImageResolution + "]");
+                        return;
+                    }
 
                     final long usedMemory = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
 
@@ -2745,7 +2800,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                         }
                         srcSequenceDelayTime = reader.getDelayTime();
                     } else {
-                        src = ir.read(0, ir.getDefaultReadParam());
+                        src = ir.read(index, ir.getDefaultReadParam());
                     }
 
                     if (LOG.isTraceEnabled()) {
@@ -2759,8 +2814,11 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             } catch (IOException | RuntimeException ex) {
                 if (ex instanceof SocketException
                         || ex instanceof SocketTimeoutException) {
-
                     doInterrupt(HttpServletResponse.SC_GATEWAY_TIMEOUT);
+                    return;
+                } else if (ex instanceof IndexOutOfBoundsException) {
+                    doInterrupt(HttpServletResponse.SC_BAD_REQUEST, 
+                            "Requested frame index out of bounds");
                     return;
                 } else {
                     LOG.error("Unexpected exception while try to decode the source image from \""
@@ -2904,9 +2962,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
             BufferedImage[] tmp = doProcessImageFrames(new BufferedImage[]{src},
                     trimWhiteSpaces, cropX, cropY, cropWidth, cropHeight,
-                    scaleWidth, scaleHeight, scalePixelRatio, scaleMethod,
-                    scaleMode, scaleForceUpscale, rotation, padSize, padColor, 
-                    borderSize, borderColor, ops);
+                    scaleTargetSize, scaleMethod, scaleMode, rotation, padSize, 
+                    padColor, borderSize, borderColor, ops);
 
             out = tmp.length > 0 ? tmp[0] : null;
 
@@ -2941,8 +2998,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 
                 BufferedImage[] outSequence = doProcessImageFrames(srcSequence,
                         trimWhiteSpaces, cropX, cropY, cropWidth, cropHeight,
-                        scaleWidth, scaleHeight, scalePixelRatio, scaleMethod,
-                        scaleMode, scaleForceUpscale, rotation, padSize,
+                        scaleTargetSize, scaleMethod, scaleMode, rotation, padSize,
                         padColor, borderSize, borderColor, ops);
 
                 outFrames.addAll(Arrays.asList(outSequence));
@@ -2982,9 +3038,8 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     
     private BufferedImage[] doProcessImageFrames(BufferedImage[] frames,
             Float trim, Integer cropX, Integer cropY, Integer cropWidth,
-            Integer cropHeight, Integer scaleWidth, Integer scaleHeight,
-            Float scalePixelRatio, Pictura.Method scaleMethod,
-            Pictura.Mode scaleMode, Boolean scaleForceUpscale,
+            Integer cropHeight, Dimension scaleTargetSize, 
+            Pictura.Method scaleMethod, Pictura.Mode scaleMode, 
             Pictura.Rotation rotation, Integer padSize, Color padColor,
             Integer borderSize, Color borderColor, BufferedImageOp[] effects) {
 
@@ -3008,11 +3063,10 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                 srcSTrim.flush();                
 
                 // Scale the current frame
-                BufferedImage srcSScaled = scaleImage(srcSCropped, scaleWidth != null ? scaleWidth : -1,
-                        scaleHeight != null ? scaleHeight : -1, scalePixelRatio != null ? scalePixelRatio : 1.f,
+                BufferedImage srcSScaled = scaleImage(srcSCropped, scaleTargetSize,
                         scaleMethod != null ? scaleMethod : Pictura.Method.AUTOMATIC,
                         scaleMode != null ? scaleMode : Pictura.Mode.AUTOMATIC,
-                        scaleForceUpscale, padSize != null ? padSize : -1);
+                        padSize != null ? padSize : -1);
                 srcSCropped.flush();
 
                 // Rotate the current frame
@@ -3056,43 +3110,12 @@ public class ImageRequestProcessor extends IIORequestProcessor {
         return src;
     }
 
-    private BufferedImage scaleImage(BufferedImage src, int width, int height,
-            float pixelRatio, Pictura.Method method, Pictura.Mode mode,
-            boolean forceUpscale, int padding) {
-
-        if (width > -1 || height > -1 || forceUpscale
-                || (pixelRatio > 0.f && (width > -1 || height > -1))) {
-
-            final int srcW = src.getWidth();
-            final int srcH = src.getHeight();
-
-            int targetWidth = width > -1 ? width : srcW;
-            int targetHeight = height > -1 ? height : srcH;
-
-            if (width > 0 && height == -1) {
-                float scal = (float) targetWidth / (float) srcW;
-                targetHeight = (int) (scal * srcH);
-            } else if (width == -1 && height > 0) {
-                float scal = (float) targetHeight / (float) srcH;
-                targetWidth = (int) (scal * srcW);
-            } else if (width > 0 && height > 0) {
-                targetWidth = width;
-                targetHeight = height;
-            }
-
-            if (pixelRatio > 0.f) {
-                targetWidth = (int) (targetWidth * pixelRatio);
-                targetHeight = (int) (targetHeight * pixelRatio);
-            }
-
-            if (!forceUpscale) {
-                if (targetWidth > srcW) {
-                    targetWidth = srcW;
-                }
-                if (targetHeight > srcH) {
-                    targetHeight = srcH;
-                }
-            }
+    private BufferedImage scaleImage(BufferedImage src, Dimension dim,
+            Pictura.Method method, Pictura.Mode mode, int padding) {
+        
+        if (dim != null) {
+            int targetWidth = dim.width;
+            int targetHeight = dim.height;
 
             if (padding > 0) {
                 int padSize = 2 * padding;
@@ -3105,7 +3128,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
         }
         return src;
     }
-
+    
     private BufferedImage rotateImage(BufferedImage src, Pictura.Rotation rotation) {
         if (rotation != null) {
             return Pictura.rotate(src, rotation);
@@ -3134,6 +3157,45 @@ public class ImageRequestProcessor extends IIORequestProcessor {
         return src;
     }
 
+    private static Dimension calculateTargetDimension(int srcWidth, int srcHeight, 
+            int width, int height, float pixelRatio, boolean forceUpscale) {
+        
+        if (width > -1 || height > -1 || forceUpscale
+                || (pixelRatio > 0.f && (width > -1 || height > -1))) {
+
+            int targetWidth = width > -1 ? width : srcWidth;
+            int targetHeight = height > -1 ? height : srcHeight;
+
+            if (width > 0 && height == -1) {
+                float scal = (float) targetWidth / (float) srcWidth;
+                targetHeight = (int) (scal * srcHeight);
+            } else if (width == -1 && height > 0) {
+                float scal = (float) targetHeight / (float) srcHeight;
+                targetWidth = (int) (scal * srcWidth);
+            } else if (width > 0 && height > 0) {
+                targetWidth = width;
+                targetHeight = height;
+            }
+
+            if (pixelRatio > 0.f) {
+                targetWidth = (int) (targetWidth * pixelRatio);
+                targetHeight = (int) (targetHeight * pixelRatio);
+            }
+
+            if (!forceUpscale) {
+                if (targetWidth > srcWidth) {
+                    targetWidth = srcWidth;
+                }
+                if (targetHeight > srcHeight) {
+                    targetHeight = srcHeight;
+                }
+            }
+
+            return new Dimension(targetWidth, targetHeight);
+        }        
+        return null;
+    }
+    
     /**
      * Returns the given string as integer or if the string is not a valid
      * integer returns the given default value.
