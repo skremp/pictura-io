@@ -957,6 +957,54 @@ public class ImageRequestProcessorTest {
     }
     
     @Test
+    public void testGetRequestedBorderColor() {
+	System.out.println("getRequestedBorderColor");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,444441/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(68, 68, 65), irp.getRequestedBorderColor(req));
+    }
+    
+    @Test
+    public void testGetRequestedBorderColor_2() {
+	System.out.println("getRequestedBorderColor_2");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,333/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(51, 51, 51), irp.getRequestedBorderColor(req));
+    }
+    
+    @Test
+    public void testGetRequestedBorderSize() {
+	System.out.println("getRequestedBorderSize");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,444444/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Integer(11), irp.getRequestedBorderSize(req));
+    }
+    
+    @Test
     public void testGetRequestedTrimTolerance() {
 	System.out.println("getRequestedTrimTolerance");
 
@@ -1002,6 +1050,22 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	irp.getRequestedTrimTolerance(req);
+    }
+    
+    @Test
+    public void testGetRequestedPage() {
+	System.out.println("getRequestedPage");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/t=2.1/s=w120,h60/c=x5,y15,w100,h50/n=1/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Integer(1), irp.getRequestedPage(req));
     }
     
     @Test
