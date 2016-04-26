@@ -24,6 +24,12 @@ _TBD_
   and gamma effects.
 * Fixed unobserved maximum image resolution in cases of up-scaling.
 
+## 1.1.1.Final
+
+_2016-04-26_
+
+* Fixed possible servlet ID collision.
+
 ## 1.1.0.Final
 
 _2016-02-06_
