@@ -108,7 +108,7 @@ pictura.js about it using the `reload()` method:
     var img = document.createElement('img');
     img.setAttribute('data-src', 'image.jpg');
     document.documentElement.appendChild(img); 
-    // load image using responsive.io    
+    // load image
     PicturaIO.reload(img);
 </script>
 ```
