@@ -17,7 +17,7 @@ _TBD_
 * Added new FTP resource locator.
 * Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
   8-digit values, to handle RGB and ARGB color values, are supported.
-* Added support for the upcoming Client Hint header *Save-Data".
+* Added support for the upcoming Client Hint header *Save-Data*.
 * Added new vibrance effect filter.
 * Fixed missing DPR check in cases of ICO output files.
 * Fixed failed bounce check for effect filter arguments in cases of saturation 
