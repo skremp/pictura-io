@@ -84,7 +84,9 @@ import io.pictura.servlet.annotation.PicturaImageInterceptor;
 import io.pictura.servlet.annotation.PicturaConfigFile;
 import io.pictura.servlet.annotation.PicturaParamsInterceptor;
 import io.pictura.servlet.annotation.PicturaThreadFactory;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -736,6 +738,10 @@ public class PicturaServlet extends HttpCacheServlet {
     private static final String[] LOCALHOST_IP_ADDRESSES = new String[]{
 	"127.0.0.1", "::1"
     };
+    
+    // Global set to store all registered servlet IDs
+    private static final Set<String> REGISTERED_SERVLET_IDS = 
+            Collections.synchronizedSet(new HashSet<String>(2));
 
     // Internal servlet id
     private final String servletId;
@@ -864,9 +870,6 @@ public class PicturaServlet extends HttpCacheServlet {
 
     // URL connection factory to fetch external resources
     private URLConnectionFactory urlConnectionFactory;
-
-    // Custom image processing parameter name mapping
-    private Map<String, String> qNameParamMap;
     
     // MXBean registration
     private ObjectName mxBeanServletObjName;
@@ -876,8 +879,12 @@ public class PicturaServlet extends HttpCacheServlet {
      * Creates a new <code>PicturaServlet</code> instance.
      */
     public PicturaServlet() {
-	servletId = randomString(new Random(System.currentTimeMillis()),
+        String tryServletId;
+        do {
+            tryServletId = randomString(new Random(System.currentTimeMillis()),
 		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 16);
+        } while (REGISTERED_SERVLET_IDS.contains(tryServletId));        
+        servletId = tryServletId;
     }
 
     @Override
