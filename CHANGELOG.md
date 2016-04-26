@@ -8,6 +8,8 @@ _TBD_
   orientation provided by Exif metadata.
 * Added new image parameter *P* and *B* to apply padding and border around the 
   edges of an image.
+* Added new image parameter *N* to extract a specified image frame from a
+  sequence of *1..n* image frames (e.g. Animated-GIFs).
 * Added new resize mode *CROP*.
 * Added new convenience methods to load and save the current http image cache.
   Among the existing methods, now it is also possible to load and save cache 
@@ -15,6 +17,12 @@ _TBD_
 * Added new FTP resource locator.
 * Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
   8-digit values, to handle RGB and ARGB color values, are supported.
+* Added support for the upcoming Client Hint header *Save-Data".
+* Added new vibrance effect filter.
+* Fixed missing DPR check in cases of ICO output files.
+* Fixed failed bounce check for effect filter arguments in cases of saturation 
+  and gamma effects.
+* Fixed unobserved maximum image resolution in cases of up-scaling.
 
 ## 1.1.0.Final
 
