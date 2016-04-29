@@ -2,7 +2,7 @@
 
 ## 1.1.2.Final
 
-_2016-04-26_
+_2016-04-29_
 
 * Fixed limited support for various protocols of external resources.
 
