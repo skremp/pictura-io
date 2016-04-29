@@ -517,7 +517,7 @@ Valid values are `true` or `false`.
 ### Usage
 
 > Keep sure, the `io.pictura.servlet.ClientHintRequestProcessor` is used
-> otherwise the cookie is ignored at server site.
+> otherwise the cookie is ignored at server side.
 
 ```html
 <html>
@@ -534,7 +534,7 @@ Valid values are `true` or `false`.
 </html>
 ```
 
-Now, the script will automatically set a client site cookie with alternative
+Now, the script will automatically set a client side cookie with alternative
 client hint values (device pixel ratio, device width, device height, WebP
 and JPEG 2000 support).
 

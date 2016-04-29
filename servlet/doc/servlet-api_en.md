@@ -535,7 +535,7 @@ public class CustomConnectionFactory implements URLConnectionFactory {
 
 ### scriptEnabled
 
-If set to `true` the client site JavaScript library is available by the
+If set to `true` the client side JavaScript library is available by the
 servlet instance. The default value is `true`.
 
 **[\[⬆\]](#table-of-contents)**
