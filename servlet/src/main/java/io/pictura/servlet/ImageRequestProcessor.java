@@ -1411,166 +1411,157 @@ public class ImageRequestProcessor extends IIORequestProcessor {
     // Parses the request URI from the given servlet request and creates
     // a key value map with all request parameters.
     private Map<String, String> getRequestParameters(HttpServletRequest req) {
-	if (parameterMap != null) {
-	    return parameterMap;
-	}
+        if (parameterMap != null) {
+            return parameterMap;
+        }       
 
-	Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
 
-	String ctxPath = req.getContextPath();
-	String reqUri = req.getRequestURI();
-	if (!"/".equals(ctxPath) && ctxPath != null) {
-	    reqUri = reqUri.replaceFirst(ctxPath, "");
-	}
+        String ctxPath = req.getContextPath();
+        String reqUri = req.getRequestURI();
+        if (!"/".equals(ctxPath) && ctxPath != null) {
+            reqUri = reqUri.replaceFirst(ctxPath, "");
+        }
 
-	String reqPath = reqUri;
-	String reqSourcePath = null;
+        String reqPath = reqUri;
+        String reqSourcePath = null;
 
-	if (reqPath.contains("http://") || reqPath.contains("https://")
-		|| reqPath.contains("http%3A%2F%2F") || reqPath.contains("https%3A%2F%2F")
-		|| reqPath.contains("ftp://") || reqPath.contains("ftp%3A%2F%2F")) {
+        boolean urlEnc = false;
+        if (reqPath.contains("://") || (urlEnc = reqPath.contains("%3A%2F%2F"))) {
+            
+            int pos = reqPath.indexOf(urlEnc ? "%3A%2F%2F" : "://");
+            if (pos > 0) {
+                
+                int i = pos;
+                char[] reqPathArr = reqPath.toCharArray();
+                                
+                while (i > 0) {
+                    if (reqPathArr[i] == '/') {
+                        break;
+                    }
+                    i--;
+                }
+                
+                reqSourcePath = reqPath.substring(++i);
+                if (urlEnc) {
+                    try {
+                        reqSourcePath = URLDecoder.decode(reqSourcePath, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                reqPath = reqPath.substring(0, i);
+                if (reqPath.endsWith("/")) {
+                    reqPath = reqPath.substring(0, reqPath.length() - 1);
+                }
+            }
+        }
+        
+        String imgSourcePath = null;
 
-	    boolean encoded = false;
+        // Remove the servlet path only if the calculated request path
+        // is not equals to the servlet path (char by char)
+        if (!req.getServletPath().equals(reqPath)) {
+            reqPath = reqPath.replaceFirst(req.getServletPath(), "");
+        }
 
-	    int pos = reqPath.indexOf("http://");
-	    if (pos == -1) {
-		pos = reqPath.indexOf("https://");
-	    }
-	    if (pos == -1) {
-		pos = reqPath.indexOf("http%3A%2F%2F");
-		encoded = true;
-	    }
-	    if (pos == -1) {
-		pos = reqPath.indexOf("https%3A%2F%2F");
-		encoded = true;
-	    }
-	    if (pos == -1) {
-		pos = reqPath.indexOf("ftp://");
-	    }
-	    if (pos == -1) {
-		pos = reqPath.indexOf("ftp%3A%2F%2F");
-		encoded = true;
-	    }
+        // A valid request starts always with an "/"
+        if (reqPath.startsWith("/")) {
+            reqPath = reqPath.substring(1);
 
-	    reqSourcePath = reqPath.substring(pos);
-	    if (encoded) {
-		try {
-		    reqSourcePath = URLDecoder.decode(reqSourcePath, "UTF-8");
-		} catch (UnsupportedEncodingException ex) {
-		    throw new RuntimeException(ex);
-		}
-	    }
-	    reqPath = reqPath.substring(0, pos);
-	    if (reqPath.endsWith("/")) {
-		reqPath = reqPath.substring(0, reqPath.length() - 1);
-	    }
-	}
+            String[] params = reqPath.split("/");
+            ArrayList<String> sourceParts = new ArrayList<>();
 
-	String imgSourcePath = null;
+            for (String param : params) {
+                if (param == null || param.isEmpty()) {
+                    continue;
+                }
 
-	// Remove the servlet path only if the calculated request path
-	// is not equals to the servlet path (char by char)
-	if (!req.getServletPath().equals(reqPath)) {
-	    reqPath = reqPath.replaceFirst(req.getServletPath(), "");
-	}
+                if (P_PATH_PARAMETER.matcher(param).matches()) {
 
-	// A valid request starts always with an "/"
-	if (reqPath.startsWith("/")) {
-	    reqPath = reqPath.substring(1);
+                    String[] nameValue = param.split("=");
 
-	    String[] params = reqPath.split("/");
-	    ArrayList<String> sourceParts = new ArrayList<>();
+                    // Always the first param wins if there are multiple
+                    // parameters from the same name present.
+                    if (nameValue.length > 0) {
+                        if (!map.containsKey(nameValue[0].toLowerCase(Locale.ENGLISH))) {
+                            map.put(nameValue[0].toLowerCase(Locale.ENGLISH), nameValue.length > 1
+                                    ? nameValue[1].toLowerCase(Locale.ENGLISH) : null);
+                        } else {
+                            // Try to concat
+                            final String val = map.get(nameValue[0].toLowerCase(Locale.ENGLISH));
+                            if (val == null) {
+                                map.put(nameValue[0].toLowerCase(Locale.ENGLISH),
+                                        nameValue.length > 1
+                                                ? nameValue[1].toLowerCase(Locale.ENGLISH) : null);
+                            } else if (nameValue[1].length() > 1) {
+                                // FIXME: Does not work with effect parameter
+                                if (!val.contains(nameValue[1].toLowerCase(Locale.ENGLISH))) {
+                                    map.put(nameValue[0].toLowerCase(Locale.ENGLISH),
+                                            val + "," + nameValue[1].toLowerCase(Locale.ENGLISH));
+                                } else {
+                                    throw new IllegalArgumentException(
+                                            "Duplicated parameter: " + nameValue[0]);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    sourceParts.add(param);
+                }
+            }
 
-	    for (String param : params) {
-		if (param == null || param.isEmpty()) {
-		    continue;
-		}
+            // Rebuild the requested image source path from the splitted
+            // URL parts.
+            if (reqSourcePath == null) {
+                StringBuilder source = new StringBuilder();
+                for (int j = 0; j < sourceParts.size(); j++) {
+                    source.append(sourceParts.get(j));
+                    if (j < sourceParts.size() - 1) {
+                        source.append("/");
+                    }
+                }
+                imgSourcePath = source.toString();
+                if (imgSourcePath.contains("%3F")) { // --> ?
+                    try {
+                        imgSourcePath = URLDecoder.decode(imgSourcePath, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            } else {
+                imgSourcePath = reqSourcePath;
+            }
+        }
 
-		if (P_PATH_PARAMETER.matcher(param).matches()) {
+        map.put(QPARAM_NAME_IMAGE, (imgSourcePath != null
+                ? imgSourcePath : reqSourcePath));
 
-		    String[] nameValue = param.split("=");
+        if (req.getAttribute("io.pictura.servlet.ENABLE_QUERY_PARAMS") instanceof Boolean
+                && (Boolean) req.getAttribute("io.pictura.servlet.ENABLE_QUERY_PARAMS")) {
+            // Test whether the request contains query parameters. If yes, we will
+            // add the parameters to the parameter map for this request but only
+            // parameters which are not already present in the map.
+            Enumeration<String> enumNames = req.getParameterNames();
+            while (enumNames.hasMoreElements()) {
+                String name = enumNames.nextElement();
+                if (map.get(name) == null) {
+                    String value = req.getParameter(name);
+                    map.put(name, value);
+                } else {
+                    throw new IllegalArgumentException("Duplicate parameter: " + name);
+                }
+            }
+        }
 
-		    // Always the first param wins if there are multiple
-		    // parameters from the same name present.
-		    if (nameValue.length > 0) {
-			if (!map.containsKey(nameValue[0].toLowerCase(Locale.ENGLISH))) {
-			    map.put(nameValue[0].toLowerCase(Locale.ENGLISH), nameValue.length > 1
-				    ? nameValue[1].toLowerCase(Locale.ENGLISH) : null);
-			} else {
-			    // Try to concat
-			    final String val = map.get(nameValue[0].toLowerCase(Locale.ENGLISH));
-			    if (val == null) {
-				map.put(nameValue[0].toLowerCase(Locale.ENGLISH),
-					nameValue.length > 1
-						? nameValue[1].toLowerCase(Locale.ENGLISH) : null);
-			    } else if (nameValue[1].length() > 1) {
-				// FIXME: Does not work with effect parameter
-				if (!val.contains(nameValue[1].toLowerCase(Locale.ENGLISH))) {
-				    map.put(nameValue[0].toLowerCase(Locale.ENGLISH),
-					    val + "," + nameValue[1].toLowerCase(Locale.ENGLISH));
-				} else {
-				    throw new IllegalArgumentException(
-					    "Duplicated parameter: " + nameValue[0]);
-				}
-			    }
-			}
-		    }
-		} else {
-		    sourceParts.add(param);
-		}
-	    }
-
-	    // Rebuild the requested image source path from the splitted
-	    // URL parts.
-	    if (reqSourcePath == null) {
-		StringBuilder source = new StringBuilder();
-		for (int j = 0; j < sourceParts.size(); j++) {
-		    source.append(sourceParts.get(j));
-		    if (j < sourceParts.size() - 1) {
-			source.append("/");
-		    }
-		}
-		imgSourcePath = source.toString();
-		if (imgSourcePath.contains("%3F")) { // --> ?
-		    try {
-			imgSourcePath = URLDecoder.decode(imgSourcePath, "UTF-8");
-		    } catch (UnsupportedEncodingException ex) {
-			throw new RuntimeException(ex);
-		    }
-		}
-	    } else {
-		imgSourcePath = reqSourcePath;
-	    }
-	}
-
-	map.put(QPARAM_NAME_IMAGE, (imgSourcePath != null
-		? imgSourcePath : reqSourcePath));
-
-	if (req.getAttribute("io.pictura.servlet.ENABLE_QUERY_PARAMS") instanceof Boolean
-		&& (Boolean) req.getAttribute("io.pictura.servlet.ENABLE_QUERY_PARAMS")) {
-	    // Test whether the request contains query parameters. If yes, we will
-	    // add the parameters to the parameter map for this request but only
-	    // parameters which are not already present in the map.
-	    Enumeration<String> enumNames = req.getParameterNames();
-	    while (enumNames.hasMoreElements()) {
-		String name = enumNames.nextElement();
-		if (map.get(name) == null) {
-		    String value = req.getParameter(name);
-		    map.put(name, value);
-		} else {
-		    throw new IllegalArgumentException("Duplicate parameter: " + name);
-		}
-	    }
-	}
-
-	// Parse combined parameters (if present)
-	parseRequestParamFormat(map);
-	parseRequestParamCompression(map);
-	parseRequestParamScale(map);
-	parseRequestParamCrop(map);
-		
-	return (parameterMap = !hasParamsInterceptor() ? map : 
-		getParamsInterceptor().intercept(map, req));
+        // Parse combined parameters (if present)
+        parseRequestParamFormat(map);
+        parseRequestParamCompression(map);
+        parseRequestParamScale(map);
+        parseRequestParamCrop(map);
+        
+        return (parameterMap = !hasParamsInterceptor() ? map
+                : getParamsInterceptor().intercept(map, req));
     }
 
     // Precompiled format parameter patterns

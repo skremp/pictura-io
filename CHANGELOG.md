@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.2.Final
+
+_2016-04-26_
+
+* Fixed limited support for various protocols of external resources.
+
 ## 1.1.1.Final
 
 _2016-04-26_
