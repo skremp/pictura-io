@@ -1,4 +1,6 @@
 ![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)
+![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
+[![Release](https://jitpack.io/v/skremp/pictura-io.svg)](https://jitpack.io/#skremp/pictura-io)
 
 # PicturaIO Image Servlet
 
@@ -41,10 +43,6 @@ That's all!
 ## Latest
 
 PicturaIO **1.1.2.Final** is released (Apr. 29th, 2016).
-
-Master branch build status:
-
-![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
 
 ## Build
 
