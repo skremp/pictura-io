@@ -6,8 +6,6 @@ To begin creating PicturaIO URLs programmatically, simply add a dependency to
 your project POM if you have a Maven project or add the jar to your project's 
 classpath and import the PicturaIO Builder library.
 
-***@since 1.2***
-
 ## Table of Contents
 
   1. [Basic Usage](#basic-usage)
@@ -74,7 +72,7 @@ import ...
 public class Example {
 
     public static void main(String... args) throws Exception {
-        URLBuilder builder = new URLBuilder("http://localhost:8084/img1", "http://localhost:8084/img2")
+        URLBuilder builder = new URLBuilder("http://localhost:8084/img1", "http://localhost:9084/img2")
                 .setImagePath("lenna.png")
                 .setImageParameter("s", "w320")
                 .joinImageParameter("s", "dpr2");
@@ -90,7 +88,7 @@ The example above prints out:
 
 ```
 http://localhost:8084/img1/s=w320,dpr2/lenna.png
-http://localhost:8084/img2/s=w320,dpr2/lenna.png
+http://localhost:9084/img2/s=w320,dpr2/lenna.png
 http://localhost:8084/img1/s=w320,dpr2/lenna.png
 ```
 
@@ -108,7 +106,7 @@ import ...
 public class Example {
 
     public static void main(String... args) throws Exception {
-        URLBuilder builder = new URLBuilder("http://localhost:8084/img1", "http://localhost:8084/img2")
+        URLBuilder builder = new URLBuilder("http://localhost:8084/img1", "http://localhost:9084/img2")
                 .setImagePath("lenna.png")
                 .setImageParameter("s", "w320")
                 .joinImageParameter("s", "dpr2");
@@ -130,7 +128,7 @@ The example above prints out:
 
 ```
 http://localhost:8084/img1/s=w320,dpr2/lenna.png
-http://localhost:8084/img2/f=webp/lenna.gif
+http://localhost:9084/img2/f=webp/lenna.gif
 ```
 
 **[\[⬆\]](#table-of-contents)**
