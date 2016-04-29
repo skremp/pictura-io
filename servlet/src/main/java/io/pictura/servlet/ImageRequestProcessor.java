@@ -1611,46 +1611,37 @@ public class ImageRequestProcessor extends IIORequestProcessor {
         String reqPath = reqUri;
         String reqSourcePath = null;
 
-        if (reqPath.contains("http://") || reqPath.contains("https://")
-                || reqPath.contains("http%3A%2F%2F") || reqPath.contains("https%3A%2F%2F")
-                || reqPath.contains("ftp://") || reqPath.contains("ftp%3A%2F%2F")) {
-
-            boolean encoded = false;
-
-            int pos = reqPath.indexOf("http://");
-            if (pos == -1) {
-                pos = reqPath.indexOf("https://");
-            }
-            if (pos == -1) {
-                pos = reqPath.indexOf("http%3A%2F%2F");
-                encoded = true;
-            }
-            if (pos == -1) {
-                pos = reqPath.indexOf("https%3A%2F%2F");
-                encoded = true;
-            }
-            if (pos == -1) {
-                pos = reqPath.indexOf("ftp://");
-            }
-            if (pos == -1) {
-                pos = reqPath.indexOf("ftp%3A%2F%2F");
-                encoded = true;
-            }
-
-            reqSourcePath = reqPath.substring(pos);
-            if (encoded) {
-                try {
-                    reqSourcePath = URLDecoder.decode(reqSourcePath, "UTF-8");
-                } catch (UnsupportedEncodingException ex) {
-                    throw new RuntimeException(ex);
+        boolean urlEnc = false;
+        if (reqPath.contains("://") || (urlEnc = reqPath.contains("%3A%2F%2F"))) {
+            
+            int pos = reqPath.indexOf(urlEnc ? "%3A%2F%2F" : "://");
+            if (pos > 0) {
+                
+                int i = pos;
+                char[] reqPathArr = reqPath.toCharArray();
+                                
+                while (i > 0) {
+                    if (reqPathArr[i] == '/') {
+                        break;
+                    }
+                    i--;
+                }
+                
+                reqSourcePath = reqPath.substring(++i);
+                if (urlEnc) {
+                    try {
+                        reqSourcePath = URLDecoder.decode(reqSourcePath, "UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                reqPath = reqPath.substring(0, i);
+                if (reqPath.endsWith("/")) {
+                    reqPath = reqPath.substring(0, reqPath.length() - 1);
                 }
             }
-            reqPath = reqPath.substring(0, pos);
-            if (reqPath.endsWith("/")) {
-                reqPath = reqPath.substring(0, reqPath.length() - 1);
-            }
         }
-
+        
         String imgSourcePath = null;
 
         // Remove the servlet path only if the calculated request path
