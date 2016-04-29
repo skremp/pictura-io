@@ -44,5 +44,4 @@ hs_err_pid*
 !/servlet/etc/webp/webp-imageio.jar
 
 server
-builder
 sandbox

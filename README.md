@@ -40,7 +40,7 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.1.0.Final** is released (Feb. 6th, 2016).
+PicturaIO **1.2.0.Final** is released (Feb. 6th, 2016).
 
 Master branch build status:
 
@@ -315,6 +315,7 @@ For a more complete set of documentation, go to
  1. [JS Client Side API Reference](servlet/doc/js-api_en.md)
  1. [Palette CSS API Reference](servlet/doc/pcss-api_en.md)
  1. [Placeholder Image API Reference](servlet/doc/placeholder-api_en.md)
+ 1. [URL Builder API Reference](builder/doc/builder-api_en.md)
 
 ## FAQ
 
