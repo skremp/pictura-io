@@ -336,11 +336,11 @@ For a more complete set of documentation, go to
 
 ### Latest version 1.1.x
 
-* [pictura-servlet-1.2.2.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.1.2.Final.pom)
+* [pictura-servlet-1.2.2.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.1.2.Final.jar)
 
 ### Latest version 1.0.x
 
-* [pictura-servlet-1.0.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.0.2.Final.pom)
+* [pictura-servlet-1.0.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.0.2.Final.jar)
  
 ## FAQ
 
