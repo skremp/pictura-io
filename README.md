@@ -1,6 +1,4 @@
-![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)
-![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
-[![Release](https://jitpack.io/v/skremp/pictura-io.svg)](https://jitpack.io/#skremp/pictura-io)
+[![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)](LICENSE)
 
 # PicturaIO Image Servlet
 
@@ -43,6 +41,10 @@ That's all!
 ## Latest
 
 PicturaIO **1.1.2.Final** is released (Apr. 29th, 2016).
+
+Master branch build status: 
+
+![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
 
 ## Build
 
@@ -90,13 +92,33 @@ Maven based project, append the dependency
 
 to the project's `pom.xml`.
 
-With Gradle append
-
-```groovy
-compile 'io.pictura:pictura-servlet:{VERSION}'
-```
-
-to the `build.gradle`.
+> **Note**: This requires an installation of the artifact in your local Maven
+> repository, because the project is currently not available via Central Maven. 
+> Alternatively you can use a reference from **JitPack** to get this Git project 
+> into your build.
+>
+> [![Release](https://jitpack.io/v/skremp/pictura-io.svg)](https://jitpack.io/#skremp/pictura-io)
+> 
+> **Step 1**: Add the JitPack repository to your build file
+>
+> ```xml
+> <repositories>
+>     <repository>
+>         <id>jitpack.io</id>
+>         <url>https://jitpack.io</url>
+>     </repository>
+> </repositories>
+> ```
+>
+> **Step 2**: Add the dependency
+>
+> ```xml
+> <dependency>
+>     <groupId>com.github.skremp.pictura-io</groupId>
+>     <artifactId>pictura-servlet</artifactId>
+>     <version>{VERSION}</version>
+> </dependency>
+> ```
 
 Next, to `WEB-INF/web.xml` add
 
