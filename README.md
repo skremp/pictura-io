@@ -253,24 +253,24 @@ public class UndertowPicturaServer {
         ResourceManager resourceManager = ...
 
         DeploymentInfo deploymentInfo = deployment()
-		.setClassLoader(UndertowServletContainerTest.class.getClassLoader())
-		.setDeploymentName("pictura.war")
-		.setContextPath("/pictura")
-		.setUrlEncoding("UTF-8")
+                .setClassLoader(UndertowServletContainerTest.class.getClassLoader())
+                .setDeploymentName("pictura.war")
+                .setContextPath("/pictura")
+                .setUrlEncoding("UTF-8")
                 .setResourceManager(resourceManager)
-		.addListener(new ListenerInfo(IIOProviderContextListener.class))
-		.addServlet(servletInfo);
+                .addListener(new ListenerInfo(IIOProviderContextListener.class))
+                .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
-	deploymentManager.deploy();
+        deploymentManager.deploy();
         
         PathHandler path = Handlers.path(Handlers.redirect("/pictura"))
 		.addPrefixPath("/pictura", deploymentManager.start());
 
         Undertow undertow = Undertow.builder()
-		.addHttpListener(8080, "localhost")
-		.setHandler(path)
-		.build();
+                .addHttpListener(8080, "localhost")
+                .setHandler(path)
+                .build();
 	undertow.start();
     }
 }
