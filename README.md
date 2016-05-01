@@ -1,4 +1,7 @@
-[![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)](LICENSE)
+[![License Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-lightgrey.svg)](LICENSE)
+![JDK 7+](https://img.shields.io/badge/JDK-7+-lightgrey.svg)
+![OpenJDK 7+](https://img.shields.io/badge/OpenJDK-7+-lightgrey.svg)
+![Servlet API 3+](https://img.shields.io/badge/Servlet%20API-3+-lightgrey.svg)
 
 # PicturaIO Image Servlet
 
