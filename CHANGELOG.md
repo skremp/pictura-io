@@ -1,10 +1,17 @@
 # Change Log
 
+## 1.1.3.Final
+
+_2016-05-20_
+
+* Fixed missing support for *DELETE* requests a cache instance is defined.
+
 ## 1.1.2.Final
 
 _2016-04-29_
 
-* Fixed limited support for various protocols of external resources.
+* Fixed limited support for various protocols of external resources. See also
+  [Amazon S3 Resource Locator Example](https://github.com/skremp/pictura-io/wiki/Amazon-S3-Resource-Locator-Example).
 
 ## 1.1.1.Final
 
