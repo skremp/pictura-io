@@ -125,9 +125,15 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
     }
     
     /**
-     * Sets automatically an requested width if nothing else was specified by
+     * Sets automatically the requested width if nothing else was specified by
      * the user and the client hint resource width and/or device width header is
-     * present as request header.
+     * present as request header. 
+     * <p>
+     * <b>Note</b>: In case where a client hint width is available but the 
+     * user has specified an image height with the default path parameter
+     * ({@link #getRequestedScaleHeight(javax.servlet.http.HttpServletRequest)}),
+     * only, this method returns <code>null</code>.
+     * </p>
      *
      * @param req The request object.
      *

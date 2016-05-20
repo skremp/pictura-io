@@ -1,4 +1,6 @@
-![License Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-lightgrey.svg)
+[![License Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-lightgrey.svg)](LICENSE)
+![Java 7+](https://img.shields.io/badge/Java-7+-lightgrey.svg)
+![Servlet API 3+](https://img.shields.io/badge/Servlet%20API-3+-lightgrey.svg)
 
 # PicturaIO Image Servlet
 
@@ -40,9 +42,9 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.1.1.Final** is released (Apr. 26th, 2016).
+PicturaIO **1.1.2.Final** is released (Apr. 29th, 2016).
 
-Master branch build status:
+Master branch build status: 
 
 ![CI](https://travis-ci.org/skremp/pictura-io.svg?branch=master)
 
@@ -92,13 +94,33 @@ Maven based project, append the dependency
 
 to the project's `pom.xml`.
 
-With Gradle append
-
-```groovy
-compile 'io.pictura:pictura-servlet:{VERSION}'
-```
-
-to the `build.gradle`.
+> **Note**: This requires an installation of the artifact in your local Maven
+> repository, because the project is currently not available via Central Maven. 
+> Alternatively you can use a reference from **JitPack** to get this Git project 
+> into your build.
+>
+> [![Release](https://jitpack.io/v/skremp/pictura-io.svg)](https://jitpack.io/#skremp/pictura-io)
+> 
+> **Step 1**: Add the JitPack repository to your build file
+>
+> ```xml
+> <repositories>
+>     <repository>
+>         <id>jitpack.io</id>
+>         <url>https://jitpack.io</url>
+>     </repository>
+> </repositories>
+> ```
+>
+> **Step 2**: Add the dependency
+>
+> ```xml
+> <dependency>
+>     <groupId>com.github.skremp.pictura-io</groupId>
+>     <artifactId>pictura-servlet</artifactId>
+>     <version>{VERSION}</version>
+> </dependency>
+> ```
 
 Next, to `WEB-INF/web.xml` add
 
@@ -233,24 +255,24 @@ public class UndertowPicturaServer {
         ResourceManager resourceManager = ...
 
         DeploymentInfo deploymentInfo = deployment()
-		.setClassLoader(UndertowServletContainerTest.class.getClassLoader())
-		.setDeploymentName("pictura.war")
-		.setContextPath("/pictura")
-		.setUrlEncoding("UTF-8")
+                .setClassLoader(UndertowServletContainerTest.class.getClassLoader())
+                .setDeploymentName("pictura.war")
+                .setContextPath("/pictura")
+                .setUrlEncoding("UTF-8")
                 .setResourceManager(resourceManager)
-		.addListener(new ListenerInfo(IIOProviderContextListener.class))
-		.addServlet(servletInfo);
+                .addListener(new ListenerInfo(IIOProviderContextListener.class))
+                .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
-	deploymentManager.deploy();
+        deploymentManager.deploy();
         
         PathHandler path = Handlers.path(Handlers.redirect("/pictura"))
 		.addPrefixPath("/pictura", deploymentManager.start());
 
         Undertow undertow = Undertow.builder()
-		.addHttpListener(8080, "localhost")
-		.setHandler(path)
-		.build();
+                .addHttpListener(8080, "localhost")
+                .setHandler(path)
+                .build();
 	undertow.start();
     }
 }
@@ -312,6 +334,16 @@ For a more complete set of documentation, go to
  1. [Palette CSS API Reference](servlet/doc/pcss-api_en.md)
  1. [Placeholder Image API Reference](servlet/doc/placeholder-api_en.md)
 
+## Prebuilt Binaries
+
+### Latest version 1.1.x
+
+* [pictura-servlet-1.1.2.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.1.2.Final.jar)
+
+### Latest version 1.0.x
+
+* [pictura-servlet-1.0.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.0.3.Final/pictura-servlet-1.0.3.Final.jar)
+ 
 ## FAQ
 
 Here is a list of frequently asked questions.
