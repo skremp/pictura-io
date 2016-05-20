@@ -1947,6 +1947,10 @@ public class PicturaServlet extends HttpCacheServlet {
     /**
      * Indicates whether the given request method is supported by this servlet
      * or not.
+     * <p>
+     * As default only "GET" requests are supported or if an {@link HttpCache}
+     * is defined (see {@link #getHttpCache()} additionally "DELETE" requests.
+     * </p>
      *
      * @param method The method to test.
      *
@@ -1954,7 +1958,8 @@ public class PicturaServlet extends HttpCacheServlet {
      * <code>false</code>.
      */
     protected boolean isMethodSupported(String method) {
-	return "GET".equalsIgnoreCase(method);
+	return "GET".equalsIgnoreCase(method) ||
+                ("DELETE".equalsIgnoreCase(method) && getHttpCache() != null);
     }
     
     /**

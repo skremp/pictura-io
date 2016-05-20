@@ -70,6 +70,15 @@ public class PicturaServletTest {
     public void testIsRequestMethodSupported_DELETE() {
 	assertFalse((new PicturaServlet()).isMethodSupported("DELETE"));
     }
+    
+    @Test
+    public void testIsRequestMethodSupported_DELETE2() {
+        HttpCache cache = mock(HttpCache.class);
+        PicturaServlet servlet = new PicturaServlet();
+        servlet.setHttpCache(cache);
+        
+	assertTrue(servlet.isMethodSupported("DELETE"));
+    }
 
     @Test
     public void testIsRequestMethodSupported_PUT() {
