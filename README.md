@@ -1,6 +1,5 @@
 [![License Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-lightgrey.svg)](LICENSE)
-![JDK 7+](https://img.shields.io/badge/JDK-7+-lightgrey.svg)
-![OpenJDK 7+](https://img.shields.io/badge/OpenJDK-7+-lightgrey.svg)
+![Java 7+](https://img.shields.io/badge/Java-7+-lightgrey.svg)
 ![Servlet API 3+](https://img.shields.io/badge/Servlet%20API-3+-lightgrey.svg)
 
 # PicturaIO Image Servlet
@@ -343,7 +342,7 @@ For a more complete set of documentation, go to
 
 ### Latest version 1.0.x
 
-* [pictura-servlet-1.0.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.0.2.Final.jar)
+* [pictura-servlet-1.0.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.0.3.Final/pictura-servlet-1.0.3.Final.jar)
  
 ## FAQ
 
