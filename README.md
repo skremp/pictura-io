@@ -42,7 +42,7 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.1.2.Final** is released (Apr. 29th, 2016).
+PicturaIO **1.1.3.Final** is released (May 20th, 2016).
 
 Master branch build status: 
 
@@ -338,7 +338,7 @@ For a more complete set of documentation, go to
 
 ### Latest version 1.1.x
 
-* [pictura-servlet-1.1.2.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.2.Final/pictura-servlet-1.1.2.Final.jar)
+* [pictura-servlet-1.1.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.3.Final/pictura-servlet-1.1.3.Final.jar)
 
 ### Latest version 1.0.x
 
