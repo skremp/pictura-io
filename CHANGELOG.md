@@ -15,14 +15,20 @@ _TBD_
   Among the existing methods, now it is also possible to load and save cache 
   entries within I/O streams.
 * Added new FTP resource locator.
-* Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
-  8-digit values, to handle RGB and ARGB color values, are supported.
 * Added support for the upcoming Client Hint header *Save-Data*.
 * Added new vibrance effect filter.
+* Introduced the URL Builder API (new module).
+* Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
+  8-digit values, to handle RGB and ARGB color values, are supported.
 * Fixed missing DPR check in cases of ICO output files.
 * Fixed failed bounce check for effect filter arguments in cases of saturation 
   and gamma effects.
 * Fixed unobserved maximum image resolution in cases of up-scaling.
+* Fixed missing HTTP response content type in cases of cached responses on 
+  Apache Tomcat application servers.
+* Fixed servlet startup failure in cases of missing optional dependencies where
+  the affected request processor was configured but the dependency is missing
+  on the application class path.
 
 ## 1.1.3.Final
 
@@ -66,8 +72,9 @@ _2016-01-19_
 
 _2016-01-16_
 
-* Added missing webp-imageio lib (required to run intefration tests).
 * Removed unnecessary whitespace in cache control header.
+
+* Added missing webp-imageio lib (required to run integration tests).
 * Fixed broken links in documentation.
 
 ## 1.0.1.Final
