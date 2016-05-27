@@ -1175,20 +1175,19 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 				    || (noBrackets = P_EFFECT_GAM_SAT_NB.matcher(o).matches())) {
 
 				float f = tryParseFloat(noBrackets ? o.substring(3, o.length())
-					: o.substring(o.indexOf('(') + 1, o.length() - 1), Float.NaN);
+                                        : o.substring(o.indexOf('(') + 1, o.length() - 1), Float.NaN);
                                 
 				if (!Float.isNaN(f)) {				    			    
-                                    f = (f + 100) / 100;
                                     if (o.startsWith("gam")) {
                                         if (f < -100 || f > 100) {
                                             throw new IllegalArgumentException("Invalid effect: gamma correction must be between -100 and 100");
                                         }
-                                        l.add(Pictura.getOpGamma(f));
+                                        l.add(Pictura.getOpGamma(((f + 100) / 100)));
                                     } else if (o.startsWith("sat")) {
                                         if (f < -100 || f > 100) {
                                             throw new IllegalArgumentException("Invalid effect: saturation must be between -100 and 100");
                                         }
-                                        l.add(Pictura.getOpSaturation(f));
+                                        l.add(Pictura.getOpSaturation(((f + 100) / 100)));
                                     }
 				} else {
 				    throw new IllegalArgumentException("Invalid effect: the effect argument must be a valid number");
@@ -2520,23 +2519,35 @@ public class ImageRequestProcessor extends IIORequestProcessor {
 		scaleHeight = (int) (srcH * (scaleHeightP / 100.f));
 	    }
 
-	    // Bounds check for ICO output format
-	    if ("ico".equals(formatName)) {
-		if ((scaleWidth != null && scaleWidth > 256)
-			|| (scaleHeight != null && scaleHeight > 256)) {
-		    doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
-			    "Invalid scale: the max image width and height "
-			    + "for the requested format are 256 px");
-		    return;
-		} else if (scaleWidth == null && scaleHeight == null
-			&& (srcW > 256 || srcH > 256)) {
-		    if (srcW > srcH) {
-			scaleWidth = 256;
-		    } else {
-			scaleHeight = 256;
-		    }
-		}
-	    }	    
+            // Bounds check for ICO output format
+            if ("ico".equals(formatName)) {
+                if ((scaleWidth != null && scaleWidth > 256)
+                        || (scaleHeight != null && scaleHeight > 256)) {
+
+                    doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
+                            "Invalid scale: the max image width and height "
+                            + "for the requested format are 256 px");
+                    return;
+
+                } else if (scaleWidth == null && scaleHeight == null
+                        && (srcW > 256 || srcH > 256)) {
+                    if (srcW > srcH) {
+                        scaleWidth = 256;
+                    } else {
+                        scaleHeight = 256;
+                    }
+                }
+
+                // Bounds check in combination with DPR
+                if (scalePixelRatio != null && scalePixelRatio > 1f) {
+                    if (scaleWidth != null && (scaleWidth * scalePixelRatio) > 256) {
+                        scaleWidth = 256;
+                    }
+                    if (scaleHeight != null && (scaleHeight * scalePixelRatio) > 256) {
+                        scaleHeight = 256;
+                    }
+                }
+            }
 	    
 	    // Calculate the absolute crop coords if crop SQUARE is requested            
 	    if (cropSquare) {
