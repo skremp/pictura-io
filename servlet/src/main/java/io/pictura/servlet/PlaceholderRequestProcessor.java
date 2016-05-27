@@ -220,7 +220,7 @@ final class PlaceholderRequestProcessor extends ImageRequestProcessor {
 
 	    if (!typeFaceSupported) {
 		doInterrupt(HttpServletResponse.SC_BAD_REQUEST,
-			"Invalid placeholder dimension: Unsupported "
+			"Invalid type face: Unsupported "
 			+ "type face (font family name) \"" + typeFace + "\"");
 		return;
 	    }
