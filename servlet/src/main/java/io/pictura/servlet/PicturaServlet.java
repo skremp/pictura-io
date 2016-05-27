@@ -2511,6 +2511,7 @@ public class PicturaServlet extends HttpCacheServlet {
 	private boolean dnc; // do not track
 
 	private String requestId; // the generated request ID
+        private String contentType; // the response content type
 
 	private PicturaServletResponse(final HttpServletRequest request,
 		final HttpServletResponse response) {
@@ -2523,12 +2524,18 @@ public class PicturaServlet extends HttpCacheServlet {
 	    setDoNotCache();
 	}
 
+        @Override
+        public void reset() {
+            this.contentType = null;
+            super.reset();
+        }
+        
 	private void setContentDisposition() {
 	    if (request.getParameter(QUERY_PARAM_DOWNLOAD) != null) {
 		String filename = request.getParameter(QUERY_PARAM_DOWNLOAD);
                 
                 // Use the correct file name suffix for the current mime type
-                final String ct = getHeader(HEADER_CONTTYPE);
+                final String ct = contentType;
                 final String fns = PicturaImageIO.getImageReaderWriterMIMETypes().get(ct);
                 
                 if (fns != null && !fns.isEmpty()) {
@@ -2619,6 +2626,9 @@ public class PicturaServlet extends HttpCacheServlet {
         @Override
         public void setContentType(String type) {
             super.setContentType(type);
+            
+            this.contentType = type;
+            this.setHeader(HEADER_CONTTYPE, type);
             
             if (PicturaServlet.this.contentDisposition) {
                 setContentDisposition();
@@ -2775,5 +2785,4 @@ public class PicturaServlet extends HttpCacheServlet {
 	    throw new IOException("External config file at \"" + configFile + "\" not found");
 	}
     }
-    
 }
