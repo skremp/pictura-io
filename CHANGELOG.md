@@ -1,5 +1,19 @@
 # Change Log
 
+## 1.1.4.Final
+
+_2016-05-27_
+
+* Fixed missing DPR check in cases of ICO output files.
+* Fixed failed bounce check for effect filter arguments in cases of saturation 
+  and gamma effects.
+* Fixed missing HTTP response content type in cases of cached responses on 
+  Apache Tomcat application servers.
+* Fixed servlet startup failure in cases of missing optional dependencies where 
+  the affected request processor was configured but the dependency is missing on
+  the application class path.
+* Fixed wrong interrupt message in placeholder request processor.
+
 ## 1.1.3.Final
 
 _2016-05-20_
