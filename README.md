@@ -251,8 +251,8 @@ public class UndertowPicturaServer {
                 + "io.pictura.servlet.AutoFormatRequestProcessor")
             .addInitParam(PicturaServlet.IPARAM_CACHE_ENABLED, "true")
             .addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
-		"io.pictura.servlet.FileResourceLocator,"
-		+ "io.pictura.servlet.HttpResourceLocator")
+                "io.pictura.servlet.FileResourceLocator,"
+                + "io.pictura.servlet.HttpResourceLocator")
             .addMapping("/*");
         
         ResourceManager resourceManager = ...
@@ -270,7 +270,7 @@ public class UndertowPicturaServer {
         deploymentManager.deploy();
         
         PathHandler path = Handlers.path(Handlers.redirect("/pictura"))
-		.addPrefixPath("/pictura", deploymentManager.start());
+                .addPrefixPath("/pictura", deploymentManager.start());
 
         Undertow undertow = Undertow.builder()
                 .addHttpListener(8080, "localhost")
