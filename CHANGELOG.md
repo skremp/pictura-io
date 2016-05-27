@@ -29,6 +29,7 @@ _TBD_
 * Fixed servlet startup failure in cases of missing optional dependencies where
   the affected request processor was configured but the dependency is missing
   on the application class path.
+* Fixed wrong interrupt message in placeholder request processor.
 
 ## 1.1.3.Final
 
