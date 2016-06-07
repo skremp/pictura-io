@@ -42,7 +42,7 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.1.3.Final** is released (May 20th, 2016).
+PicturaIO **1.1.4.Final** is released (May 27th, 2016).
 
 Master branch build status: 
 
@@ -251,8 +251,8 @@ public class UndertowPicturaServer {
                 + "io.pictura.servlet.AutoFormatRequestProcessor")
             .addInitParam(PicturaServlet.IPARAM_CACHE_ENABLED, "true")
             .addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
-                "io.pictura.servlet.FileResourceLocator,"
-                + "io.pictura.servlet.HttpResourceLocator")
+		"io.pictura.servlet.FileResourceLocator,"
+		+ "io.pictura.servlet.HttpResourceLocator")
             .addMapping("/*");
         
         ResourceManager resourceManager = ...
@@ -270,7 +270,7 @@ public class UndertowPicturaServer {
         deploymentManager.deploy();
         
         PathHandler path = Handlers.path(Handlers.redirect("/pictura"))
-                .addPrefixPath("/pictura", deploymentManager.start());
+		.addPrefixPath("/pictura", deploymentManager.start());
 
         Undertow undertow = Undertow.builder()
                 .addHttpListener(8080, "localhost")
@@ -343,7 +343,7 @@ For a more complete set of documentation, go to
 
 ### Latest version 1.1.x
 
-* [pictura-servlet-1.1.3.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.3.Final/pictura-servlet-1.1.3.Final.jar)
+* [pictura-servlet-1.1.4.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.1.4.Final/pictura-servlet-1.1.4.Final.jar)
 
 ### Latest version 1.0.x
 

@@ -17,18 +17,29 @@ _TBD_
 * Added new FTP resource locator.
 * Added support for the upcoming Client Hint header *Save-Data*.
 * Added new vibrance effect filter.
+* Added the possibility to define a custom error handler in case of HTTP error
+  responses (status code 4xx and 5xx).
 * Introduced the URL Builder API (new module).
 * Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
   8-digit values, to handle RGB and ARGB color values, are supported.
+* Fixed unobserved maximum image resolution in cases of up-scaling.
+* Fixed wrong palette CSS source URL computation in pictura.js if the format
+  *PCSS* is already set in the origin source URL.
+* Fixed browser viewport width and height update in pictura.js in case of
+  window resizes.
+
+## 1.1.4.Final
+
+_2016-05-27_
+
 * Fixed missing DPR check in cases of ICO output files.
 * Fixed failed bounce check for effect filter arguments in cases of saturation 
   and gamma effects.
-* Fixed unobserved maximum image resolution in cases of up-scaling.
 * Fixed missing HTTP response content type in cases of cached responses on 
   Apache Tomcat application servers.
-* Fixed servlet startup failure in cases of missing optional dependencies where
-  the affected request processor was configured but the dependency is missing
-  on the application class path.
+* Fixed servlet startup failure in cases of missing optional dependencies where 
+  the affected request processor was configured but the dependency is missing on
+  the application class path.
 * Fixed wrong interrupt message in placeholder request processor.
 
 ## 1.1.3.Final
