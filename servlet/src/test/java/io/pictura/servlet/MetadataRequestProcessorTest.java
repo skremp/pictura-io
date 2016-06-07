@@ -15,6 +15,7 @@
  */
 package io.pictura.servlet;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
@@ -32,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -53,6 +56,16 @@ public class MetadataRequestProcessorTest {
 	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
 
 	assertTrue(rp.isPreferred(req));
+        
+        HttpServletRequest req2 = mock(HttpServletRequest.class);
+
+	when(req2.getContextPath()).thenReturn("/pictura-web");
+	when(req2.getServletPath()).thenReturn("/images");
+	when(req2.getRequestURI()).thenReturn("/pictura-web/f=pda/images/lenna.jpg");
+	when(req2.getQueryString()).thenReturn(null);
+	when(req2.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	assertFalse(rp.isPreferred(req2));
     }
     
     @Test
@@ -82,6 +95,26 @@ public class MetadataRequestProcessorTest {
 	assertNotNull(rp.getRequestParameter(req, ImageRequestProcessor.QPARAM_NAME_FORMAT_NAME));
         assertNotNull(rp.getRequestParameter(req, ImageRequestProcessor.QPARAM_NAME_IMAGE));
         assertNull(rp.getRequestParameter(req, ImageRequestProcessor.QPARAM_NAME_EFFECT));
+    }
+    
+    @Test
+    public void testDoProcess_InternalServerError() throws Exception {
+        MetadataRequestProcessor rp = new MetadataRequestProcessor();
+        
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);               
+        
+        when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/f=pda/e=g/images/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+        
+        rp.setRequest(req);
+        rp.setResponse(resp);
+        
+        rp.doProcessImage(new ByteArrayInputStream(new byte[1]), req, resp);        
+        verify(resp).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
     
     @Test

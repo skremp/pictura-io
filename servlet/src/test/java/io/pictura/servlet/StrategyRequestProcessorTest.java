@@ -20,8 +20,10 @@ import java.util.Collections;
 import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -42,7 +44,7 @@ public class StrategyRequestProcessorTest {
 	when(req.getAttribute("io.pictura.servlet.MAX_IMAGE_RESOLUTION")).thenReturn(1000L * 1000L);
 	when(req.getAttribute("io.pictura.servlet.DEFLATER_COMPRESSION_MIN_SIZE")).thenReturn(1024 * 100);
         
-        final StrategyRequestProcessor rp = new StrategyRequestProcessor() {
+        final StrategyRequestProcessor rp = new StrategyRequestProcessor() {            
             @Override
             public boolean isPreferred(HttpServletRequest req) {
                 return false;
@@ -51,7 +53,7 @@ public class StrategyRequestProcessorTest {
             @Override
             public ImageRequestProcessor createRequestProcessor() {
                 return null;
-            }
+            }                              
         };
         
         rp.setRequest(req);
@@ -60,7 +62,13 @@ public class StrategyRequestProcessorTest {
         assertNotNull(irp);
         assertNotSame(rp, irp);
         
+        verify(req).setAttribute("io.pictura.servlet.BASE_REQUEST_PROCESSOR", irp);
+        when(req.getAttribute("io.pictura.servlet.BASE_REQUEST_PROCESSOR")).thenReturn(irp);
+                
+        assertSame(irp, rp.getBaseRequestProcessor(req));
+        
         rp.runFinalize();
+        when(req.getAttribute("io.pictura.servlet.BASE_REQUEST_PROCESSOR")).thenReturn(null);
         assertNotSame(irp, rp.getBaseRequestProcessor(req));
     }
     

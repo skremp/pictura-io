@@ -291,7 +291,7 @@ public class RequestProcessorTest {
 
 	rp.doInterrupt();
 	assertTrue(rp.isInterrupted());
-    }
+    }        
 
     @Test
     public void testDoInterrupt_0args() throws Exception {
@@ -574,7 +574,12 @@ public class RequestProcessorTest {
     public void testIsCacheable() {
 	System.out.println("isCacheable");
 
-	RequestProcessor rp = new RequestProcessorImpl();
+	RequestProcessor rp = new RequestProcessor() {
+            @Override
+            protected void doProcess(HttpServletRequest req, 
+                    HttpServletResponse resp) throws ServletException, IOException {
+            }
+        };
 	assertFalse(rp.isCacheable());
     }
 
@@ -748,7 +753,7 @@ public class RequestProcessorTest {
 	HttpServletRequest req = mock(HttpServletRequest.class);
 	rp.setRequest(req);
 
-	req.setAttribute("test", "value");
+	rp.setAttribute("test", "value");
 	verify(req).setAttribute("test", "value");
     }
 
@@ -761,6 +766,8 @@ public class RequestProcessorTest {
     @Test(expected = IllegalStateException.class)
     public void testSetPreProcessor_IllegalStateException() {
         RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
         rp.run();
         rp.setPreProcessor(new Runnable() {
             @Override
@@ -772,6 +779,8 @@ public class RequestProcessorTest {
     @Test(expected = IllegalStateException.class)
     public void testSetRequest_IllegalStateException() {
         RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
         rp.run();
         rp.setRequest(mock(HttpServletRequest.class));
     }
@@ -779,6 +788,8 @@ public class RequestProcessorTest {
     @Test(expected = IllegalStateException.class)
     public void testSetResponse_IllegalStateException() {
         RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
         rp.run();
         rp.setResponse(mock(HttpServletResponse.class));
     }
@@ -786,6 +797,8 @@ public class RequestProcessorTest {
     @Test(expected = IllegalStateException.class)
     public void testAsyncContext_IllegalStateException() {
         RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
         rp.run();
         rp.setAsyncContext(mock(AsyncContext.class));
     }
@@ -793,11 +806,27 @@ public class RequestProcessorTest {
     @Test(expected = IllegalStateException.class)
     public void testResourcePaths_IllegalStateException() {
         RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
         rp.run();
         rp.setResourcePaths(null);
     }
+    
+    @Test(expected = IllegalStateException.class)
+    public void testResourceLocators_IllegalStateException() {
+        RequestProcessor rp = new RequestProcessorImpl();
+        rp.setRequest(mock(HttpServletRequest.class));
+        rp.setResponse(mock(HttpServletResponse.class));
+        rp.run();
+        rp.setResourceLocators(new ResourceLocator[0]);
+    }
 
     private final class RequestProcessorImpl extends RequestProcessor {
+
+        @Override
+        public boolean isCacheable() {
+            return false;
+        }
 
 	@Override
 	public void doProcess(HttpServletRequest req, HttpServletResponse resp)
@@ -806,8 +835,8 @@ public class RequestProcessorTest {
 
     }
 
-    private final class RequestProcessorErrorImpl extends RequestProcessor {
-
+    private final class RequestProcessorErrorImpl extends RequestProcessor {        
+        
 	@Override
 	public void doProcess(HttpServletRequest req, HttpServletResponse resp)
 		throws ServletException, IOException {
