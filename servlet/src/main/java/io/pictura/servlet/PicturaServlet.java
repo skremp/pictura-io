@@ -890,10 +890,20 @@ public class PicturaServlet extends HttpCacheServlet {
         String tryServletId;
         do {
             tryServletId = randomString(new Random(System.currentTimeMillis()),
-		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 16);
+                    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", 16);
         } while (REGISTERED_SERVLET_IDS.contains(tryServletId));        
         servletId = tryServletId;
+        REGISTERED_SERVLET_IDS.add(servletId);
     }
+
+    @Override
+    public String getServletName() {
+        String sn = super.getServletName();
+        if (sn == null || sn.isEmpty()) {
+            return getServletID();
+        }
+        return sn;
+    } 
 
     @Override
     public String getServletInfo() {
