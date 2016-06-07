@@ -450,6 +450,10 @@ value. Valid sizes are in the range `1 - 99`.
  `/P=5,232323/image.jpg`
 
  `/P=10,444/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_pad.jpg)|
  
 ## Border
 
@@ -467,6 +471,10 @@ sizes are in the range `1 - 99`.
  `/B=5,232323/image.jpg`
 
  `/B=10,444/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_border.jpg)|
 
 **[\[⬆\]](#table-of-contents)**
 
