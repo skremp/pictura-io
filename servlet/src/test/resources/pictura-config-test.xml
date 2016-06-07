@@ -16,6 +16,10 @@
         <worker-timeout>15000</worker-timeout>
     </executor>
     
+    <error-handler>
+        <class>io.pictura.servlet.MyErrorHandler</class>
+    </error-handler>
+    
     <resource-paths>
         <path>/images/*</path>
         <path>http://www.google.de/*</path>

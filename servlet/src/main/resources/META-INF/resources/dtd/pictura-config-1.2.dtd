@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+    Copyright 2015 Steffen Kremp
+    
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+-->
+
+<!--
+    An example how to use this DTD from your XML document:
+
+    <?xml version="1.0"?>
+
+    <!DOCTYPE pictura SYSTEM "pictura-config-1.1.dtd">
+
+    <pictura>
+    ...
+    </pictura>
+-->
+
+<!ELEMENT pictura (resource-locators|debug|query-params|placeholder-producer|header|jmx|webp|executor|resource-paths|request-processor|imageio|http|https|stats|deflater|cache-control-handler|script|content-disposition|cache|error-handler)*>
+<!ELEMENT debug (#PCDATA)>
+<!ELEMENT jmx (enabled)*>
+<!ELEMENT enabled (#PCDATA)>
+<!ELEMENT executor (use-container-pool|core-pool-size|max-pool-size|keep-alive-time|worker-queue-size|worker-timeout)*>
+<!ELEMENT use-container-pool (#PCDATA)>
+<!ELEMENT core-pool-size (#PCDATA)>
+<!ELEMENT max-pool-size (#PCDATA)>
+<!ELEMENT keep-alive-time (#PCDATA)>
+<!ELEMENT worker-queue-size (#PCDATA)>
+<!ELEMENT worker-timeout (#PCDATA)>
+<!ELEMENT resource-paths (path)*>
+<!ELEMENT path (#PCDATA)>
+<!ELEMENT resource-locators (class)*>
+<!ELEMENT error-handler (class)*>
+<!ELEMENT class (#PCDATA)>
+<!ELEMENT request-processor (class|factory|strategy|priority)*>
+<!ELEMENT factory (class)*>
+<!ELEMENT strategy (class)*>
+<!ELEMENT priority (class)*>
+<!ELEMENT imageio (max-file-size|max-resolution|max-effects|enabled-input-formats|enabled-output-formats|enable-base64-image-encoding|use-cache|cache-dir|spi-filter)*>
+<!ELEMENT include (class)*>
+<!ELEMENT exclude (class)*>
+<!ELEMENT max-file-size (#PCDATA)>
+<!ELEMENT max-resolution (#PCDATA)>
+<!ELEMENT max-effects (#PCDATA)>
+<!ELEMENT enabled-input-formats (format-name)*>
+<!ELEMENT enabled-output-formats (format-name)*>
+<!ELEMENT format-name (#PCDATA)>
+<!ELEMENT enable-base64-image-encoding (#PCDATA)>
+<!ELEMENT use-cache (#PCDATA)>
+<!ELEMENT cache-dir (#PCDATA)>
+<!ELEMENT url (connection-factory)*>
+<!ELEMENT connection-factory (class)*>
+<!ELEMENT http (agent|connect-timeout|read-timeout|follow-redirects|max-forwards|proxy)*>
+<!ELEMENT agent (#PCDATA)>
+<!ELEMENT connect-timeout (#PCDATA)>
+<!ELEMENT read-timeout (#PCDATA)>
+<!ELEMENT follow-redirects (#PCDATA)>
+<!ELEMENT max-forwards (#PCDATA)>
+<!ELEMENT proxy (hostname|port)*>
+<!ELEMENT hostname (#PCDATA)>
+<!ELEMENT port (#PCDATA)>
+<!ELEMENT https (disable-certificate-validation)*>
+<!ELEMENT disable-certificate-validation (#PCDATA)>
+<!ELEMENT stats (enabled|path|ip-address-match)*>
+<!ELEMENT ip-address-match (address)*>
+<!ELEMENT address (#PCDATA)>
+<!ELEMENT script (enabled|path)*>
+<!ELEMENT placeholder-producer (enabled|path)*>
+<!ELEMENT query-params (enable)*>
+<!ELEMENT enable (#PCDATA)>
+<!ELEMENT content-disposition (enable)*>
+<!ELEMENT webp (enable)*>
+<!ELEMENT header (add-content-location|add-true-cache-key|add-request-id)*>
+<!ELEMENT add-content-location (#PCDATA)>
+<!ELEMENT add-true-cache-key (#PCDATA)>
+<!ELEMENT add-request-id (#PCDATA)>
+<!ELEMENT cache-control-handler (class)*>
+<!ELEMENT deflater (compression-level)*>
+<!ELEMENT compression-level (#PCDATA)>
+<!ELEMENT cache (class|capacity|max-entry-size|file|enabled)*>
+<!ELEMENT capacity (#PCDATA)>
+<!ELEMENT max-entry-size (#PCDATA)>
+<!ELEMENT file (#PCDATA)>

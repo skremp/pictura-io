@@ -131,6 +131,51 @@ value is `/stats`.
 Sets the statistics monitor access control. Multiple IP addresses are separated
 by comma. The default value is `127.0.0.1,::1`.
 
+### errorHandler
+
+Sets a custom error handler class (see `io.pictura.servlet.ErrorHandler`).
+
+**Example**
+
+```xml
+<web-app ...>
+...
+    <servlet>
+        ...
+        <init-param>
+            <param-name>errorHandler</param-name>
+            <param-value>io.pictura.servlet.examples.MyErrorHandler</param-value>
+        </init-param>
+    </servlet>
+...
+</web-app>
+```
+
+```java
+package io.pictura.servlet.examples;
+
+import ...
+
+public class MyErrorHandler implements ErrorHandler {
+
+    @Override
+    public boolean doHandle(HttpServletRequest req, HttpServletResponse resp, 
+            int sc, String msg) throws IOException {
+            
+        if (sc == 404) {
+            resp.setContentType("text/plain");
+            resp.getWriter().write("File not found - 404");
+            return true;
+        }            
+        return false;
+    }        
+}
+```
+
+***@since 1.2***
+
+**[\[⬆\]](#table-of-contents)**
+
 ### useContainerPool
 
 Flag to decide to use the servlet container pool to execute image requests if

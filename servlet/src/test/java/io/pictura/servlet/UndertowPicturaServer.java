@@ -23,7 +23,6 @@ import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
-import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import java.awt.AlphaComposite;
@@ -45,14 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LoggingMXBean;
 import javax.imageio.ImageIO;
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -110,6 +103,8 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_CONTENT_DISPOSITION, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_BASE64_IMAGE_ENCODING, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HTTP_AGENT, "TEST");
+        servletInfo.addInitParam(PicturaServlet.IPARAM_ERROR_HANDLER, 
+                "io.pictura.servlet.UndertowPicturaServer$MyErrorHandler");
         servletInfo.addInitParam(PicturaServlet.IPARAM_IMAGEIO_SPI_FILTER_EXCLUDE,
                 "com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi");
         servletInfo.addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
@@ -123,7 +118,7 @@ public final class UndertowPicturaServer {
                 + "io.pictura.servlet.ClientHintRequestProcessor,"
                 + "io.pictura.servlet.AutoFormatRequestProcessor");
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLED_OUTPUT_IMAGE_FORMATS,
-                "jpg,jp2,webp,png,gif");
+                "jpg,jp2,webp,png,gif,ico");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_CONTROL_HANDLER,
                 "io.pictura.servlet.UndertowPicturaServer$CacheControl");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_ENABLED, "true");
@@ -138,8 +133,6 @@ public final class UndertowPicturaServer {
                 .setResourceManager(rm)
                 .addListener(new ListenerInfo(IIOProviderContextListener.class))
                 .addInitParameter("io.pictura.servlet.LOG_LEVEL", "TRACE")
-                .addFilter(new FilterInfo("pictura-reques-filter", DemoServletFilter.class))
-                .addFilterUrlMapping("pictura-reques-filter", "/*", DispatcherType.REQUEST)
                 .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
@@ -154,7 +147,6 @@ public final class UndertowPicturaServer {
                 .setIoThreads(10)
                 .setWorkerThreads(100)
                 .build();
-        undertow.start();
 
         LoggingMXBean loggingMXBean = LogManager.getLoggingMXBean();
         List<String> loggerNames = loggingMXBean.getLoggerNames();
@@ -171,6 +163,7 @@ public final class UndertowPicturaServer {
             }
         }
         
+        undertow.start();
         LOG.info("PicturaIO embedded servlet started in " + (System.currentTimeMillis() - start) + " ms");
     }
 
@@ -334,24 +327,19 @@ public final class UndertowPicturaServer {
         }
 
     }
-
-    public static class DemoServletFilter implements Filter {
-        
-        @Override
-        public void init(FilterConfig filterConfig) throws ServletException {
-            LOG.info("PicturaIO servlet filter initialized");
-        }
+    
+    public static class MyErrorHandler implements ErrorHandler {
 
         @Override
-        public void doFilter(ServletRequest request, ServletResponse response, 
-                FilterChain chain) throws IOException, ServletException {
-                        
-            chain.doFilter(request, response);
-        }
-
-        @Override
-        public void destroy() {
-            LOG.info("PicturaIO servlet filter destroyed");
+        public boolean doHandle(HttpServletRequest req, HttpServletResponse resp, 
+                int sc, String msg) throws IOException {
+            
+            if (sc == 404) {
+                resp.setContentType("text/plain");
+                resp.getWriter().write("Resource not found - 404");
+                return true;
+            }            
+            return false;
         }
         
     }

@@ -628,6 +628,13 @@ public class PicturaServlet extends HttpCacheServlet {
     public static final String IPARAM_CACHE_FILE = "cacheFile";
 
     /**
+     * Servlet parameter to set a custom error handler.
+     */
+    @InitParam
+    @ConfigParam(xpath = "/pictura/error-handler/class")
+    public static final String IPARAM_ERROR_HANDLER = "errorHandler";
+    
+    /**
      * Servlet parameter to disable the <i>X-Powered-By</i> response header. Set
      * it's value to <code>false</code> to remove the header from any response.
      * The default value is <code>true</code>.
@@ -867,6 +874,7 @@ public class PicturaServlet extends HttpCacheServlet {
 
     // Counter map for response errors
     private ConcurrentHashMap<Integer, AtomicLong> errorCounter;
+    private ErrorHandler errorHandler;
 
     // URL connection factory to fetch external resources
     private URLConnectionFactory urlConnectionFactory;
@@ -1113,6 +1121,19 @@ public class PicturaServlet extends HttpCacheServlet {
 		throw new ServletException(
 			"The specified URL connection factory is not a instance of "
 			+ URLConnectionFactory.class.getName());
+	    }
+	}
+        
+        // Get the optional error handler class
+	final String errorHandlerClass = config.getInitParameter(IPARAM_ERROR_HANDLER);
+	if (errorHandlerClass != null) {
+	    final Object obj = createObjectInstance(errorHandlerClass.trim());
+	    if (obj instanceof ErrorHandler) {
+		errorHandler = (ErrorHandler) obj;
+	    } else {
+		throw new ServletException(
+			"The specified error handler is not a instance of "
+			+ ErrorHandler.class.getName());
 	    }
 	}
 
@@ -2300,11 +2321,14 @@ public class PicturaServlet extends HttpCacheServlet {
 	} else if (e instanceof IllegalArgumentException) {
 	    sc = HttpServletResponse.SC_BAD_REQUEST;
 	    msg = e.getMessage();
-	}
-
+	} 
+        
 	addError(sc);
 
 	if (!resp.isCommitted()) {
+            if (e instanceof ExecutionException) {
+                LOG.error("Execution error while processing request", e);
+            }
 	    resp.reset();
 	    if (e instanceof RejectedExecutionException
 		    || e instanceof TimeoutException
@@ -2646,6 +2670,10 @@ public class PicturaServlet extends HttpCacheServlet {
 	    error = true;
 	    
 	    if (sc != HttpServletResponse.SC_NOT_MODIFIED) {
+                
+                // Count error for statistics and monitoring
+                addError(sc);
+                
                 if (!isCommitted()) {
 		    reset();
 
@@ -2658,17 +2686,23 @@ public class PicturaServlet extends HttpCacheServlet {
 			setHeader("X-Pictura-Err", msg);
 		    }
 
-		    setDateHeader(HEADER_DATE, System.currentTimeMillis());
+                    setDateHeader(HEADER_DATE, System.currentTimeMillis());
 
-		    if (xPoweredBy) {
-			setHeader("X-Powered-By", getServletInfo());
-		    }
+                    if (xPoweredBy) {
+                        setHeader("X-Powered-By", getServletInfo());
+                    }
 
-		    if (sc == HttpServletResponse.SC_SERVICE_UNAVAILABLE) {
-			setIntHeader("Retry-After", 30);
-		    }                    
+                    if (sc == HttpServletResponse.SC_SERVICE_UNAVAILABLE) {
+                        setIntHeader("Retry-After", 30);
+                    }
+
+                    // Check if we have a custom error handler for this
+                    // servlet instance
+                    if (sc > 399 && errorHandler != null 
+                            && errorHandler.doHandle(request, this, sc, msg)) {
+                        return;
+                    }
 		}
-                addError(sc);
 	    }
 	    super.sendError(sc, msg);
 	}        
