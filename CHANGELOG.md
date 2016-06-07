@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.5.Final
+
+_2016-06-07_
+
+* Fixed wrong error messages.
+* Fixed an error while the internal servlet ID is calculated.
+* Fixed broken *onResize* handling in client side JS.
+
 ## 1.1.4.Final
 
 _2016-05-27_
