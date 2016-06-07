@@ -4,29 +4,34 @@
 
 _TBD_
 
-* Added support for auto image rotation depending on the source image
-  orientation provided by Exif metadata.
 * Added new image parameter *P* and *B* to apply padding and border around the 
   edges of an image.
 * Added new image parameter *N* to extract a specified image frame from a
   sequence of *1..n* image frames (e.g. Animated-GIFs).
-* Added new resize mode *CROP*.
-* Added new convenience methods to load and save the current http image cache.
+* Added resize mode *CROP*.
+* Added new vibrance effect filter.
+* Added new FTP resource locator.
+* Added support for auto image rotation depending on the source image
+  orientation provided by Exif metadata.
+* Added support for the upcoming Client Hint header *Save-Data*.
+* Added convenience methods to load and save the current http image cache.
   Among the existing methods, now it is also possible to load and save cache 
   entries within I/O streams.
-* Added new FTP resource locator.
-* Added support for the upcoming Client Hint header *Save-Data*.
-* Added new vibrance effect filter.
 * Added the possibility to define a custom error handler in case of HTTP error
   responses (status code 4xx and 5xx).
-* Introduced the URL Builder API (new module).
 * Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
   8-digit values, to handle RGB and ARGB color values, are supported.
 * Fixed unobserved maximum image resolution in cases of up-scaling.
-* Fixed wrong palette CSS source URL computation in pictura.js if the format
-  *PCSS* is already set in the origin source URL.
-* Fixed browser viewport width and height update in pictura.js in case of
-  window resizes.
+
+* Introduced the URL Builder API (new module).
+
+## 1.1.5.Final
+
+_2016-06-07_
+
+* Fixed wrong error messages.
+* Fixed an error while the internal servlet ID is calculated.
+* Fixed broken *onResize* handling in client side JS.
 
 ## 1.1.4.Final
 
