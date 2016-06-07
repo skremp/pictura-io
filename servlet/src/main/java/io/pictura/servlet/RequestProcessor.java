@@ -158,7 +158,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
     void setRequest(HttpServletRequest req) {
 	if (committed) {
-	    throw new IllegalStateException("setPreProcessor() after comitted");
+	    throw new IllegalStateException("setRequest() after comitted");
 	}
 	this.req = req;
     }
@@ -169,7 +169,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
     void setResponse(HttpServletResponse resp) {
 	if (committed) {
-	    throw new IllegalStateException("setPreProcessor() after comitted");
+	    throw new IllegalStateException("setResponse() after comitted");
 	}
 	this.resp = resp;
     }
@@ -180,7 +180,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
     void setAsyncContext(AsyncContext asyncCtx) {
 	if (committed) {
-	    throw new IllegalStateException("setPreProcessor() after comitted");
+	    throw new IllegalStateException("setAsyncContext() after comitted");
 	}
 	this.asyncCtx = asyncCtx;
 	setRequest((HttpServletRequest) asyncCtx.getRequest());
@@ -193,7 +193,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
     void setResourcePaths(Pattern[] resPaths) {
 	if (committed) {
-	    throw new IllegalStateException("setPreProcessor() after comitted");
+	    throw new IllegalStateException("setResourcePaths() after comitted");
 	}
 	this.resPaths = resPaths;
     }    
@@ -471,7 +471,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      */
     public final void setResourceLocators(ResourceLocator[] resLocators) {
 	if (committed) {
-	    throw new IllegalStateException("setPreProcessor() after comitted");
+	    throw new IllegalStateException("setResourceLocators() after comitted");
 	}
 	this.resLocators = resLocators;
     }
@@ -781,7 +781,8 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 	    }
 
 	    req.setAttribute("io.pictura.servlet.REQUEST_ID", getRequestId().toString());
-	    if (isDebugEnabled() || (boolean) req.getAttribute("io.pictura.servlet.HEADER_ADD_REQUEST_ID")) {
+	    if (isDebugEnabled() || (req.getAttribute("io.pictura.servlet.HEADER_ADD_REQUEST_ID") != null 
+                    && (boolean) req.getAttribute("io.pictura.servlet.HEADER_ADD_REQUEST_ID"))) {
 		response.setHeader("X-Pictura-RequestId", getRequestId().toString());
 	    }
 
@@ -963,7 +964,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
             
             if (isDebugEnabled()) {
                 if (getAttribute("io.pictura.servlet.BYTES_READ") instanceof Long) {
-                    long clIn = (long) getAttribute("io.pictura.servlet.BYTES_READ");
+                    long clIn = (Long) getAttribute("io.pictura.servlet.BYTES_READ");
                     resp.setHeader("X-Pictura-SavedData", String.valueOf(clIn - length));
                 }
             }
