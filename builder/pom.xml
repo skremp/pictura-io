@@ -14,12 +14,12 @@
     
     <artifactId>pictura-builder</artifactId>
     
-    <name>PicturaIO Builder</name>
+    <name>PicturaIO URL Builder</name>
     
     <description>
         A Java client library for generating URLs with PicturaIO.
     </description>
-                
+    
     <packaging>jar</packaging>                 
            
     <dependencies>           
@@ -74,26 +74,13 @@
         </dependency>
     </dependencies>
            
-    <build>
-        <resources>        
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
-            </resource>
-            
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/*.properties</exclude>
-                </excludes>
-            </resource>                   
-        </resources>
-        
-        <plugins>                 
+    <build>       
+        <plugins>
+            <!--
+                Exclude the gernal NOTICE file for this module, because
+                this is (currentyl) completely dependency free from 
+                3rd-party code lines.
+            -->
             <plugin>                
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -133,15 +120,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
-            
-            <!--
-                Integration tests
-            -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
             </plugin>                                   
             
+            <!--
+                Override the general code coverag for this module.
+            -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -165,7 +152,7 @@
                             </rules>
                         </configuration>
                     </execution>
-                </executions>               
+                </executions>
             </plugin>
             
             <plugin>

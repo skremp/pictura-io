@@ -12,9 +12,9 @@
     
     <name>PicturaIO</name>
         
-    <description>Server side image processing servlet</description>
-    
-    <inceptionYear>2015</inceptionYear>
+    <description>
+        Server side dependency free image processing servlet.
+    </description>
     
     <developers>
         <developer>
@@ -56,14 +56,14 @@
         <timestamp>${maven.build.timestamp}</timestamp>
         <script.version>${project.version}</script.version>
         
-        <skip.it>false</skip.it>        
-        <skip.tests>false</skip.tests>
-        <skip.jar>false</skip.jar>
-        <skip.javadoc>false</skip.javadoc>
-        <skip.source>false</skip.source>  
+        <skipITs>false</skipITs>
+        <skipTests>false</skipTests>
+        <skipJavadoc>false</skipJavadoc>
+        <skipSource>false</skipSource>
+        <skipEnforcer>false</skipEnforcer>
         
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss</maven.build.timestamp.format>
-        <maven.test.skip>${skip.tests}</maven.test.skip>
+        <maven.test.skip>${skipTests}</maven.test.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
@@ -97,6 +97,11 @@
         <version.twelvemonkeys.imageio.icns>3.2</version.twelvemonkeys.imageio.icns>
         <version.twelvemonkeys.imageio.jpeg>3.2</version.twelvemonkeys.imageio.jpeg>
         <version.twelvemonkeys.imageio.psd>3.2</version.twelvemonkeys.imageio.psd>
+        
+        <!--
+            Plug-in versions.
+        -->
+        <version.org.jacoco>0.7.4.201502262128</version.org.jacoco>
     </properties>
     
     <dependencyManagement>
@@ -245,6 +250,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>2.7</version>
+                    <configuration>
+                        <encoding>UTF-8</encoding>
+                    </configuration>
                     <executions>
                         <execution>
                             <id>copy-resources</id>
@@ -273,12 +281,14 @@
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>2.6</version>
                     <configuration>
-                        <skipSource>${skip.jar}</skipSource>
+                        <skipSource>${skipSource}</skipSource>
                         <archive>
-                            <manifest>
-                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            </manifest>
-                        </archive>
+                            <manifestEntries>
+                                <Implementation-Title>${project.groupId}:${project.artifactId}</Implementation-Title>
+                                <Implementation-Version>${project.version}</Implementation-Version>
+                                <Implementation-URL>${project.scm.url}</Implementation-URL>
+                            </manifestEntries>
+                        </archive>                    
                     </configuration>
                 </plugin>
                 
@@ -291,6 +301,7 @@
                         <target>${maven.compiler.target}</target>
                         <optimize>${maven.compiler.optimize}</optimize>                    
                         <showDeprecation>true</showDeprecation>
+                        <debuglevel>source,lines</debuglevel>
                         <showWarnings>true</showWarnings>
                         <encoding>${project.build.sourceEncoding}</encoding>
                         <compilerArgs>
@@ -310,11 +321,17 @@
                     <version>2.18.1</version>
                     <configuration>
                         <argLine>${surefireArgLine}</argLine>
-                        <skipTests>${skip.tests}</skipTests>          
+                        <skipTests>${skipTests}</skipTests>          
                         <excludes>
                             <exclude>**/*IT.java</exclude>
                             <exclude>**/*LT.java</exclude>
                         </excludes>
+                        <systemProperties>
+                            <property>
+                                <name>java.awt.headless</name>
+                                <value>true</value>
+                            </property>
+                        </systemProperties>
                     </configuration>
                 </plugin>
                 
@@ -325,11 +342,19 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>2.18.1</version>
+                    <configuration>
+                        <systemProperties>
+                            <property>
+                                <name>java.awt.headless</name>
+                                <value>true</value>
+                            </property>
+                        </systemProperties>
+                    </configuration>
                     <executions>
                         <execution>
                             <configuration>
-                                <skipITs>${skip.it}</skipITs>
-                                <skipTests>${skip.tests}</skipTests>
+                                <skipITs>${skipITs}</skipITs>
+                                <skipTests>${skipTests}</skipTests>
                                 <argLine>${failsafeArgLine}</argLine>
                                 <excludes>
                                     <exclude>**/*LT.java</exclude>
@@ -349,7 +374,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.7.4.201502262128</version>
+                    <version>${version.org.jacoco}</version>
                     <configuration>
                         <skip>false</skip>
                         <fileSets>
@@ -417,13 +442,13 @@
                                     <rule>
                                         <limits>
                                             <!-- 
-                                                Overall code coverage for unit tests >= 60% 
+                                                Overall code coverage for unit tests >= 70% 
                                                 NOTE: this does not include integration tests
                                             -->
                                             <limit>
                                                 <counter>LINE</counter>
                                                 <value>COVEREDRATIO</value>
-                                                <minimum>0.64</minimum>
+                                                <minimum>0.7</minimum>
                                             </limit>
                                         </limits>
                                     </rule>
@@ -438,7 +463,7 @@
                     <artifactId>maven-source-plugin</artifactId>
                     <version>2.4</version>
                     <configuration>
-                        <skipSource>${skip.source}</skipSource>
+                        <skipSource>${skipSource}</skipSource>
                     </configuration>
                     <executions>
                         <execution>
@@ -457,8 +482,8 @@
                     <version>2.10.3</version>
                     <configuration>
                         <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
-                        <bottom><![CDATA[Copyright &#169;, {currentYear} Steffen Kremp.]]></bottom>
-                        <skip>${skip.javadoc}</skip>
+                        <bottom><![CDATA[Copyright &#169;, 2015 - {currentYear} Steffen Kremp.]]></bottom>
+                        <skip>${skipJavadoc}</skip>
                         <jarOutputDirectory>${project.basedir}/target</jarOutputDirectory>
                     </configuration>
                     <executions>
@@ -482,7 +507,7 @@
                                 <goal>enforce</goal>
                             </goals>
                             <configuration>
-                                <skip>${skip.enforcer}</skip>
+                                <skip>${skipEnforcer}</skip>
                                 <rules>
                                     <requireJavaVersion>
                                         <!-- Java version >= 1.7 -->
@@ -497,6 +522,19 @@
             </plugins>                        
         </pluginManagement>
     </build>
+    
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.6</version>
+                <configuration>
+                    <targetJdk>1.7</targetJdk>
+                </configuration>
+            </plugin>
+        </plugins>
+    </reporting>
     
     <profiles>
         <profile>
@@ -513,9 +551,9 @@
         <profile>
             <id>develop</id>
             <properties>
-                <skip.it>true</skip.it>
-                <skip.javadoc>true</skip.javadoc>
-                <skip.source>true</skip.source>
+                <skipITs>true</skipITs>
+                <skipJavadoc>true</skipJavadoc>
+                <skipSource>true</skipSource>
                 <maven.compiler.optimize>false</maven.compiler.optimize>
                 <maven.compiler.debug>true</maven.compiler.debug>
             </properties>
@@ -533,6 +571,6 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+        </profile>                
     </profiles>    
 </project>
