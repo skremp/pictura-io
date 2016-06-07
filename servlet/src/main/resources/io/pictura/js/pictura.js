@@ -5,7 +5,7 @@
  */
 
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2015, 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,33 +47,33 @@
  */
 
 if (!window['__PicturaIO__']) {
-    
+
     // Prevent double script running on same page. Also note, we NEED to use 
     // string as closure compiler would otherwise compile this statement badly.
 
     "use strict";
-          
-    (function(window, document) {
-                
+
+    (function (window, document) {
+
         // User options
         var options = {};
-        
+
         // Client side config
-        if (typeof(PicturaIO) === 'object') {
-            if (typeof(PicturaIO.init) !== undefined) {
+        if (typeof (PicturaIO) === 'object') {
+            if (typeof (PicturaIO.init) !== undefined) {
                 options = PicturaIO.init;
-            }            
+            }
         } else {
             PicturaIO = {
-                init: { }
+                init: {}
             };
-        }           
-                
+        }
+
         /**
          * The current PicturaIO client side JavaScript implementation version.
          */
         PicturaIO.version = "${script.version}";
-                
+
         /**
          * Reloads the specified image. If there is no image is specified or
          * is <code>null</code>, this function triggers a reload of all images
@@ -83,10 +83,10 @@ if (!window['__PicturaIO__']) {
          * @param {Integer} delay An optional delay in millis to wait before the
          *   image will be reloaded.
          */
-        PicturaIO.reload = function(img, delay) {                        
+        PicturaIO.reload = function (img, delay) {
             var i = img;
             if (delay && delay > 0) {
-                window.setTimeout(function() {
+                window.setTimeout(function () {
                     if (i === null) {
                         imgs = [];
                         findImages();
@@ -102,7 +102,7 @@ if (!window['__PicturaIO__']) {
                 showImage(i);
             }
         };
-        
+
         /**
          * Gets, sets or overrides the specified parameter. The current set of 
          * parameters includes:
@@ -171,7 +171,7 @@ if (!window['__PicturaIO__']) {
          * <tr>
          * <td><i>reloadThreshold</i></td>
          * <td></td>
-         * </tr>
+         * </tr>         
          * </table>
          * 
          * @param {String} name Parameter name.
@@ -180,7 +180,7 @@ if (!window['__PicturaIO__']) {
          * @returns {Object} The old value of the specified parameter or in
          *   cases of read parameter the current value.
          */
-        PicturaIO.param = function(name, value) {
+        PicturaIO.param = function (name, value) {
             if (value === undefined) {
                 return P[name];
             } else if (value !== undefined && name !== undefined) {
@@ -189,7 +189,7 @@ if (!window['__PicturaIO__']) {
                 return oldValue;
             }
         };
-        
+
         /**
          * Converts the given source image URL to a palette CSS URL.
          * <p>
@@ -203,14 +203,17 @@ if (!window['__PicturaIO__']) {
          * @returns {String} URL to get the palette CSS for the specified
          *   source image with the optional data options.
          */
-        PicturaIO.pcssURL = function(src, opt) {
-            return buildSrcURL(getServer(), src, opt += '/F=PCSS');
+        PicturaIO.pcssURL = function (src, opt) {
+            if (src && src.toLowerCase().indexOf("/f=pcss") === -1) {
+                return buildSrcURL(getServer(), src, opt += '/F=PCSS');
+            }
+            return src;
         };
-        
-        PicturaIO.imgURL = function(src, opt) {
+
+        PicturaIO.imgURL = function (src, opt) {
             return buildSrcURL(getServer(), src, opt);
         };
-        
+
         /**
          * Returns the server address (endpoint) where the Pictura service is
          * running. In cases of multiple address URLs, the funtion will 
@@ -218,101 +221,92 @@ if (!window['__PicturaIO__']) {
          * 
          * @returns Address of the remote service endpoint.
          */
-        PicturaIO.serverAddr = function() {
+        PicturaIO.serverAddr = function () {
             return getServer();
-        };        
-        
+        };
+
         // Responsive image as a service options
         var P = {
             // Debug flag to automatically append the debug URL query parameter
             debug: options.debug || false,
-                        
             // Image I/O server (service) endpoint
             server: options.server || null,
-            
             // An optional delay to wait after domready before the script
             // will search for images
             delay: options.delay || 0,
-            
             // CSS class name for image tags as marker
             imageClass: options.imageClass || null,
-            
             // Default image quality
             imageQuality: options.imageQuality || null,
-            
             // Default image compression quality
             imageCompressionQuality: options.imageCompressionQuality || null,
-            
             // Custom error handler
             imageOnError: options.imageOnError || null,
-            
             // Custom on load callback
             imageOnLoad: options.imageOnLoad || null,
-            
             // Custom on change callback
             imageOnChange: options.imageOnChange || null,
-            
             // Custom image source resolver
             imageResolver: options.imageResolver || null,
-            
             // Lazyload
             lazyLoad: options.lazyLoad || false,
-            
             // Vertical offset in px. used for preloading images while scrolling
             lazyLoadOffset: options.lazyLoadOffset || -1,
-            
             // Reload on resize
             reloadOnResize: options.reloadOnResize || true,
-            
             // Reload on resize down
             reloadOnResizeDown: options.reloadOnResizeDown || false,
-            
             // Reload on orientation change
             reloadOnOrientationChange: options.reloadOnOrientationChange || true,
-            
             // Reload only if the size changed is larger than the specified delta in px (default is 10px)
-            reloadThreshold: options.reloadThreshold || 10
-        };                
-        
+            reloadThreshold: options.reloadThreshold || 10,
+            // The attribute, which should be transformed to src
+            srcAttr: 'data-src',
+            // The attribute, which should be transformed to srcset
+            srcsetAttr: 'data-srcset',
+            // The attribute, used to set the optional image processing parameters
+            paramsAttr: 'data-params'
+        };
+
         var width = viewportW();
         var height = viewportH();
-        
+
         var
-            // Vertical offset in px. used for preloading images while scrolling
-            offset = P.lazyLoadOffset > -1 ? P.lazyLoadOffset : height / 6,
-            // Where to get real src            
-            dataSrcAttr = 'data-src',
-            // Where to get real srcset (optional)
-            dataSrcsetAttr = 'data-srcset',
-            // Where to get custom layzyload (optional)
-            dataLazyLoadAttr = 'data-lazyload',
-            // Where to get additional image params (optional)
-            dataParamsAttr = 'data-params',
-            // If set to true, the script will ignore the related image tag
-            dataSkipAttr = 'data-skip',
-            // Window width
-            winW = width,
-            // Window height
-            winH = height,
-            // Current consumed reload delta
-            reloadThreshold = 0,
-            // Client pixel ratio
-            dpr = (window.devicePixelRatio !== undefined ? Math.round(window.devicePixelRatio * 100) / 100 : 1),
-            // Self-populated page images array, we do not getElementsByTagName
-            imgs = [],
-            pageHasLoaded = false,
-            unsubscribed = false,
-            // Throttled functions, so that we do not call them too much
-            saveViewportT = throttle(viewportH, 20),
-            showImagesT = throttle(showImages, 20),
-            // Resize timer to prevent polling
-            resizeTimer = 0,
-            // Flag if media print matches
-            mediaPrint = false,
-            // Server addr array index
-            serverIndex = -1,
-            // RegEx to detect raster image format names
-            rasterImageFormatRegExp = /(\.(jpg|jpeg|JPG|JPEG)($|#.*|\?.*)|\.(png|PNG)($|#.*|\?.*)|\.(gif|GIF)($|#.*|\?.*)|\.(webp|WEBP)($|#.*|\?.*)|\.(bmp|BMP)($|#.*|\?.*)|\.(jp2|jpeg2000|JP2|JPEG2000)($|#.*|\?.*))/;
+        // Vertical offset in px. used for preloading images while scrolling
+        offset = P.lazyLoadOffset > -1 ? P.lazyLoadOffset : height / 6,
+        // Where to get real src            
+        dataSrcAttr = P.srcAttr,
+        // Where to get real srcset (optional)
+        dataSrcsetAttr = P.srcsetAttr,
+        // Where to get additional image params (optional)
+        dataParamsAttr = P.paramsAttr,
+        // Where to get custom layzyload (optional)
+        dataLazyLoadAttr = 'data-lazyload',
+        // If set to true, the script will ignore the related image tag
+        dataSkipAttr = 'data-skip',       
+        // Window width
+        winW = width,
+        // Window height
+        winH = height,
+        // Current consumed reload delta
+        reloadThreshold = 0,
+        // Client pixel ratio
+        dpr = (window.devicePixelRatio !== undefined ? Math.round(window.devicePixelRatio * 100) / 100 : 1),
+        // Self-populated page images array, we do not getElementsByTagName
+        imgs = [],
+        pageHasLoaded = false,
+        unsubscribed = false,
+        // Throttled functions, so that we do not call them too much
+        saveViewportT = throttle(viewportH, 20),
+        showImagesT = throttle(showImages, 20),
+        // Resize timer to prevent polling
+        resizeTimer = 0,
+        // Flag if media print matches
+        mediaPrint = false,
+        // Server addr array index
+        serverIndex = -1,
+        // RegEx to detect raster image format names
+        rasterImageFormatRegExp = /(\.(jpg|jpeg|JPG|JPEG)($|#.*|\?.*)|\.(png|PNG)($|#.*|\?.*)|\.(gif|GIF)($|#.*|\?.*)|\.(webp|WEBP)($|#.*|\?.*)|\.(bmp|BMP)($|#.*|\?.*)|\.(jp2|jpeg2000|JP2|JPEG2000)($|#.*|\?.*)|\.(ico)($|#.*|\?.*))/;
 
         // Override image element .getAttribute globally so that we give the real src
         // does not works for ie < 8: http://perfectionkills.com/whats-wrong-with-extending-the-dom/
@@ -323,22 +317,23 @@ if (!window['__PicturaIO__']) {
         // Called from every lazy <img> onload event
         window['__PicturaIO__'] = onDataSrcImgLoad;
 
-        // init
+        // init       
         if (P.delay && P.delay > 0) {
-            window.setTimeout(function() {
-                domready(findImages);                
+            window.setTimeout(function () {
+                domready(findImages);
             }, P.delay);
         } else {
             domready(findImages);
         }
         addEvent(window, 'load', onLoad);
+        addEvent(window, 'resize', onResize);
 
         // Bind events
         subscribe();
-        
+
         // Force image loading if 'print' was called
         if (window.matchMedia) {
-            window.matchMedia('print').addListener(function(e) {
+            window.matchMedia('print').addListener(function (e) {
                 mediaPrint = true;
                 showImages();
             });
@@ -346,9 +341,9 @@ if (!window['__PicturaIO__']) {
 
         // domain sharding
         function getServer() {
-            return P.server === null ? null : (typeof(P.server) === 'string' ? 
-                P.server : (typeof(P.server) === 'object' ? (P.server[P.server.length > 
-                    (serverIndex + 1) ? ++serverIndex : (serverIndex = 0)]) : P.server));
+            return P.server === null ? null : (typeof (P.server) === 'string' ?
+                    P.server : (typeof (P.server) === 'object' ? (P.server[P.server.length >
+                            (serverIndex + 1) ? ++serverIndex : (serverIndex = 0)]) : P.server));
         }
 
         // called by img onload= or onerror= for IE6/7
@@ -367,9 +362,9 @@ if (!window['__PicturaIO__']) {
 
         // find and merge images on domready with possibly already present onload= onerror= imgs
         function findImages() {
-            var domreadyImgs = document.getElementsByTagName('img'), 
-                domreadyDivs = P.imageClass ? document.getElementsByClassName(P.imageClass) : [],
-                currentImg;            
+            var domreadyImgs = document.getElementsByTagName('img'),
+                    domreadyDivs = P.imageClass ? document.getElementsByClassName(P.imageClass) : [],
+                    currentImg;
 
             // remove imgs from the "div" list
             var buf = [];
@@ -382,8 +377,8 @@ if (!window['__PicturaIO__']) {
 
             // Concat the two node lists
             var domreadyEls = Array.prototype.slice.call(domreadyImgs).concat(
-                    Array.prototype.slice.call(domreadyDivs));           
-                        
+                    Array.prototype.slice.call(domreadyDivs));
+
             // merge them with already self onload registered imgs
             for (var imgIndex = 0, max = domreadyEls.length; imgIndex < max; imgIndex += 1) {
                 currentImg = domreadyEls[imgIndex];
@@ -398,7 +393,7 @@ if (!window['__PicturaIO__']) {
 
         function onLoad() {
             pageHasLoaded = true;
-            // if page height changes (hiding elements at start)t
+            // if page height changes (hiding elements at start)
             // we should recheck for new in viewport images that need to be shown
             // see onload test
             showImagesT();
@@ -410,7 +405,7 @@ if (!window['__PicturaIO__']) {
 
         function throttle(fn, minDelay) {
             var lastCall = 0;
-            return function() {
+            return function () {
                 var now = +new Date();
                 if (now - lastCall < minDelay) {
                     return;
@@ -475,7 +470,8 @@ if (!window['__PicturaIO__']) {
                 if (document.createEventObject && document.documentElement.doScroll) {
                     try {
                         top = !window.frameElement;
-                    } catch (e) { }
+                    } catch (e) {
+                    }
                     if (top) {
                         poll();
                     }
@@ -488,15 +484,21 @@ if (!window['__PicturaIO__']) {
         }
 
         function onResize() {
+            winH = viewportH();
+            winW = viewportW();
+            offset = P.lazyLoadOffset > -1 ? P.lazyLoadOffset : height / 6;
+        }
+
+        function onResizeReload() {
             if (resizeTimer) {
                 clearTimeout(resizeTimer);
             }
             resizeTimer = setTimeout(reloadIfViewportChanged, 500);
-        } 
+        }
 
         function onErrorImg(e) {
             if (e && e.target && e.target.dataset) {
-                var alt = typeof(P.imageOnError) === 'function' ? P.imageOnError(e) : P.imageOnError;
+                var alt = typeof (P.imageOnError) === 'function' ? P.imageOnError(e) : P.imageOnError;
                 if (alt !== undefined && alt !== null && alt !== '') {
                     if (startsWith(alt, 'data:')) {
                         e.target['src'] = alt;
@@ -514,15 +516,15 @@ if (!window['__PicturaIO__']) {
          * initial viewport as we have loaded the current displayed images.
          */
         function reloadIfViewportChanged() {
-            var vw = viewportW();    
-            if (winW < vw || (imgs.length > 0 && P.reloadOnResizeDown)) {                
-                reloadThreshold += (winW - vw);                
-                if (P.reloadThreshold && P.reloadThreshold > 0) {                    
-                    if ((reloadThreshold < 0 && P.reloadOnResizeDown && reloadThreshold > P.reloadThreshold) || 
-                            (reloadThreshold > 0 && reloadThreshold < P.reloadThreshold)) {      
+            var vw = viewportW();
+            if (winW < vw || (imgs.length > 0 && P.reloadOnResizeDown)) {
+                reloadThreshold += (winW - vw);
+                if (P.reloadThreshold && P.reloadThreshold > 0) {
+                    if ((reloadThreshold < 0 && P.reloadOnResizeDown && reloadThreshold > P.reloadThreshold) ||
+                            (reloadThreshold > 0 && reloadThreshold < P.reloadThreshold)) {
                         return;
                     }
-                }                
+                }
                 reloadThreshold = 0;
                 winW = vw;
                 imgs = [];
@@ -538,7 +540,7 @@ if (!window['__PicturaIO__']) {
             // http://bugs.jquery.com/ticket/4996                                    
             if (contains(document.documentElement, img) &&
                     !isSkipLoading(img) && (mediaPrint || !isLazyLoad(img) ||
-                        img.getBoundingClientRect().top < winH + offset)) {
+                    img.getBoundingClientRect().top < winH + offset)) {
 
                 // To avoid onload loop calls
                 // removeAttribute on IE is not enough to prevent the event to fire
@@ -549,33 +551,33 @@ if (!window['__PicturaIO__']) {
                 img.onerror = null;
                 img.removeAttribute('onerror');
 
-                showImage(img);                
+                showImage(img);
                 imgs[index] = null;
 
                 return true; // img shown
             }
             return false; // img to be shown
-        }        
-        
+        }
+
         function isLazyLoad(img) {
             var lazyLoad = img.getAttribute(dataLazyLoadAttr);
-            return (lazyLoad && lazyLoad === '1') ? true : 
-                (P.lazyLoad ? ((lazyLoad && lazyLoad === '0') ? false : true) : 
-                    false);
-        } 
-        
+            return (lazyLoad && lazyLoad === '1') ? true :
+                    (P.lazyLoad ? ((lazyLoad && lazyLoad === '0') ? false : true) :
+                            false);
+        }
+
         function isSkipLoading(img) {
             var skip = img.getAttribute(dataSkipAttr);
             return skip && (skip === '1' || skip === 'true');
-        } 
-                
+        }
+
         function buildSrcURL(server, src, opt, width, height) {
-            
+
             // If the source image is not a raster image do not use Pictura
             if (src.match(rasterImageFormatRegExp) === null) {
                 return;
             }
-            
+
             // remove the server address if specified by the user
             src = src.replace(server, '');
             if (startsWith(src, 'http') && src.indexOf('?') > -1) {
@@ -589,7 +591,7 @@ if (!window['__PicturaIO__']) {
             if (opt !== null) {
                 opt = (startsWith(opt, '/') ? '' : '/') + opt;
                 opt = opt.toLowerCase();
-            }            
+            }
 
             // bounds check; if the image has no information about the
             // current client width, we will try to get this info 
@@ -599,7 +601,7 @@ if (!window['__PicturaIO__']) {
                 if (width !== undefined) {
                     src = '/s=w' + width + (height > 0 ? ',h' + height : '') + ',dpr' + dpr + src;
                 }
-            }                
+            }
 
             // if there is no custom quality is specified we will use
             // the global default specified quality.
@@ -620,7 +622,7 @@ if (!window['__PicturaIO__']) {
             if (opt !== null) {
                 src = opt + src;
             }
-            
+
             if (endsWith(server, '/') && startsWith(src, '/')) {
                 src = src.substring(1);
             }
@@ -628,49 +630,49 @@ if (!window['__PicturaIO__']) {
             // the new image source link (if debug enabled this will also
             // append the debug query parameter)
             return server + src + (P.debug === true ? '?debug' : '');
-        }
-                
-        function showImage(img, err) {                        
+        }        
+
+        function showImage(img, err) {
             
-            if (typeof(P.imageOnChange) === 'function') {
-                P.imageOnChange(img);                
+            if (typeof (P.imageOnChange) === 'function') {
+                P.imageOnChange(img);
             }
-            
+
             var src = img.getAttribute(dataSrcAttr),
-                srcset = img.getAttribute(dataSrcsetAttr) || null,
-                params = img.getAttribute(dataParamsAttr) || null;
-                        
-            if ((!err || err === false) && typeof(P.imageResolver) === 'function') {
+                    srcset = img.getAttribute(dataSrcsetAttr) || null,
+                    params = img.getAttribute(dataParamsAttr) || null;
+
+            if ((!err || err === false) && typeof (P.imageResolver) === 'function') {
                 src = P.imageResolver(src, params);
                 srcset = null; // reset
             }
-            
+
             var server = getServer();
-            
+
             // calcualte the scale width only if the image is marked as
             // responsive image             
-            if ((src || srcset) && server !== null && 
-                    (P.imageClass === null || 
-                        ((' ' + img.className + ' ').indexOf(' ' + P.imageClass + ' ') > -1))) {
+            if ((src || srcset) && server !== null &&
+                    (P.imageClass === null ||
+                            ((' ' + img.className + ' ').indexOf(' ' + P.imageClass + ' ') > -1))) {
 
                 // Get the required image width and the device pixel ratio.
                 // Also skip tracking pixels or placeholder pixels with a size
                 // of 1x1 px.
-                var w = (img.width !== undefined && img.width > 0) ? img.width 
-                        : (img.clientWidth > 1 && img.clientHeight > 1 && 
-                            img.width !== img.clientWidth) ? img.clientWidth : 0,
-                    h = -1;
+                var w = (img.width !== undefined && img.width > 0) ? img.width
+                        : (img.clientWidth > 1 && img.clientHeight > 1 &&
+                                img.width !== img.clientWidth) ? img.clientWidth : 0,
+                        h = -1;
 
                 if ((w === undefined || w === 0) && img.parentElement !== undefined) {
-                    
+
                     var n = img.parentElement;
                     while (n.clientWidth < 1) {
                         n = n.parentElement;
-                    }                    
-                    
+                    }
+
                     w = n.clientWidth;
                     h = n.clientHeight;
-                    
+
                     if (w !== undefined && w > 0 && n.offsetWidth) {
                         if (w < n.offsetWidth) {
                             w = n.offsetWidth;
@@ -680,11 +682,11 @@ if (!window['__PicturaIO__']) {
                         w = winW;
                     }
                 }
-                                
+
                 // Test if we need to use an image from the srcset attribute
                 var srcsetArr = srcset ? parseSrcset(srcset) : null;
                 if (srcsetArr !== null) {
-                    for (var i=0; i<srcsetArr.length; i++) {
+                    for (var i = 0; i < srcsetArr.length; i++) {
                         var srci = srcsetArr[i];
                         if (srci && srci['url']) {
                             var srcj = buildSrcURL(server, srci['url'], params, w);
@@ -700,18 +702,18 @@ if (!window['__PicturaIO__']) {
                             srcset = (i === 0 ? srcj : srcset + ', ' + srcj);
                         }
                     }
-                }                
-                    
+                }
+
                 src = buildSrcURL(server, src, params, w, h);
             }
-            
-            if (typeof(P.imageOnLoad) === 'function' && !img.eventOnLoadAdded) {
-                addEvent(img, 'load', function(e) {
+
+            if (typeof (P.imageOnLoad) === 'function' && !img.eventOnLoadAdded) {
+                addEvent(img, 'load', function (e) {
                     P.imageOnLoad(e);
                     img.eventOnLoadAdded = true;
                 });
             }
-            
+
             // if the user has defined an onError fallback image we have
             // to register an onError event listener to this image.
             if (P.imageOnError !== null) {
@@ -727,7 +729,7 @@ if (!window['__PicturaIO__']) {
                     }
                 }
             }
-                       
+
             if (img.tagName.toLowerCase() === 'div') {
                 var url = 'url(' + src + ')';
                 img.style.backgroundImage = url;
@@ -740,7 +742,7 @@ if (!window['__PicturaIO__']) {
                 img.src = src;
             }
         }
-                
+
         /**
          * Tests whether the given string starts with the specified prefix 
          * or not.
@@ -754,29 +756,29 @@ if (!window['__PicturaIO__']) {
         function startsWith(str, prefix) {
             return str.length > 0 && str.slice(0, 1) === prefix;
         }
-        
+
         function endsWith(str, suffix) {
             return str.indexOf(suffix, str.length - suffix.length) !== -1;
         }
-        
+
         /**
          * Calculates the browser viewport width in px.
          * @returns {Number} Viewport width.
          */
         function viewportW() {
             return document.documentElement.clientWidth >= 0 ? document.documentElement.clientWidth :
-                (document.body && document.body.clientWidth >= 0) ? document.body.clientWidth : 
-                window.innerWidth >= 0 ? window.innerWidth : 0;
-        }        
-        
+                    (document.body && document.body.clientWidth >= 0) ? document.body.clientWidth :
+                    window.innerWidth >= 0 ? window.innerWidth : 0;
+        }
+
         /**
          * Calculates the browser viewport hight in px.
          * @returns {Number} Viewport height.
          */
         function viewportH() {
             return document.documentElement.clientHeight >= 0 ? document.documentElement.clientHeight :
-                (document.body && document.body.clientHeight >= 0) ? document.body.clientHeight :
-                window.innerHeight >= 0 ? window.innerHeight : 0;
+                    (document.body && document.body.clientHeight >= 0) ? document.body.clientHeight :
+                    window.innerHeight >= 0 ? window.innerHeight : 0;
         }
 
         /**
@@ -802,14 +804,15 @@ if (!window['__PicturaIO__']) {
         function unsubscribe() {
             unsubscribed = true;
             removeEvent(window, 'load', onLoad);
+            removeEvent(window, 'resize', onResize);
         }
 
         function subscribe() {
             unsubscribed = false;
             addEvent(window, 'resize', saveViewportT);
-            addEvent(window, 'scroll', showImagesT);            
+            addEvent(window, 'scroll', showImagesT);
             if (P.reloadOnResize) {
-                addEvent(window, 'resize', onResize);
+                addEvent(window, 'resize', onResizeReload);
             }
             if (P.reloadOnOrientationChange) {
                 addEvent(window, 'orientationchange', reloadIfViewportChanged());
@@ -818,24 +821,24 @@ if (!window['__PicturaIO__']) {
 
         function overrideGetAttribute() {
             var original = window['HTMLImageElement'].prototype.getAttribute;
-            window['HTMLImageElement'].prototype.getAttribute = function(name) {
+            window['HTMLImageElement'].prototype.getAttribute = function (name) {
                 // if name !== 'src' our own lazyloader will go through theses 
                 // lines because we use getAttribute(lazyAttr)
-                return name === 'src' ? (original.call(this, dataSrcAttr) || 
-                        original.call(this, name)) : original.call(this, name);                
+                return name === 'src' ? (original.call(this, dataSrcAttr) ||
+                        original.call(this, name)) : original.call(this, name);
             };
         }
 
         // https://github.com/jquery/sizzle/blob/3136f48b90e3edc84cbaaa6f6f7734ef03775a07/sizzle.js#L708
         var contains = document.documentElement.compareDocumentPosition ?
-                function(a, b) {
+                function (a, b) {
                     return !!(a.compareDocumentPosition(b) & 16);
                 } :
                 document.documentElement.contains ?
-                function(a, b) {
+                function (a, b) {
                     return a !== b && (a.contains ? a.contains(b) : false);
                 } :
-                function(a, b) {
+                function (a, b) {
                     var b0 = b.parentNode;
                     while ((b === b0)) {
                         if (b === a) {
@@ -866,8 +869,8 @@ if (!window['__PicturaIO__']) {
             }
 
             return -1;
-        }                
-         
+        }
+
         // https://github.com/baloneysandwiches/parse-srcset/blob/master/parse-srcset.js
         function parseSrcset(input) {
             var inputLength = input.length;
@@ -1198,7 +1201,7 @@ if (!window['__PicturaIO__']) {
             } // (close parseDescriptors fn)
 
         }
-        
-    }) (this, document);
+
+    })(this, document);
 
 }
