@@ -16,6 +16,7 @@
 package io.pictura.servlet;
 
 import io.pictura.servlet.PicturaConfig.ConfigParam;
+import static io.pictura.servlet.RequestProcessor.HEADER_ALLOW;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
@@ -104,7 +105,7 @@ public class PicturaPostServlet extends PicturaServlet {
 	    throws ServletException, IOException {
 
 	// Override the default allow header
-	rp.getResponse().setHeader("Allow", "GET, POST");
+	rp.getResponse().setHeader(HEADER_ALLOW, "GET, POST");
 
 	// Set additional request attributes for this type of servlet
 	rp.getRequest().setAttribute("io.pictura.servlet.MAX_IMAGE_POST_CONTENT_LEGTH",
