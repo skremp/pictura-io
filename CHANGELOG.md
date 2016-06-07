@@ -18,7 +18,7 @@ _2016-05-27_
 
 _2016-05-20_
 
-* Fixed missing support for *DELETE* requests a cache instance is defined.
+* Fixed missing support for *DELETE* requests if a cache instance is defined.
 
 ## 1.1.2.Final
 
