@@ -22,14 +22,8 @@
                 
     <packaging>jar</packaging>
     
-    <properties>               
-        <skip.it>false</skip.it>        
-        <skip.tests>false</skip.tests>
-        <skip.jar>false</skip.jar>
-        <skip.javadoc>false</skip.javadoc>
-        <skip.source>false</skip.source>                
-        
-        <maven.test.skip>${skip.tests}</maven.test.skip>
+    <properties>
+        <maven.test.skip>${skipTests}</maven.test.skip>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
         <maven.compiler.optimize>true</maven.compiler.optimize>
@@ -210,7 +204,7 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.6</version>
                 <configuration>
-                    <skipSource>${skip.jar}</skipSource>
+                    <skipSource>${skipSource}</skipSource>
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -247,7 +241,7 @@
                 <version>2.18.1</version>
                 <configuration>
                     <argLine>${surefireArgLine}</argLine>
-                    <skipTests>${skip.tests}</skipTests>          
+                    <skipTests>${skipTests}</skipTests>          
                     <excludes>
                         <exclude>**/*IT.java</exclude>
                         <exclude>**/*LT.java</exclude>
@@ -265,8 +259,8 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <skipITs>${skip.it}</skipITs>
-                            <skipTests>${skip.tests}</skipTests>
+                            <skipITs>${skipITs}</skipITs>
+                            <skipTests>${skipTests}</skipTests>
                             <argLine>${failsafeArgLine}</argLine>
                             <excludes>
                                 <exclude>**/*LT.java</exclude>
@@ -395,7 +389,7 @@
                 <configuration>
                     <overview>${project.basedir}/src/main/javadoc/overview.html</overview>
                     <bottom><![CDATA[Copyright &#169;, {currentYear} Steffen Kremp.]]></bottom>
-                    <skip>${skip.javadoc}</skip>
+                    <skip>${skipJavadoc}</skip>
                     <jarOutputDirectory>${project.basedir}/target</jarOutputDirectory>
                 </configuration>
                 <executions>
@@ -419,7 +413,7 @@
                             <goal>enforce</goal>
                         </goals>
                         <configuration>
-                            <skip>${skip.enforcer}</skip>
+                            <skip>${skipEnforcer}</skip>
                             <rules>
                                 <requireJavaVersion>
                                     <!-- Java version >= 1.7 -->
@@ -459,19 +453,8 @@
     </build>
     
     <profiles>        
-        <!--
-            Develop profile with disabled integration tests. Also this profile
-            will not generate any javadoc and source archive.
-        -->
         <profile>
-            <id>develop</id>
-            <properties>
-                <skip.it>true</skip.it>
-                <skip.javadoc>true</skip.javadoc>
-                <skip.source>true</skip.source>
-                <maven.compiler.optimize>false</maven.compiler.optimize>
-                <maven.compiler.debug>true</maven.compiler.debug>
-            </properties>
+            <id>develop</id>            
             <build>
                 <plugins>
                     <plugin>

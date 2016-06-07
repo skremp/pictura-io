@@ -49,6 +49,12 @@
     </modules>
     
     <properties>
+        <skipITs>false</skipITs>        
+        <skipTests>false</skipTests>
+        <skipJavadoc>false</skipJavadoc>
+        <skipSource>false</skipSource>
+        <skipEnforcer>false</skipEnforcer>
+        
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>               
                
@@ -210,8 +216,19 @@
             </activation>
         </profile>
         
+        <!--
+            Develop profile with disabled integration tests. Also this profile
+            will not generate any javadoc and source archive.
+        -->
         <profile>
             <id>develop</id>
+            <properties>
+                <skipITs>true</skipITs>
+                <skipJavadoc>true</skipJavadoc>
+                <skipSource>true</skipSource>
+                <maven.compiler.optimize>false</maven.compiler.optimize>
+                <maven.compiler.debug>true</maven.compiler.debug>
+            </properties>
         </profile>
     </profiles>    
 </project>
