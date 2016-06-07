@@ -2522,7 +2522,7 @@ public class ImageRequestProcessor extends IIORequestProcessor {
                 } else if (!canWriteFormat(formatName)) {
                     doInterrupt(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE,
                             "Invalid format: the requested image output format \""
-                            + formatName + "\" is not supported by this server.");
+                            + formatName + "\" is not supported by this server");
                     return;
                 }
             }
