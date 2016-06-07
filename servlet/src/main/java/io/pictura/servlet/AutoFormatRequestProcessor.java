@@ -112,7 +112,7 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
 	    } else if (canWriteFormat("jpeg2000")) {
 		return "jpeg2000";
 	    }
-	}
+	}        
 	return null;
     }
 
@@ -156,10 +156,6 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
 			    DEFAULT_COMPRESSION_FACTOR;
 		    break;
 	    }
-            
-            if (LOG.isTraceEnabled()) {
-                
-            }
 	}
 	return o;
     }
@@ -240,8 +236,8 @@ public class AutoFormatRequestProcessor extends ImageRequestProcessor
 	    contAcceptHeader = "image/webp";
 	}
 	return b;
-    }
-
+    }    
+    
     @Override
     public boolean isPreferred(HttpServletRequest req) {
 	return req != null && super.getRequestedFormatName(req) == null
