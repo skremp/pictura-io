@@ -18,6 +18,7 @@ package io.pictura.servlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -85,14 +86,52 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
             }
 
             // Convert the memory tree to JSON
-            com.google.gson.Gson gson = new com.google.gson.Gson();
-            byte[] json = gson.toJson(tree).getBytes();
+            byte[] json = toJson(tree).getBytes();
 
             resp.setContentType("application/json");
             doWrite(json, 0, json.length, req, resp);
         } catch (Throwable t) {
             throw new IOException(t);
         }
+    }
+
+    private String toJson(LinkedHashMap<String, LinkedHashMap<String, String>> src) {
+        // Try the default javax.json package available since JEE 7 
+        if (classForName(null, "javax.json.Json") != null) {
+            // javax.json is available as API and provider. If there is the API
+            // available it is not guaranteed that a provider is also available.
+            String json = null;
+            try {
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Found javax.json.Json to build EXIF metadata output");
+                }
+                javax.json.JsonObjectBuilder builder = javax.json.Json.createObjectBuilder();
+                for (String k : src.keySet()) {
+                    javax.json.JsonObjectBuilder j = javax.json.Json.createObjectBuilder();
+                    Map<String, String> v = src.get(k);
+                    for (String vk : v.keySet()) {
+                        j.add(vk, v.get(vk));
+                    }
+                    builder.add(k, j.build());
+                }
+                json = builder.build().toString();
+            } catch (Throwable t) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(t);
+                }
+            }
+            if (json != null) {
+                return json;
+            }
+        }
+        
+        // Fallback Gson
+        if (classForName(null, "com.google.gson.Gson") != null) {
+            return new com.google.gson.Gson().toJson(src);
+        }
+        
+        // Should normally never happen
+        return null;
     }
 
     /**
@@ -110,7 +149,8 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
     @Override
     public boolean isPreferred(HttpServletRequest req) {
         if ("exif".equals(getBaseRequestProcessor(req).getRequestParameter(req, QPARAM_NAME_FORMAT_NAME))) {
-            if (classForName(req.getServletContext(), "com.google.gson.Gson") == null) {
+            if (classForName(req.getServletContext(), "javax.json.Json") == null
+                    && classForName(req.getServletContext(), "com.google.gson.Gson") == null) {
                 LOG.warn("Can not handle request because of missing optional dependency \"com.google.code.gson:gson\"");
                 return false;
             }
