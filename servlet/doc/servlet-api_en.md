@@ -652,6 +652,15 @@ each response. The default value is `false`.
 
 **[\[⬆\]](#table-of-contents)**
 
+### headerAddNormalizedParams
+
+If set to `true`, the servlet appends automatically a normalized string of the
+image request parameters to the response. The default value is `false`.
+
+***@since 1.2***
+
+**[\[⬆\]](#table-of-contents)**
+
 ### cacheControlHandler
 
 Sets a custom cache control handler (class name or file). If a specified cache
