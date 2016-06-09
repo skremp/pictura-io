@@ -119,7 +119,13 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
+        
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <scope>provided</scope>
+        </dependency>
         
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
