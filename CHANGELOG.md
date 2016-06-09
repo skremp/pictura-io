@@ -19,11 +19,14 @@ _TBD_
   entries within I/O streams.
 * Added the possibility to define a custom error handler in case of HTTP error
   responses (status code 4xx and 5xx).
+* Added optional response header *X-Pictura-NormalizedParams*.
+* Added support for JEE 7 JSON API in cases of EXIF metadata requests.
 * Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
   8-digit values, to handle RGB and ARGB color values, are supported.
-* Fixed unobserved maximum image resolution in cases of up-scaling.
-
-* Introduced the URL Builder API (new module).
+* Fixed unobserved maximum image resolution in case of up-scaling images.
+* Fixed *resourcePaths* in the base *RequestProcessor*. If the value was
+  overridden (by method) the new value was not used while the requested path
+  was checked by the *RequestProcessor* himself.
 
 ## 1.1.5.Final
 
