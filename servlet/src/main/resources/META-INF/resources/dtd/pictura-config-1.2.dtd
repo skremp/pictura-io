@@ -82,7 +82,7 @@
 <!ELEMENT enable (#PCDATA)>
 <!ELEMENT content-disposition (enable)*>
 <!ELEMENT webp (enable)*>
-<!ELEMENT header (add-content-location|add-true-cache-key|add-request-id)*>
+<!ELEMENT header (add-content-location|add-true-cache-key|add-request-id|add-normalized-params)*>
 <!ELEMENT add-content-location (#PCDATA)>
 <!ELEMENT add-true-cache-key (#PCDATA)>
 <!ELEMENT add-request-id (#PCDATA)>

@@ -542,6 +542,15 @@ public class PicturaServlet extends HttpCacheServlet {
     public static final String IPARAM_HEADER_ADD_REQUEST_ID = "headerAddRequestId";
 
     /**
+     * Servlet parameter to append the normalized image request parameters to
+     * the response. As default this is set to <code>false</code> to reduce
+     * the size of the response head.
+     */
+    @InitParam
+    @ConfigParam(xpath = "/pictura/header/add-normalized-params")
+    public static final String IPARAM_HEADER_ADD_NORMALIZED_PARAMS = "headerAddNormalizedParams";
+    
+    /**
      * Servlet parameter to define a cache control handler to set or overwrite
      * the default cache control response headers depending on the requested
      * resource path. The value could be a filename to a local cache control
@@ -803,8 +812,19 @@ public class PicturaServlet extends HttpCacheServlet {
 	@Override
 	public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
 	    rejectedTaskCount++;
+            
+            // Write a warning message with the current executor core values,
+            // where A = active count, P = pool size and Q = queue size.
+            if (LOG.isWarnEnabled() && r instanceof RequestProcessor) {
+                final RequestProcessor rp = (RequestProcessor) r;                                
+                LOG.warn("Rejected \"" + rp.getRequest().getMethod() 
+                        + " " + rp.getRequestURI() 
+                        + " " + rp.getRequest().getProtocol() + "\""
+                        + " [A: " + executor.getActiveCount() 
+                        + ", P: " + executor.getPoolSize() 
+                        + ", Q: " + executor.getQueue().size() + "]");
+            }
 	}
-
     };
 
     // Resource locations
@@ -865,6 +885,7 @@ public class PicturaServlet extends HttpCacheServlet {
     private boolean headerAddContentLocation;
     private boolean headerAddTrueCacheKey;
     private boolean headerAddRequestId;
+    private boolean headerAddNormalizedParams;
 
     // Additional statistics
     private volatile long instanceMillis;
@@ -900,6 +921,8 @@ public class PicturaServlet extends HttpCacheServlet {
     public String getServletName() {
         String sn = super.getServletName();
         if (sn == null || sn.isEmpty()) {
+            // If the user has not defined a servlet name for this instance
+            // use the auto generated servlet ID as servlet name, too.
             return getServletID();
         }
         return sn;
@@ -1199,6 +1222,7 @@ public class PicturaServlet extends HttpCacheServlet {
 	headerAddContentLocation = Boolean.parseBoolean(config.getInitParameter(IPARAM_HEADER_ADD_CONTENT_LOCATION));
 	headerAddTrueCacheKey = Boolean.parseBoolean(config.getInitParameter(IPARAM_HEADER_ADD_TRUE_CACHE_KEY));
 	headerAddRequestId = Boolean.parseBoolean(config.getInitParameter(IPARAM_HEADER_ADD_REQUEST_ID));
+        headerAddNormalizedParams = Boolean.parseBoolean(config.getInitParameter(IPARAM_HEADER_ADD_NORMALIZED_PARAMS));
 
 	// Optional content disposition option via query param
 	contentDisposition = Boolean.parseBoolean(config.getInitParameter(IPARAM_ENABLE_CONTENT_DISPOSITION));
@@ -2157,6 +2181,7 @@ public class PicturaServlet extends HttpCacheServlet {
 	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_CONTENT_LOCATION", headerAddContentLocation);
 	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_TRUE_CACHE_KEY", headerAddTrueCacheKey);
 	    pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_REQUEST_ID", headerAddRequestId);
+            pReq.setAttributeIfAbsent("io.pictura.servlet.HEADER_ADD_NORMALIZED_PARAMS", headerAddNormalizedParams);
 	    pReq.setAttributeIfAbsent("io.pictura.servlet.URL_CONNECTION_FACTORY", urlConnectionFactory);
             pReq.setAttributeIfAbsent("io.pictura.servlet.SERVICE_NANO_TIMESTAMP", serviceNanoTimestamp);
 	    
@@ -2405,7 +2430,7 @@ public class PicturaServlet extends HttpCacheServlet {
 	    throws ServletException, IOException {
 	doProcess("TRACE", req, resp);
     }
-
+    
     /**
      * Returns a thread pool who is responsible to execute the specified request
      * processor.

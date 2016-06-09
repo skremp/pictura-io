@@ -120,6 +120,7 @@
         <add-content-location>false</add-content-location>
         <add-true-cache-key>true</add-true-cache-key>
         <add-request-id>true</add-request-id>
+        <add-normalized-params>true</add-normalized-params>
     </header>
     
     <cache-control-handler>

@@ -39,8 +39,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -1600,7 +1602,13 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             return parameterMap;
         }       
 
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map;
+        if (req.getAttribute("io.pictura.servlet.HEADER_ADD_NORMALIZED_PARAMS") != null &&
+                (Boolean) req.getAttribute("io.pictura.servlet.HEADER_ADD_NORMALIZED_PARAMS")) {
+            map = new LinkedHashMap<>();
+        } else {
+            map = new HashMap<>();
+        }
 
         String ctxPath = req.getContextPath();
         String reqUri = req.getRequestURI();
@@ -2068,6 +2076,24 @@ public class ImageRequestProcessor extends IIORequestProcessor {
             maxImageFileSize = (Long) req.getAttribute("io.pictura.servlet.MAX_IMAGE_FILE_SIZE");
             maxImageResolution = (Long) req.getAttribute("io.pictura.servlet.MAX_IMAGE_RESOLUTION");
 
+            if (req.getAttribute("io.pictura.servlet.HEADER_ADD_NORMALIZED_PARAMS") != null &&
+                    (Boolean) req.getAttribute("io.pictura.servlet.HEADER_ADD_NORMALIZED_PARAMS")) {
+                
+                Map<String, String> params = getRequestParameters(req);
+                StringBuilder np = new StringBuilder();
+                for (Entry<String, String> p : params.entrySet()) {
+                    if (!QPARAM_NAME_IMAGE.equals(p.getKey())) {
+                        if (np.length() > 0) {
+                            np.append("/");
+                        }
+                        np.append(p.getKey()).append("=").append(p.getValue());
+                    }
+                }
+                if (np.length() > 0) {
+                    resp.setHeader("X-Pictura-NormalizedParams", np.toString());
+                }
+            }
+            
             if (srcUrl.getHost() != null && "".equals(srcUrl.getHost())) {
                 if ("file".equalsIgnoreCase(srcUrl.getProtocol())) {
                     doProcessFile(new File(srcUrl.toURI()), req, resp);
