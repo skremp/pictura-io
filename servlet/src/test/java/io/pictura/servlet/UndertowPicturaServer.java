@@ -106,6 +106,7 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_DEBUG, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_JMX_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HEADER_ADD_TRUE_CACHE_KEY, "true");
+        servletInfo.addInitParam(PicturaServlet.IPARAM_HEADER_ADD_NORMALIZED_PARAMS, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_USE_CONTAINER_POOL, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_STATS_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_PLACEHOLDER_PRODUCER_ENABLED, "true");
