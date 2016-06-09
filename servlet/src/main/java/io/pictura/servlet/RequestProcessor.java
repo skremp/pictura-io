@@ -189,7 +189,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 
     Pattern[] getResourcePaths() {
         // A request attribute overrides the default value
-        if (getAttribute("io.pictura.servlet.RESOURCE_PATHS") instanceof Pattern[]) {
+        if (req != null && getAttribute("io.pictura.servlet.RESOURCE_PATHS") instanceof Pattern[]) {
             return (Pattern[]) getAttribute("io.pictura.servlet.RESOURCE_PATHS");
         }
 	return resPaths;
@@ -458,7 +458,7 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      */
     public final ResourceLocator[] getResourceLocators() {
         // A request attribute overrides the default value
-        if (getAttribute("io.pictura.servlet.RESOURCE_LOCATORS") instanceof ResourceLocator[]) {
+        if (req != null && getAttribute("io.pictura.servlet.RESOURCE_LOCATORS") instanceof ResourceLocator[]) {
             return (ResourceLocator[]) getAttribute("io.pictura.servlet.RESOURCE_LOCATORS");
         }
 	return resLocators;
