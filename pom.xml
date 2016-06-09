@@ -46,7 +46,6 @@
     
     <modules>        
         <module>servlet</module>
-        <module>builder</module>
     </modules>
     
     <properties>
