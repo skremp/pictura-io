@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -86,7 +87,7 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
             }
 
             // Convert the memory tree to JSON
-            byte[] json = toJson(tree).getBytes();
+            byte[] json = toJson(tree, req.getServletContext()).getBytes();
 
             resp.setContentType("application/json");
             doWrite(json, 0, json.length, req, resp);
@@ -95,9 +96,11 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
         }
     }
 
-    private String toJson(LinkedHashMap<String, LinkedHashMap<String, String>> src) {
+    private String toJson(LinkedHashMap<String, LinkedHashMap<String, String>> src,
+            ServletContext ctx) {
+        
         // Try the default javax.json package available since JEE 7 
-        if (classForName(null, "javax.json.Json") != null) {
+        if (classForName(ctx, "javax.json.Json") != null) {
             // javax.json is available as API and provider. If there is the API
             // available it is not guaranteed that a provider is also available.
             String json = null;
@@ -126,7 +129,7 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
         }
         
         // Fallback Gson
-        if (classForName(null, "com.google.gson.Gson") != null) {
+        if (classForName(ctx, "com.google.gson.Gson") != null) {
             return new com.google.gson.Gson().toJson(src);
         }
         
