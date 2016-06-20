@@ -683,6 +683,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -704,6 +705,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -725,6 +727,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -746,6 +749,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -767,6 +771,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -788,6 +793,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -903,6 +909,7 @@ public class PicturaServletTest {
         when(config.getServletContext()).thenReturn(context);
         when(config.getInitParameter(PicturaServlet.IPARAM_DEBUG)).thenReturn("true");
         when(config.getInitParameter(PicturaServlet.IPARAM_JMX_ENABLED)).thenReturn("false");
+        when(config.getInitParameter(PicturaServlet.IPARAM_ERROR_HANDLER)).thenReturn(DummyErrorHandler.class.getName());
         
         servlet.init(config);     
         assertTrue(servlet.isAlive());
@@ -927,6 +934,16 @@ public class PicturaServletTest {
         servlet.doGet(req, resp);        
         verify(resp).sendError(HttpServletResponse.SC_BAD_REQUEST, "The requested image path cannot be not null or empty.");
         servlet.destroy();
+    }
+    
+    public static class DummyErrorHandler implements ErrorHandler {
+
+        @Override
+        public boolean doHandle(HttpServletRequest req, HttpServletResponse resp, 
+                int sc, String msg) throws IOException {
+            return false;
+        }
+        
     }
     
 }

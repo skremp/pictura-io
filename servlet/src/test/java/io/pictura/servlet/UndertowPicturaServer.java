@@ -115,8 +115,8 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_CONTENT_DISPOSITION, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_BASE64_IMAGE_ENCODING, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HTTP_AGENT, "TEST");
-        servletInfo.addInitParam(PicturaServlet.IPARAM_ERROR_HANDLER,
-                "io.pictura.servlet.UndertowPicturaServer$MyErrorHandler");
+//        servletInfo.addInitParam(PicturaServlet.IPARAM_ERROR_HANDLER,
+//                "io.pictura.servlet.UndertowPicturaServer$MyErrorHandler");
         servletInfo.addInitParam(PicturaServlet.IPARAM_IMAGEIO_SPI_FILTER_EXCLUDE,
                 "com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi");
         servletInfo.addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
@@ -144,7 +144,7 @@ public final class UndertowPicturaServer {
                 .setClassLoader(UndertowPicturaServer.class.getClassLoader())
                 .setDeploymentName("pictura.war")
                 .setContextPath("/")
-                .setUrlEncoding("UTF-8")
+                .setUrlEncoding("UTF-8")                
                 .setResourceManager(rm)
                 .addListener(new ListenerInfo(IIOProviderContextListener.class))
                 .addInitParameter("io.pictura.servlet.LOG_LEVEL", "TRACE")
@@ -391,12 +391,14 @@ public final class UndertowPicturaServer {
                 
                 LOG.info("New /special request \"" + uri + "\"");
                 
+                httpReq.setAttribute("io.pictura.servlet.DEBUG", false);
+                
                 // Allow 10 image effects per request insteadof 5 (default)
                 httpReq.setAttribute("io.pictura.servlet.MAX_IMAGE_EFFECTS", 10);
                 
-                // Only allow lenna.gif?... as request path
+                // Only allow lenna.*?... as request path
                 httpReq.setAttribute("io.pictura.servlet.RESOURCE_PATHS", new Pattern[] {
-                    Pattern.compile("lenna\\.gif.{0,}")
+                    Pattern.compile("lenna\\..{0,}")
                 });
                 
                 // Use our own file resource locator

@@ -16,6 +16,9 @@
 package io.pictura.servlet;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Locale;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +26,8 @@ import javax.servlet.http.HttpServletResponse;
  * Interface to handle customized error responses for any HTTP status code
  * designated as an error condition - that is, any 4xx or 5xx status.
  *
- * <p>Example:</p>
+ * <p>
+ * Example:</p>
  *
  * <pre><code>
  * public class MyErrorHandler implements ErrorHandler {
@@ -67,4 +71,70 @@ public interface ErrorHandler {
     public boolean doHandle(HttpServletRequest req, HttpServletResponse resp,
             int sc, String msg) throws IOException;
 
+    /**
+     * A default implementation of the <code>ErrorHandler</code> interface to
+     * handle client (4xx) and server (5xx) errors, only.
+     *
+     * @since 1.3
+     */
+    public static final class DefaultErrorHandler implements ErrorHandler {
+
+        private static final DefaultErrorHandler HANDLER = new DefaultErrorHandler();
+
+        /**
+         * @return Default implementation of the error handler.
+         * @see DefaultErrorHandler
+         */
+        public static ErrorHandler getDefault() {
+            return HANDLER;
+        }
+
+        // Prevent instantiation
+        private DefaultErrorHandler() {
+        }
+
+        @Override
+        public boolean doHandle(HttpServletRequest req, HttpServletResponse resp,
+                int sc, String msg) throws IOException {
+
+            // Handle client and server errors only
+            if (sc < 400 || req == null || resp == null) {
+                return false;
+            }
+
+            resp.setStatus(sc);
+            resp.setCharacterEncoding("UTF-8");
+            resp.setDateHeader(RequestProcessor.HEADER_EXPIRES, 0L);
+
+            final Locale l = req.getLocale();
+            final String httpSc = I18N.getString("http." + sc, l);
+
+            String stackTrace = null;
+
+            if (req.getAttribute("io.pictura.servlet.DEBUG") instanceof Boolean
+                    && (Boolean) req.getAttribute("io.pictura.servlet.DEBUG")) {
+
+                stackTrace = printStrackTrace((req.getAttribute("io.pictura.servlet.ERROR") instanceof Throwable)
+                        ? (Throwable) req.getAttribute("io.pictura.servlet.ERROR") : null);
+            }
+
+            final byte[] content = (sc + ". " + httpSc + (stackTrace != null ? "\n\n" + stackTrace : "")).getBytes("UTF-8");
+
+            resp.setContentType("text/plain");
+            resp.setContentLength(content.length);
+            resp.getOutputStream().write(content);
+
+            return true;
+        }
+
+        private static String printStrackTrace(Throwable t) {
+            if (t != null) {
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                t.printStackTrace(pw);
+                return sw.toString();
+            }
+            return null;
+        }
+    }
 }

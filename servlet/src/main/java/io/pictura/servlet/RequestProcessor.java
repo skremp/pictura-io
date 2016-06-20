@@ -407,7 +407,16 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
 	    response.flushBuffer();
 	    return;
 	}
-
+        
+        // Pass the throwable (if available) to the request object for future
+        // use (e.g. in an error handler or JSP).
+        if (e != null && getRequest() != null) {
+            getRequest().setAttribute("io.pictura.servlet.ERROR", e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Request processor interrupted with error", e);
+            }
+        }
+        
 	response.reset();
 
 	if (msg != null) {
