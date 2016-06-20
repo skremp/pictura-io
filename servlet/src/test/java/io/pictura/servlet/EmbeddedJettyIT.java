@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import io.undertow.server.handlers.resource.FileResourceManager;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,7 +60,10 @@ public class EmbeddedJettyIT {
 	server.setHandler(context);
  
         // Add servlet
-        context.addServlet(PicturaServlet.class, "/*");
+        ServletHolder sh = context.addServlet(PicturaServlet.class, "/*");
+        sh.setInitOrder(1);
+        sh.setAsyncSupported(true);
+        sh.setInitParameter(PicturaServlet.IPARAM_DEBUG, "true");
 	
         server.start();
 	System.out.println("Embedded Jetty started");
