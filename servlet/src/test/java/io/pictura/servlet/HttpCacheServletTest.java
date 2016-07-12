@@ -35,6 +35,7 @@ import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -204,6 +205,7 @@ public class HttpCacheServletTest {
     }
 
     @Test
+    @Ignore
     public void testSaveLoadHttpCacheToStream() throws Exception {
         ByteArrayOutputStream os = new ByteArrayOutputStream(1024 * 64);        
         HttpCacheServlet.saveHttpCacheToStream(os, createDummyCache());
