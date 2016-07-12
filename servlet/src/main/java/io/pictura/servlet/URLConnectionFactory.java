@@ -83,8 +83,12 @@ public interface URLConnectionFactory {
 	    return FACTORY;
 	}
 
-	// Prevent instantiation
-	private DefaultURLConnectionFactory() {
+	/**
+         * Creates a new instance from this default implementation.
+         *
+         * @since 1.3
+         */
+	public DefaultURLConnectionFactory() {
 	}
 
 	@Override
