@@ -215,7 +215,7 @@ public class HttpCacheServletTest {
         HttpCacheServlet.loadHttpCacheFromStream(new ByteArrayInputStream(os.toByteArray()), newCache);
         assertEquals(10, newCache.keySet().size());
         
-        Thread.sleep(1010);
+        Thread.sleep(2000);
         
         HttpCache newCache2 = HttpCacheServlet.createDefaultHttpCache(100, 1024 * 32);
         assertEquals(0, newCache2.keySet().size());
@@ -227,7 +227,7 @@ public class HttpCacheServletTest {
     public HttpCache createDummyCache() {
         HttpCache cache = HttpCacheServlet.createDefaultHttpCache(10, 1024 * 32);
         for (int i = 0; i < 10; i++) {
-            cache.put("key-" + i, createDummyCacheEntry("key-" + i, new Date(System.currentTimeMillis() + 1000)));
+            cache.put("key-" + i, createDummyCacheEntry("key-" + i, new Date(System.currentTimeMillis() + 1250)));
         }
         return cache;
     }
