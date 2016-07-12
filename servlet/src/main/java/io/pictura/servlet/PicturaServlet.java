@@ -83,7 +83,9 @@ import javax.servlet.http.HttpServletResponseWrapper;
 import io.pictura.servlet.annotation.PicturaImageInterceptor;
 import io.pictura.servlet.annotation.PicturaConfigFile;
 import io.pictura.servlet.annotation.PicturaParamsInterceptor;
+import io.pictura.servlet.annotation.PicturaServletConfig;
 import io.pictura.servlet.annotation.PicturaThreadFactory;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -406,6 +408,8 @@ public class PicturaServlet extends HttpCacheServlet {
      * {@link URLConnection}'s to fetch external resources. The implementation
      * of an {@link URLConnectionFactory} gets always the default HTTP init
      * parameters (if configured) as default {@link Properties} map.
+     *
+     * @see URLConnectionFactory
      */
     @InitParam
     @ConfigParam(xpath = "/pictura/url/connection-factory/class")
@@ -545,6 +549,8 @@ public class PicturaServlet extends HttpCacheServlet {
      * Servlet parameter to append the normalized image request parameters to
      * the response. As default this is set to <code>false</code> to reduce the
      * size of the response head.
+     *
+     * @since 1.2
      */
     @InitParam
     @ConfigParam(xpath = "/pictura/header/add-normalized-params")
@@ -638,6 +644,10 @@ public class PicturaServlet extends HttpCacheServlet {
 
     /**
      * Servlet parameter to set a custom error handler.
+     *
+     * @see ErrorHandler
+     *
+     * @since 1.2
      */
     @InitParam
     @ConfigParam(xpath = "/pictura/error-handler/class")
@@ -1438,7 +1448,7 @@ public class PicturaServlet extends HttpCacheServlet {
             }
         }
     }
-
+    
     private void initMXBeans() throws ServletException {
         try {
             ManagementFactory.getPlatformMBeanServer().registerMBean(new PicturaServletMXBean() {
@@ -2343,13 +2353,13 @@ public class PicturaServlet extends HttpCacheServlet {
         }
     }
 
-    private void doHandleError(HttpServletRequest req, HttpServletResponse resp, 
+    private void doHandleError(HttpServletRequest req, HttpServletResponse resp,
             Throwable e) throws ServletException, IOException {
-        
+
         if (req != null && e != null) {
             req.setAttribute("io.pictura.servlet.ERROR", e);
         }
-        
+
         String msg = null;
 
         // If not yet committed, we will send an error code depending
@@ -2628,6 +2638,13 @@ public class PicturaServlet extends HttpCacheServlet {
 
         private void setDoNotCache() {
             if (isDoNotCacheRequest(request)) {
+                if (LOG.isTraceEnabled()) {
+                    String uri = request.getRequestURI();
+                    if (request.getQueryString() != null) {
+                        uri += "?" + request.getQueryString();
+                    }
+                    LOG.trace("Override cache headers with DNC [" + uri + "]");
+                }
                 super.setDateHeader(HEADER_EXPIRES, 0);
                 super.setHeader(HEADER_CACHECONTROL, "private, max-age=0, no-cache");
                 super.setHeader(HEADER_PRAGMA, "no-cache");
@@ -2715,8 +2732,8 @@ public class PicturaServlet extends HttpCacheServlet {
                 addError(sc);
 
                 if (!isCommitted()) {
-                    reset();                    
-                    
+                    reset();
+
                     if (requestId != null) {
                         setHeader("X-Pictura-RequestId", requestId);
                     }
@@ -2775,10 +2792,15 @@ public class PicturaServlet extends HttpCacheServlet {
         private final ServletConfig config;
         private final PicturaConfig extConfig;
 
+        private final PicturaServletConfig annotatedConfig;
+
+        private Set<String> paramNames;
+        
         PicturaServletConfigWrapper(Servlet servlet, ServletConfig config) throws IOException {
             this.config = config;
 
             PicturaConfigFile aConf = servlet.getClass().getAnnotation(PicturaConfigFile.class);
+            annotatedConfig = servlet.getClass().getAnnotation(PicturaServletConfig.class);
 
             String cfgFile = aConf != null ? aConf.value() : getInitParameter1(IPARAM_CONFIG_FILE);
             extConfig = cfgFile != null ? new PicturaConfig(servlet,
@@ -2800,13 +2822,41 @@ public class PicturaServlet extends HttpCacheServlet {
             String value = getInitParameter1(name);
             if (value == null) {
                 value = getInitParameter2(name);
+                if (value == null) {
+                    value = getInitParameterByAnnotation(name);
+                }
             }
             return value != null ? merge(value) : null;
         }
 
         @Override
         public Enumeration<String> getInitParameterNames() {
-            return config.getInitParameterNames();
+            if (paramNames == null) {
+                paramNames = new HashSet<>();
+                
+                Enumeration<String> servletConfigInitParamNames = config.getInitParameterNames();
+                while (servletConfigInitParamNames.hasMoreElements()) {
+                    paramNames.add(servletConfigInitParamNames.nextElement());
+                }
+                
+                if (extConfig != null) {
+                    paramNames.addAll(extConfig.getConfigParamNames());
+                }
+            }            
+            return new Enumeration<String>() {
+                
+                final Iterator<String> enumIter = paramNames.iterator();
+                
+                @Override
+                public boolean hasMoreElements() {
+                    return enumIter.hasNext();
+                }
+
+                @Override
+                public String nextElement() {
+                    return enumIter.next();
+                }  
+            };
         }
 
         private String getInitParameter1(String name) {
@@ -2815,6 +2865,51 @@ public class PicturaServlet extends HttpCacheServlet {
 
         private String getInitParameter2(String name) {
             return extConfig != null ? extConfig.getConfigParam(name) : null;
+        }
+
+        private String getInitParameterByAnnotation(String name) {
+            if (annotatedConfig != null) {
+                Method[] methods = annotatedConfig.getClass().getMethods();
+                for (Method m : methods) {
+                    if (m.getName().equals(name)) {
+                        try {
+                            String strValue = null;
+                            Object objValue = m.invoke(annotatedConfig);
+
+                            if (objValue instanceof Object[]) {
+                                StringBuilder sb = new StringBuilder();
+                                Object[] array = (Object[]) objValue;
+                                for (int i = 0; i < array.length; i++) {
+                                    if (i > 0) {
+                                        sb.append(",");
+                                    }
+                                    Object o = array[i];
+                                    if (o instanceof Class<?>) {
+                                        sb.append(((Class<?>) o).getName());
+                                        continue;
+                                    }
+                                    sb.append(array[i].toString());
+                                }
+                                strValue = sb.toString();
+                            } else if (objValue instanceof Class<?>) {
+                                strValue = ((Class<?>) objValue).getName();
+                            } else if (objValue != null) {
+                                strValue = objValue.toString();
+                            }
+
+                            if (strValue != null && !strValue.isEmpty() && LOG.isTraceEnabled()) {
+                                LOG.info("Use init parameter " + name + "=" + strValue.trim()
+                                        + " from annotation @PicturaServletConfig");
+                            }
+
+                            return (strValue != null && strValue.isEmpty()) ? null : strValue;
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            }
+            return null;
         }
 
         private String merge(String value) {

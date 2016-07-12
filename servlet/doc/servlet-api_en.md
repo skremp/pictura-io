@@ -2069,6 +2069,31 @@ public class CmsFileResourceLocator extends FileResourceLocator {
 
 **[\[⬆\]](#table-of-contents)**
 
+### @PicturaServletConfig
+
+Annotation used to configure a `io.pictura.servlet.PicturaServlet`.
+
+**Example**
+
+```java
+package io.pictura.servlet.examples;
+
+import ...
+
+@WebServlet(...)
+@PicturaServletConfig(
+    debug = true,
+    resourceLocators = {"io.pictura.servlet.FileResourceLocator", "io.pictura.servlet.HttpResourceLocator"}
+)
+public class ImageServlet extends PicturaServlet {
+    
+    private static final long serialVersionUID = -1L;
+
+}
+```
+
+**[\[⬆\]](#table-of-contents)**
+
 ## Authentication
 
 Authentication is done by the servlet-container. If you need it, you have to

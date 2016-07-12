@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import javax.servlet.Servlet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -64,16 +65,16 @@ public final class PicturaConfig {
     @Documented
     public @interface ConfigParam {
 
-	/**
-	 * @return XPath to the configuration value.
-	 */
-	String xpath();
+        /**
+         * @return XPath to the configuration value.
+         */
+        String xpath();
 
-	/**
-	 * @return <code>true</code> if repeated configuration value (1..n);
-	 * otherwise <code>false</code>.
-	 */
-	boolean repeated() default false;
+        /**
+         * @return <code>true</code> if repeated configuration value (1..n);
+         * otherwise <code>false</code>.
+         */
+        boolean repeated() default false;
     }
 
     private final Servlet servlet;
@@ -92,23 +93,23 @@ public final class PicturaConfig {
      * external configuration file.
      */
     PicturaConfig(Servlet servlet, String filename) throws IOException {
-	if (servlet == null) {
-	    throw new IllegalArgumentException("Servlet must be not null");
-	}
-	this.servlet = servlet;
+        if (servlet == null) {
+            throw new IllegalArgumentException("Servlet must be not null");
+        }
+        this.servlet = servlet;
 
-	if (filename == null || filename.isEmpty()) {
-	    throw new IllegalArgumentException("Config filename must be not null nor empty");
-	}
-	this.filename = filename;
+        if (filename == null || filename.isEmpty()) {
+            throw new IllegalArgumentException("Config filename must be not null nor empty");
+        }
+        this.filename = filename;
 
-	if (filename.toLowerCase(Locale.ENGLISH).endsWith(".properties")) {
-	    readPropertiesConfig();
-	} else if (filename.toLowerCase(Locale.ENGLISH).endsWith(".xml")) {
-	    readXmlConfig();
-	} else {
-	    throw new IOException("Unsupported Pictura configuration file format");
-	}
+        if (filename.toLowerCase(Locale.ENGLISH).endsWith(".properties")) {
+            readPropertiesConfig();
+        } else if (filename.toLowerCase(Locale.ENGLISH).endsWith(".xml")) {
+            readXmlConfig();
+        } else {
+            throw new IOException("Unsupported Pictura configuration file format");
+        }
     }
 
     /**
@@ -121,99 +122,111 @@ public final class PicturaConfig {
      * parameter is not present.
      */
     public String getConfigParam(String paramName) {
-	return (paramMap != null && paramMap.get(paramName) != null)
-		? paramMap.get(paramName) : null;
+        return (paramMap != null && paramMap.get(paramName) != null)
+                ? paramMap.get(paramName) : null;
+    }
+
+    /**
+     * Gets a set of parameter names by this instance.
+     * 
+     * @return A set of all available parameter names listed by this
+     * configuration.
+     *
+     * @since 1.3
+     */
+    public Set<String> getConfigParamNames() {
+        return paramMap != null ? paramMap.keySet() : Collections.<String>emptySet();
     }
 
     private void readXmlConfig() throws IOException {
-	try (InputStream is = new FileInputStream(filename)) {
-	    DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
-	    DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
-	    Document xmlDocument = xmlBuilder.parse(is);
+        try (InputStream is = new FileInputStream(filename)) {
+            DocumentBuilderFactory xmlFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder xmlBuilder = xmlFactory.newDocumentBuilder();
+            Document xmlDocument = xmlBuilder.parse(is);
 
-	    XPathFactory xpFactory = XPathFactory.newInstance();
-	    XPath xp = xpFactory.newXPath();
+            XPathFactory xpFactory = XPathFactory.newInstance();
+            XPath xp = xpFactory.newXPath();
 
-	    HashMap<String, String> map = new HashMap<>();
+            HashMap<String, String> map = new HashMap<>();
 
-	    Field[] psf = getDeclaredFields(servlet.getClass(), true);
-	    for (Field f : psf) {
-		InitParam ip = f.getAnnotation(InitParam.class);
-		if (ip != null) {
-		    ConfigParam cp = f.getAnnotation(ConfigParam.class);
-		    if (cp != null && cp.xpath() != null && !cp.xpath().isEmpty()) {
+            Field[] psf = getDeclaredFields(servlet.getClass(), true);
+            for (Field f : psf) {
+                InitParam ip = f.getAnnotation(InitParam.class);
+                if (ip != null) {
+                    ConfigParam cp = f.getAnnotation(ConfigParam.class);
+                    if (cp != null && cp.xpath() != null && !cp.xpath().isEmpty()) {
 
-			Object val = xp.evaluate(cp.xpath(), xmlDocument,
-				cp.repeated() ? XPathConstants.NODESET : XPathConstants.NODE);
+                        Object val = xp.evaluate(cp.xpath(), xmlDocument,
+                                cp.repeated() ? XPathConstants.NODESET : XPathConstants.NODE);
 
-			String tVal = null;
+                        String tVal = null;
 
-			if (val instanceof Node) {
-			    tVal = ((Node) val).getTextContent().trim();
-			} else if (val instanceof NodeList) {
-			    StringBuilder sb = new StringBuilder();
-			    String sep = "";
+                        if (val instanceof Node) {
+                            tVal = ((Node) val).getTextContent().trim();
+                        } else if (val instanceof NodeList) {
+                            StringBuilder sb = new StringBuilder();
+                            String sep = "";
 
-			    NodeList nl = (NodeList) val;
-			    for (int i = 0; i < nl.getLength(); i++) {
-				sb.append(sep);
-				sb.append(nl.item(i).getTextContent().trim());
-				sep = ",";
-			    }
+                            NodeList nl = (NodeList) val;
+                            for (int i = 0; i < nl.getLength(); i++) {
+                                sb.append(sep);
+                                sb.append(nl.item(i).getTextContent().trim());
+                                sep = ",";
+                            }
 
-			    tVal = sb.toString();
-			}
+                            tVal = sb.toString();
+                        }
 
-			Object initParamName = f.get(null);
-			if (initParamName instanceof String) {
-			    map.put((String) initParamName, tVal);
-			}
-		    }
-		}
-	    }
+                        Object initParamName = f.get(null);
+                        if (initParamName instanceof String) {
+                            map.put((String) initParamName, tVal);
+                        }
+                    }
+                }
+            }
 
-	    paramMap = Collections.unmodifiableMap(map);
-	} catch (ParserConfigurationException | SAXException |
-		XPathExpressionException | IllegalAccessException ex) {
-	    throw new IOException(ex);
-	}
+            paramMap = Collections.unmodifiableMap(map);
+        } catch (ParserConfigurationException | SAXException |
+                XPathExpressionException | IllegalAccessException ex) {
+            throw new IOException(ex);
+        }
     }
 
     private void readPropertiesConfig() throws IOException {
-	try (InputStream is = new FileInputStream(filename)) {
-	    final Properties props = new Properties();
-	    props.load(is);
+        try (InputStream is = new FileInputStream(filename)) {
+            final Properties props = new Properties();
+            props.load(is);
 
-	    final HashMap<String, String> map = new HashMap<>();
+            final HashMap<String, String> map = new HashMap<>();
 
-	    Field[] psf = getDeclaredFields(servlet.getClass(), true);
+            Field[] psf = getDeclaredFields(servlet.getClass(), true);
 
-	    for (final Field f : psf) {
-		InitParam ip = f.getAnnotation(InitParam.class);
-		if (ip != null) {
+            for (final Field f : psf) {
+                InitParam ip = f.getAnnotation(InitParam.class);
+                if (ip != null) {
 
-		    AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
 
-			@Override
-			public Object run() {
-			    try {
-				String shortName = (String) f.get(servlet);
-				String val = props.getProperty("io.pictura.servlet." + shortName);
-				if (val != null) {
-				    map.put(shortName, val);
-				}
-			    } catch (IllegalAccessException | IllegalArgumentException ex) {
-				// TODO
-			    }
-			    return null;
-			}
-		    });
+                        @Override
+                        public Object run() {
+                            try {
+                                String shortName = (String) f.get(servlet);
+                                String val = props.getProperty("io.pictura.servlet." + shortName);
+                                if (val != null) {
+                                    map.put(shortName, val);
+                                }
+                            } catch (IllegalAccessException | IllegalArgumentException ex) {
+                                // TODO
+                            }
+                            return null;
+                        }
+                    });
 
-		}
-	    }
-	    
-	    paramMap = Collections.unmodifiableMap(map);
-	}
+                }
+            }
+
+            paramMap = Collections.unmodifiableMap(map);
+        }
     }
 
     /**
@@ -225,20 +238,20 @@ public final class PicturaConfig {
      * @return list of fields
      */
     private static Field[] getDeclaredFields(Class<?> clazz, boolean recursively) {
-	List<Field> fields = new LinkedList<>();
-	Field[] declaredFields = clazz.getDeclaredFields();
-	Collections.addAll(fields, declaredFields);
+        List<Field> fields = new LinkedList<>();
+        Field[] declaredFields = clazz.getDeclaredFields();
+        Collections.addAll(fields, declaredFields);
 
-	Class<?> superClass = clazz.getSuperclass();
+        Class<?> superClass = clazz.getSuperclass();
 
-	if (superClass != null && recursively) {
-	    Field[] declaredFieldsOfSuper = getDeclaredFields(superClass, recursively);
-	    if (declaredFieldsOfSuper.length > 0) {
-		Collections.addAll(fields, declaredFieldsOfSuper);
-	    }
-	}
+        if (superClass != null && recursively) {
+            Field[] declaredFieldsOfSuper = getDeclaredFields(superClass, recursively);
+            if (declaredFieldsOfSuper.length > 0) {
+                Collections.addAll(fields, declaredFieldsOfSuper);
+            }
+        }
 
-	return fields.toArray(new Field[fields.size()]);
+        return fields.toArray(new Field[fields.size()]);
     }
 
 }

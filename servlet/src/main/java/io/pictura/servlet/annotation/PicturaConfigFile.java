@@ -30,9 +30,9 @@ import java.lang.annotation.Target;
  * <pre>
  * &#64;WebServlet(...)
  * &#64;PicturaConfigFile("image-servlet-config.xml")
- public class ImageServlet extends PicturaServlet {
- }
- </pre>
+ * public class ImageServlet extends PicturaServlet {
+ * }
+ * </pre>
  * 
  * @author Steffen Kremp
  * 

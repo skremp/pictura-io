@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.3.0.Final
+
+_TBD_
+
+* TODO: Added interface and a default implementation to securing image URLs to
+  preventing unauthorized parties from changing the parameters on image URLs.
+* Added new annotation *PicturaServletConfig* to configure any *PicturaServlet*
+  directly with a single annotation (PicturaIO related parameters).
+* Added a default error handler implementation for client errors (4xx) and
+  server errors (5xx).
+
 ## 1.2.0.Final
 
 _TBD_
@@ -93,7 +104,6 @@ _2016-01-19_
 _2016-01-16_
 
 * Removed unnecessary whitespace in cache control header.
-
 * Added missing webp-imageio lib (required to run integration tests).
 * Fixed broken links in documentation.
 
