@@ -89,8 +89,10 @@ public interface ErrorHandler {
             return HANDLER;
         }
 
-        // Prevent instantiation
-        private DefaultErrorHandler() {
+        /**
+         * Creates a new instance from this default implementation.
+         */
+        public DefaultErrorHandler() {
         }
 
         @Override
