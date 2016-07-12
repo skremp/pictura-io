@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Steffen Kremp
+ * Copyright 2016 Steffen Kremp
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,28 +20,28 @@ import java.net.URL;
 import java.util.Locale;
 
 /**
- * An {@link ResourceLocator} implementation to lookup remote (http, https)
- * located resources.
+ * An {@link ResourceLocator} implementation to lookup remote located resources
+ * on ftp servers.
  *
  * @see ResourceLocator
  * @see FileResourceLocator
- * @see FtpResourceLocator
+ * @see HttpResourceLocator
  *
  * @author Steffen Kremp
  *
- * @since 1.0
+ * @since 1.2
  */
-public class HttpResourceLocator implements ResourceLocator {
+public class FtpResourceLocator implements ResourceLocator {
 
     @Override
     public URL getResource(String path) throws MalformedURLException {
-	if (path != null && !path.isEmpty()) {
-	    String str = path.toLowerCase(Locale.ENGLISH);
-	    if (str.startsWith("http://") || str.startsWith("https://")) {
-		return new URL(path);
-	    }
-	}
-	return null;
+        if (path != null && !path.isEmpty()) {
+            String str = path.toLowerCase(Locale.ENGLISH);
+            if (str.startsWith("ftp://")) {
+                return new URL(path);
+            }
+        }
+        return null;
     }
 
 }

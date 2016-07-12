@@ -131,6 +131,51 @@ value is `/stats`.
 Sets the statistics monitor access control. Multiple IP addresses are separated
 by comma. The default value is `127.0.0.1,::1`.
 
+### errorHandler
+
+Sets a custom error handler class (see `io.pictura.servlet.ErrorHandler`).
+
+**Example**
+
+```xml
+<web-app ...>
+...
+    <servlet>
+        ...
+        <init-param>
+            <param-name>errorHandler</param-name>
+            <param-value>io.pictura.servlet.examples.MyErrorHandler</param-value>
+        </init-param>
+    </servlet>
+...
+</web-app>
+```
+
+```java
+package io.pictura.servlet.examples;
+
+import ...
+
+public class MyErrorHandler implements ErrorHandler {
+
+    @Override
+    public boolean doHandle(HttpServletRequest req, HttpServletResponse resp, 
+            int sc, String msg) throws IOException {
+            
+        if (sc == 404) {
+            resp.setContentType("text/plain");
+            resp.getWriter().write("File not found - 404");
+            return true;
+        }            
+        return false;
+    }        
+}
+```
+
+***@since 1.2***
+
+**[\[⬆\]](#table-of-contents)**
+
 ### useContainerPool
 
 Flag to decide to use the servlet container pool to execute image requests if
@@ -196,6 +241,7 @@ Default Resource Locators:
 
   1. `io.pictura.servlet.FileResourceLocator`
   1. `io.pictura.servlet.HttpResourceLocator`
+  1. `io.pictura.servlet.FtpResourceLocator`
   1. `io.pictura.servlet.EmptyResourceLocator`
  
 **Example**
@@ -534,7 +580,7 @@ public class CustomConnectionFactory implements URLConnectionFactory {
 
 ### scriptEnabled
 
-If set to `true` the client site JavaScript library is available by the
+If set to `true` the client side JavaScript library is available by the
 servlet instance. The default value is `true`.
 
 **[\[⬆\]](#table-of-contents)**
@@ -603,6 +649,15 @@ each cache key to the responses. The default value is `false`.
 
 If set to `true`, the servlet appends automatically a unique request ID 
 each response. The default value is `false`.
+
+**[\[⬆\]](#table-of-contents)**
+
+### headerAddNormalizedParams
+
+If set to `true`, the servlet appends automatically a normalized string of the
+image request parameters to the response. The default value is `false`.
+
+***@since 1.2***
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -1272,6 +1327,7 @@ and `GIF`.
 | Mozilla Firefox       | YES  |           |      | YES | YES |
 | Microsoft IE          | YES  |           |      | YES | YES |
 | Microsoft Edge        | YES  |           |      | YES | YES |
+| Vivaldi               | YES  |           | YES  | YES | YES |
 
 > Implements the `io.pictura.servlet.ImageRequestStrategy` interface.
 

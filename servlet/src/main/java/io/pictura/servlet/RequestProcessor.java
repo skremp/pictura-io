@@ -188,6 +188,10 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
     }
 
     Pattern[] getResourcePaths() {
+        // A request attribute overrides the default value
+        if (req != null && getAttribute("io.pictura.servlet.RESOURCE_PATHS") instanceof Pattern[]) {
+            return (Pattern[]) getAttribute("io.pictura.servlet.RESOURCE_PATHS");
+        }
 	return resPaths;
     }
 
@@ -453,10 +457,11 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      * @see ResourceLocator
      */
     public final ResourceLocator[] getResourceLocators() {
-	if (resLocators != null) {
-	    return resLocators;
-	}
-	return null;
+        // A request attribute overrides the default value
+        if (req != null && getAttribute("io.pictura.servlet.RESOURCE_LOCATORS") instanceof ResourceLocator[]) {
+            return (ResourceLocator[]) getAttribute("io.pictura.servlet.RESOURCE_LOCATORS");
+        }
+	return resLocators;
     }
     
     /**
@@ -486,9 +491,10 @@ public abstract class RequestProcessor implements Runnable, Cacheable {
      * resource path; otherwise <code>false</code>.
      */
     protected final boolean isAllowedResourcePath(String path) {
-	if (resPaths != null && resPaths.length > 0) {
+        Pattern[] rp = getResourcePaths();
+	if (rp != null && rp.length > 0) {
 	    Matcher m;
-	    for (Pattern p : resPaths) {
+	    for (Pattern p : rp) {
 		m = p.matcher(path);
 		if (m.matches()) {
 		    return true;

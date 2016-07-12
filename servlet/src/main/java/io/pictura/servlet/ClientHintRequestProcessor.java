@@ -55,6 +55,10 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
     // Device Width
     private static final String CH_DW = "Viewport-Width";
     
+    // Save Data
+    private static final String CH_SAVE_DATA = "Save-Data";
+    
+    // Fallback cookie name; if the client does not support client hints
     private static final String CLIENT_HINT_COOKIE_NAME = "__picturaio__";
     
     // Lazy cache key
@@ -79,6 +83,9 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 	    Cookie c = getClientHintCookie(req);
 	    if (c instanceof ClientHintCookie) {
 		if (((ClientHintCookie) c).isImageFormatWebPSupported()) {
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Format by client hint cookie; f[webp]");
+                    }
 		    varyClientHintCookie = true;
 		    return true;
 		}
@@ -94,6 +101,9 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 	    Cookie c = getClientHintCookie(req);
 	    if (c instanceof ClientHintCookie) {
 		if (((ClientHintCookie) c).isImageFormatJP2Supported()) {
+                    if (LOG.isTraceEnabled()) {
+                        LOG.trace("Format by client hint cookie; f[jp2]");
+                    }
 		    varyClientHintCookie = true;
 		    return true;
 		}
@@ -197,6 +207,28 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 	}
 	return originDpr;
     }   
+
+    /**
+     * Gets the requested compression quality. In cases where the client hint
+     * request header "Save-Data: on" is present, the origin requested 
+     * compression quality is changed to 
+     * <code>0.85f * super.getRequestedCompressionQuality(req)</code>.
+     * 
+     * @param req The request object.
+     * 
+     * @return The requested compression quality or a reduced compression quality
+     * if the client has set the client hint request header "Save-Data: on".
+     * 
+     * @since 1.2
+     */
+    @Override
+    protected Float getRequestedCompressionQuality(HttpServletRequest req) {
+        final Float cq = super.getRequestedCompressionQuality(req);
+        if ("on".equalsIgnoreCase(req.getHeader(CH_SAVE_DATA))) {            
+            return 0.85f * (cq != null ? cq : 0.8f);
+        }
+        return cq;
+    }        
     
     @Override
     public String getTrueCacheKey() {
@@ -217,6 +249,14 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 		    sep = ";";
 		}
 		
+                if ("on".equals(req.getHeader(CH_SAVE_DATA))) {
+                    Float cq = getRequestedCompressionQuality(req);
+                    if (cq != null) {
+                        newTrueCacheKey.append(sep).append("o=").append(cq);
+                        sep = ";";
+                    }
+                }
+                
 		Integer sw = getRequestedScaleWidth(req);
 		if (sw != null) {
 		    newTrueCacheKey.append(sep).append("sw=").append(sw);
@@ -227,7 +267,7 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 		if (dpr != null) {
 		    newTrueCacheKey.append(sep).append("dpr=").append(dpr);
 		}
-		
+                
 		trueCacheKey = newTrueCacheKey.toString();
 	    }
 	}
@@ -249,7 +289,12 @@ public class ClientHintRequestProcessor extends AutoFormatRequestProcessor {
 	} else if (req.getHeader(CH_DW) != null) {
 	    resp.addHeader(HEADER_VARY, CH_DW);
 	    resp.setHeader("Content-" + CH_DW, req.getHeader(CH_DW));
-	}		
+        }
+        
+        if (req.getHeader(CH_SAVE_DATA) != null) {
+            resp.addHeader(HEADER_VARY, CH_SAVE_DATA);
+            resp.setHeader("Content-" + CH_SAVE_DATA, req.getHeader(CH_SAVE_DATA));
+        }
 
 	if (varyClientHintCookie) {
 	    resp.addHeader(HEADER_VARY, "Cookie");

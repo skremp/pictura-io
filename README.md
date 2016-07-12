@@ -42,7 +42,7 @@ That's all!
 
 ## Latest
 
-PicturaIO **1.1.5.Final** is released (June 7th, 2016).
+PicturaIO **1.2.0.Final** is released (July 12th, 2016).
 
 Master branch build status: 
 
@@ -79,6 +79,9 @@ Optionally, you can install the project in your local Maven repository using:
 > **Note**: this requires Maven 3.0.3 or newer be installed
 
 ## Usage
+
+> **Note**: at first, you need to download or clone the project and build it 
+> with `mvn install`!
 
 To use the servlet in your web application project, include the `pictura-servlet-{VERSION}.jar`
 in your web-application's classpath (`WEB-INF/lib`) or if your project is a 
@@ -323,6 +326,7 @@ available at `http://localhost:8084/`. For example:
  * `http://localhost:8084/ip/D=320x480/`
  * `http://localhost:8084/ip/D=320x480/BG=ORANGE/R=L`
  * `http://localhost:8084/js/pictura.js`
+ * `http://localhost:8084/demo.html`
 
 ## Related Documentation
 
@@ -333,8 +337,13 @@ For a more complete set of documentation, go to
  1. [JS Client Side API Reference](servlet/doc/js-api_en.md)
  1. [Palette CSS API Reference](servlet/doc/pcss-api_en.md)
  1. [Placeholder Image API Reference](servlet/doc/placeholder-api_en.md)
+ 1. [URL Builder API Reference](builder/doc/builder-api_en.md)
 
 ## Prebuilt Binaries
+
+### Latest version 1.2.x
+
+* [pictura-servlet-1.2.0.Final.jar](https://jitpack.io/com/github/skremp/pictura-io/pictura-servlet/1.2.0.Final/pictura-servlet-1.2.0.Final.jar)
 
 ### Latest version 1.1.x
 

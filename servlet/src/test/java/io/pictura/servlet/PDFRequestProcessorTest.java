@@ -26,12 +26,14 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -53,6 +55,16 @@ public class PDFRequestProcessorTest {
 	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
 
 	assertTrue(rp.isPreferred(req));
+        
+        HttpServletRequest req2 = mock(HttpServletRequest.class);
+
+	when(req2.getContextPath()).thenReturn("/pictura-web");
+	when(req2.getServletPath()).thenReturn("/images");
+	when(req2.getRequestURI()).thenReturn("/pictura-web/f=pda/images/lenna.jpg");
+	when(req2.getQueryString()).thenReturn(null);
+	when(req2.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	assertFalse(rp.isPreferred(req2));
     }
     
     @Test
@@ -81,6 +93,28 @@ public class PDFRequestProcessorTest {
         
 	assertEquals("jpg", rp.getRequestParameter(req, "fn"));
         assertEquals("g", rp.getRequestParameter(req, "e"));
+    }
+    
+    @Test
+    public void testDoWrite_InternalServerError() throws Exception {
+        PDFRequestProcessor rp = new PDFRequestProcessor();
+        
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);               
+        
+        when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/f=pda/e=g/images/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+        
+        rp.setRequest(req);
+        rp.setResponse(resp);
+        
+        assertEquals(-1, rp.doWrite(new byte[1], req, resp));
+        assertEquals(-1, rp.doWrite(new byte[1], 0, 1, req, resp));
+        
+        verify(resp).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
     
     @Test

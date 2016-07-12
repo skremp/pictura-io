@@ -23,6 +23,7 @@ import static io.undertow.servlet.Servlets.defaultContainer;
 import static io.undertow.servlet.Servlets.deployment;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
+import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ListenerInfo;
 import io.undertow.servlet.api.ServletInfo;
 import java.awt.AlphaComposite;
@@ -32,8 +33,11 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -43,9 +47,16 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LoggingMXBean;
+import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,11 +73,14 @@ public final class UndertowPicturaServer {
     private static final String HOST = "localhost";
     private static final int PORT = 8084;
 
-    private static final Level LOG_LEVEL = Level.FINER;
+    private static final Level LOG_LEVEL = Level.FINEST;
 
     private static Undertow undertow;
 
     public static void main(String[] args) throws Exception {
+
+        final long start = System.currentTimeMillis();
+
         System.setProperty("java.util.logging.SimpleFormatter.format",
                 "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$-7s [%2$s] %5$s%6$s%n");
 
@@ -92,6 +106,7 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_DEBUG, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_JMX_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HEADER_ADD_TRUE_CACHE_KEY, "true");
+        servletInfo.addInitParam(PicturaServlet.IPARAM_HEADER_ADD_NORMALIZED_PARAMS, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_USE_CONTAINER_POOL, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_STATS_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_PLACEHOLDER_PRODUCER_ENABLED, "true");
@@ -100,11 +115,14 @@ public final class UndertowPicturaServer {
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_CONTENT_DISPOSITION, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLE_BASE64_IMAGE_ENCODING, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_HTTP_AGENT, "TEST");
+        servletInfo.addInitParam(PicturaServlet.IPARAM_ERROR_HANDLER,
+                "io.pictura.servlet.UndertowPicturaServer$MyErrorHandler");
         servletInfo.addInitParam(PicturaServlet.IPARAM_IMAGEIO_SPI_FILTER_EXCLUDE,
                 "com.sun.imageio.plugins.jpeg.JPEGImageReaderSpi");
         servletInfo.addInitParam(PicturaServlet.IPARAM_RESOURCE_LOCATORS,
                 "io.pictura.servlet.FileResourceLocator,"
-                + "io.pictura.servlet.HttpResourceLocator");
+                + "io.pictura.servlet.HttpResourceLocator,"
+                + "io.pictura.servlet.FtpResourceLocator");
         servletInfo.addInitParam(PicturaServlet.IPARAM_REQUEST_PROCESSOR_STRATEGY,
                 "io.pictura.servlet.MetadataRequestProcessor,"
                 + "io.pictura.servlet.PDFRequestProcessor,"
@@ -112,12 +130,15 @@ public final class UndertowPicturaServer {
                 + "io.pictura.servlet.ClientHintRequestProcessor,"
                 + "io.pictura.servlet.AutoFormatRequestProcessor");
         servletInfo.addInitParam(PicturaServlet.IPARAM_ENABLED_OUTPUT_IMAGE_FORMATS,
-                "jpg,jp2,webp,png,gif");
+                "jpg,jp2,webp,png,gif,ico");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_CONTROL_HANDLER,
                 "io.pictura.servlet.UndertowPicturaServer$CacheControl");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_ENABLED, "true");
         servletInfo.addInitParam(PicturaServlet.IPARAM_CACHE_CAPACITY, "50");
         servletInfo.addMapping("/*");
+
+        FilterInfo filterInfo = new FilterInfo("FF", ClientServletFilter.class);
+        filterInfo.setAsyncSupported(true);
 
         DeploymentInfo deploymentInfo = deployment()
                 .setClassLoader(UndertowPicturaServer.class.getClassLoader())
@@ -126,7 +147,9 @@ public final class UndertowPicturaServer {
                 .setUrlEncoding("UTF-8")
                 .setResourceManager(rm)
                 .addListener(new ListenerInfo(IIOProviderContextListener.class))
-                .addInitParameter("io.pictura.servlet.LOG_LEVEL", "DEBUG")
+                .addInitParameter("io.pictura.servlet.LOG_LEVEL", "TRACE")
+                .addFilter(filterInfo)
+                .addFilterUrlMapping("FF", "/*", DispatcherType.REQUEST)
                 .addServlet(servletInfo);
 
         DeploymentManager deploymentManager = defaultContainer().addDeployment(deploymentInfo);
@@ -141,7 +164,6 @@ public final class UndertowPicturaServer {
                 .setIoThreads(10)
                 .setWorkerThreads(100)
                 .build();
-        undertow.start();
 
         LoggingMXBean loggingMXBean = LogManager.getLoggingMXBean();
         List<String> loggerNames = loggingMXBean.getLoggerNames();
@@ -157,6 +179,9 @@ public final class UndertowPicturaServer {
                 ((ConsoleHandler) handler).setLevel(LOG_LEVEL);
             }
         }
+
+        undertow.start();
+        LOG.info("PicturaIO embedded servlet started in " + (System.currentTimeMillis() - start) + " ms");
     }
 
     public static class InterceptableServlet extends PicturaPostServlet {
@@ -316,6 +341,91 @@ public final class UndertowPicturaServer {
             resp.setContentLength(bos.size());
 
             bos.writeTo(resp.getOutputStream());
+        }
+
+    }
+
+    public static class MyErrorHandler implements ErrorHandler {
+
+        @Override
+        public boolean doHandle(HttpServletRequest req, HttpServletResponse resp,
+                int sc, String msg) throws IOException {
+
+            if (sc == 404) {
+                resp.setContentType("text/plain");
+                resp.getWriter().write("Resource not found - 404");
+                return true;
+            }
+            return false;
+        }
+
+    }
+
+    public static class ClientServletFilter implements Filter {
+
+        @Override
+        public void init(FilterConfig filterConfig) throws ServletException {
+            LOG.info("Client servlet filter initialized");
+        }
+
+        @Override
+        public void destroy() {
+            LOG.info("Client servlet filter destroyed");
+        }
+
+        @Override
+        public void doFilter(ServletRequest request, ServletResponse response,
+                FilterChain chain) throws IOException, ServletException {
+
+            HttpServletRequest httpReq = (HttpServletRequest) request;
+            String uri = httpReq.getRequestURI();
+            if (httpReq.getQueryString() != null) {
+                uri += "?" + httpReq.getQueryString();
+            }
+
+            // If the request starts with path "/special" we will forward the
+            // request to the default image processing servlet but with
+            // a special param set (servlet) which differs from the init
+            // servlet params.
+            if (uri.startsWith("/special")) {
+                
+                LOG.info("New /special request \"" + uri + "\"");
+                
+                // Allow 10 image effects per request insteadof 5 (default)
+                httpReq.setAttribute("io.pictura.servlet.MAX_IMAGE_EFFECTS", 10);
+                
+                // Only allow lenna.gif?... as request path
+                httpReq.setAttribute("io.pictura.servlet.RESOURCE_PATHS", new Pattern[] {
+                    Pattern.compile("lenna\\.gif.{0,}")
+                });
+                
+                // Use our own file resource locator
+                httpReq.setAttribute("io.pictura.servlet.RESOURCE_LOCATORS", new ResourceLocator[]{
+                    new FileResourceLocator() {
+                        @Override
+                        protected String getRootPath() {                            
+                            URL url = UndertowPicturaServer.class.getResource("/lenna.gif");
+                            
+                            File f;
+                            try {
+                                f = new File(url.toURI());
+                            } catch (URISyntaxException e) {
+                                f = new File(url.getPath());
+                            }
+                            
+                            return f.getParentFile().getAbsolutePath();
+                        }
+                    }
+                });                
+
+                // Dispatch to the default servlet to handle our image requests,
+                // by removing the path prefix
+                request.getRequestDispatcher(uri.replaceFirst("/special", "")).forward(request, response);
+                return;
+            }
+
+            // Default case
+            chain.doFilter(request, response);
         }
 
     }

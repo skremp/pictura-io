@@ -195,7 +195,49 @@ public class ClientHintRequestProcessorTest {
 
 	assertEquals(new Float(1.5f), rp.getRequestedScalePixelRatio(req));
     }
+    
+    @Test
+    public void testGetRequestedCompressionQuality_1() throws Exception {
+        System.out.println("getRequestedCompressionQuality_2");
 
+	ClientHintRequestProcessor rp = new ClientHintRequestProcessor();
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getHeader("DPR")).thenReturn("1.25");
+        when(req.getHeader("Save-Data")).thenReturn("on");
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/s=w222,dpr1.5/images/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+        rp.setRequest(req);
+        
+	assertEquals((0.85f * 0.8f), (float)rp.getRequestedCompressionQuality(req), 0.05f);
+        assertEquals("/pictura-web/s=w222,dpr1.5/images/lenna.jpg#o=0.68;sw=222;dpr=1.5", rp.getTrueCacheKey());
+    }
+
+    @Test
+    public void testGetRequestedCompressionQuality_2() throws Exception {
+        System.out.println("getRequestedCompressionQuality_2");
+
+	ClientHintRequestProcessor rp = new ClientHintRequestProcessor();
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getHeader("DPR")).thenReturn("1.25");
+        when(req.getHeader("Save-Data")).thenReturn("on");
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/o=70/s=w222,dpr1.5/images/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+        rp.setRequest(req);
+        
+	assertEquals((0.85f * 0.7f), (float)rp.getRequestedCompressionQuality(req), 0.05f);
+        assertEquals("/pictura-web/o=70/s=w222,dpr1.5/images/lenna.jpg#o=0.595;sw=222;dpr=1.5", rp.getTrueCacheKey());
+    }
+    
     @Test
     public void testIsPreferred_1() throws Exception {
 	System.out.println("isPreferred_1");
@@ -384,6 +426,6 @@ public class ClientHintRequestProcessorTest {
         rp.setRequest(req);
         
 	assertEquals("/pictura-web/images/lenna.jpg#sw=1920;dpr=1.2", rp.getTrueCacheKey());
-    }
+    }        
     
 }

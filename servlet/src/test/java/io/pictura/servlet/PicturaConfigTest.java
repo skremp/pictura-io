@@ -89,6 +89,8 @@ public class PicturaConfigTest {
 	assertEquals("io.pictura.servlet.CacheControlHandler", pc.getConfigParam(PicturaServlet.IPARAM_CACHE_CONTROL_HANDLER));
 	assertEquals("7", pc.getConfigParam(PicturaServlet.IPARAM_DEFLATER_COMPRESSION_LEVEL));
 	assertEquals("com.mycompany.MyURLConnectionFactory", pc.getConfigParam(PicturaServlet.IPARAM_URL_CONNECTION_FACTORY));
+        assertEquals("io.pictura.servlet.MyErrorHandler", pc.getConfigParam(PicturaServlet.IPARAM_ERROR_HANDLER));
+        assertEquals("true", pc.getConfigParam(PicturaServlet.IPARAM_HEADER_ADD_NORMALIZED_PARAMS));
     }
 
     @Test(expected = IOException.class)

@@ -18,6 +18,7 @@
  */
 package io.pictura.servlet;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -713,10 +714,10 @@ public final class Pictura {
 
     };
 
-    static final BufferedImageOp getOpRescale(final float scaleFactor) {
-	return new RescaleOp(scaleFactor, 0, null);
-    }
-
+    static final BufferedImageOp getOpRescale(final float value) {
+	return new RescaleOp(value, 0, null);
+    }    
+    
     static final BufferedImageOp getOpGamma(final float value) {
 	byte[] table = new byte[256];
 	for (int i = 0; i < table.length; i++) {
@@ -743,6 +744,49 @@ public final class Pictura {
                     return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];
                 }
                 return rgb;
+            }
+        };
+    }
+    
+    static final BufferedImageOp getOpVibrance(final float value) {
+        
+        final float arg = value * -1;
+        
+        return new PointImageOp() {
+            @Override
+            public int filterRGB(int x, int y, int rgb) {
+                int a = rgb & 0xff000000;
+                int r = (rgb >> 16) & 0xff;
+                int g = (rgb >> 8) & 0xff;
+                int b = rgb & 0xff;
+                
+                // https://github.com/meltingice/CamanJ/blob/master/src/com/meltingice/caman/filters/Vibrance.java
+                
+                int max = Math.max(r, Math.max(g, b));
+                
+		double avg = (r + g + b) / 3;
+		double amt = ((Math.abs(max - avg) * 2.0 / 255.0) * arg) / 100.0;
+
+		int diff;
+		
+                if (r != max) {
+                    diff = max - r;
+                    r += diff * amt;
+                }
+                
+                if (g != max) {
+                    diff = max - g;
+                    g += diff * amt;
+                }
+		
+                if (b != max) {
+                    diff = max - b;
+                    b += diff * amt;
+                }
+
+                int[] rgb2 = clamp(r, g, b);
+                
+		return a | (rgb2[0] << 16) | (rgb2[1] << 8) | rgb2[2];                
             }
         };
     }
@@ -904,7 +948,13 @@ public final class Pictura {
 	 * dimensions for the resultant image that best-fit within the given
 	 * height, regardless of the orientation of the image.
 	 */
-	FIT_TO_HEIGHT;
+        FIT_TO_HEIGHT,
+        /**
+         * Used to indicate that the scaling implementation should calculate
+         * dimensions for the resultant image that best-fit within the given
+         * height and width, and then crop it to fit within the bounding box.
+         */
+        CROP;
     }
 
     /**
@@ -1468,7 +1518,7 @@ public final class Pictura {
 	// <= 1 is a square or landscape-oriented image, > 1 is a portrait.
 	float ratio = ((float) currentHeight / (float) currentWidth);
 
-	/*
+        /*
 	 * First determine if ANY size calculation needs to be done, in the case
 	 * of FIT_EXACT, ignore image proportions and orientation and just use
 	 * what the user sent in, otherwise the proportion of the picture must
@@ -1484,62 +1534,89 @@ public final class Pictura {
 	 * pre-compute proportional dimensions before calling the API, they can
 	 * just specify the dimensions they would like the image to roughly fit
 	 * within and it will do the right thing without mangling the result.
-	 */
-	if (resizeMode == Mode.BEST_FIT_BOTH) {
-	    float requestedHeightScaling = ((float) targetHeight / (float) currentHeight);
-	    float requestedWidthScaling = ((float) targetWidth / (float) currentWidth);
-	    float actualScaling = Math.min(requestedHeightScaling, requestedWidthScaling);
+         */
+        if (resizeMode == Mode.BEST_FIT_BOTH) {
+            float requestedHeightScaling = ((float) targetHeight / (float) currentHeight);
+            float requestedWidthScaling = ((float) targetWidth / (float) currentWidth);
+            float actualScaling = Math.min(requestedHeightScaling, requestedWidthScaling);
 
-	    targetHeight = Math.round((float) currentHeight * actualScaling);
-	    targetWidth = Math.round((float) currentWidth * actualScaling);
+            targetHeight = Math.round((float) currentHeight * actualScaling);
+            targetWidth = Math.round((float) currentWidth * actualScaling);
 
-	    if (targetHeight == currentHeight && targetWidth == currentWidth) {
-		return src;
-	    }
-	} else if (resizeMode != Mode.FIT_EXACT) {
-	    if ((ratio <= 1 && resizeMode == Mode.AUTOMATIC)
-		    || (resizeMode == Mode.FIT_TO_WIDTH)) {
-		// First make sure we need to do any work in the first place
-		if (targetWidth == src.getWidth()) {
-		    return src;
-		}
+            if (targetHeight == currentHeight && targetWidth == currentWidth) {
+                return src;
+            }
+        } else if (resizeMode != Mode.FIT_EXACT) {
+            if ((ratio <= 1 && resizeMode == Mode.AUTOMATIC) || (resizeMode == Mode.FIT_TO_WIDTH)) {
+                // First make sure we need to do any work in the first place
+                if (targetWidth == currentWidth) {
+                    return src;
+                }
 
-		/*
+                /*
 		 * Landscape or Square Orientation: Ignore the given height and
 		 * re-calculate a proportionally correct value based on the
 		 * targetWidth.
-		 */
-		targetHeight = Math.round((float) targetWidth * ratio);
-	    } else {
-		// First make sure we need to do any work in the first place
-		if (targetHeight == src.getHeight()) {
-		    return src;
-		}
+                 */
+                targetHeight = Math.round((float) targetWidth * ratio);
+            } else if (resizeMode == Mode.CROP) {
+                
+                // https://github.com/leon/imgscalr/commit/c71bbc991481c43aed4b0e56a06bd8553e62cd72
+                
+                // If already right size return
+                if (targetWidth == currentWidth && targetHeight == currentHeight) {
+                    return src;
+                }
 
-		/*
+                int originalTargetWidth = targetWidth;
+                int originalTargetHeight = targetHeight;
+
+                // Calculate ratio that will fit within the targetWidth and height
+                ratio = Math.max((float) targetWidth / currentWidth, (float) targetHeight / currentHeight);
+
+                targetWidth = Math.round((float) currentWidth * ratio);
+                targetHeight = Math.round((float) currentHeight * ratio);
+
+                // Calculate the offset for the crop
+                int xOffset = (int) ((targetWidth - originalTargetWidth) / 2D);
+                int yOffset = (int) ((targetHeight - originalTargetHeight) / 2D);
+
+                // If the calculated size is bigger than what was sent in, return what was sent in instead.
+                targetWidth = (int) Math.ceil(targetWidth > originalTargetWidth ? originalTargetWidth : targetWidth);
+                targetHeight = (int) Math.ceil(targetHeight > originalTargetHeight ? originalTargetHeight : targetHeight);
+
+                // Crop to fit within the target height and width
+                src = crop(src, xOffset, yOffset, targetWidth, targetHeight);
+            } else {
+                // First make sure we need to do any work in the first place
+                if (targetHeight == currentHeight) {
+                    return src;
+                }
+
+                /*
 		 * Portrait Orientation: Ignore the given width and re-calculate
 		 * a proportionally correct value based on the targetHeight.
-		 */
-		targetWidth = Math.round((float) targetHeight / ratio);
-	    }
-	}
+                 */
+                targetWidth = Math.round((float) targetHeight / ratio);
+            }
+        }
 
-	// If AUTOMATIC was specified, determine the real scaling method.
-	if (scalingMethod == Method.AUTOMATIC) {
-	    scalingMethod = determineScalingMethod(targetWidth, targetHeight,
-		    ratio);
-	}
+        // If AUTOMATIC was specified, determine the real scaling method.
+        if (scalingMethod == Method.AUTOMATIC) {
+            scalingMethod = determineScalingMethod(targetWidth, targetHeight,
+                    ratio);
+        }
 
-	// Now we scale the image
-	if (scalingMethod == Method.SPEED) {
-	    result = scaleImage(src, targetWidth, targetHeight,
-		    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-	} else if (scalingMethod == Method.BALANCED) {
-	    result = scaleImage(src, targetWidth, targetHeight,
-		    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-	} else if (scalingMethod == Method.QUALITY
-		|| scalingMethod == Method.ULTRA_QUALITY) {
-	    /*
+        // Now we scale the image
+        if (scalingMethod == Method.SPEED) {
+            result = scaleImage(src, targetWidth, targetHeight,
+                    RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        } else if (scalingMethod == Method.BALANCED) {
+            result = scaleImage(src, targetWidth, targetHeight,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        } else if (scalingMethod == Method.QUALITY
+                || scalingMethod == Method.ULTRA_QUALITY) {
+            /*
 	     * If we are scaling up (in either width or height - since we know
 	     * the image will stay proportional we just check if either are
 	     * being scaled up), directly using a single BICUBIC will give us
@@ -1548,20 +1625,20 @@ public final class Pictura {
 	     * 
 	     * If we are scaling down, we must use the incremental scaling
 	     * algorithm for the best result.
-	     */
-	    if (targetWidth > currentWidth || targetHeight > currentHeight) {
-		/*
+             */
+            if (targetWidth > currentWidth || targetHeight > currentHeight) {
+                /*
 		 * BILINEAR and BICUBIC look similar the smaller the scale jump
 		 * upwards is, if the scale is larger BICUBIC looks sharper and
 		 * less fuzzy. But most importantly we have to use BICUBIC to
 		 * match the contract of the QUALITY rendering scalingMethod.
 		 * This note is just here for anyone reading the code and
 		 * wondering how they can speed their own calls up.
-		 */
-		result = scaleImage(src, targetWidth, targetHeight,
-			RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	    } else {
-		/*
+                 */
+                result = scaleImage(src, targetWidth, targetHeight,
+                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            } else {
+                /*
 		 * Originally we wanted to use BILINEAR interpolation here
 		 * because it takes 1/3rd the time that the BICUBIC
 		 * interpolation does, however, when scaling large images down
@@ -1570,19 +1647,19 @@ public final class Pictura {
 		 * be unexpectedly annoying to a user expecting a "QUALITY"
 		 * scale of their original image. Instead BICUBIC was chosen to
 		 * honor the contract of a QUALITY scale of the original image.
-		 */
-		result = scaleImageIncrementally(src, targetWidth,
-			targetHeight, scalingMethod,
-			RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-	    }
-	}
+                 */
+                result = scaleImageIncrementally(src, targetWidth,
+                        targetHeight, scalingMethod,
+                        RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            }
+        }
 
-	// Apply any optional operations (if specified).
-	if (ops != null && ops.length > 0) {
-	    result = apply(result, ops);
-	}
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
 
-	return result;
+        return result;
     }
 
     /**
@@ -1732,6 +1809,207 @@ public final class Pictura {
 	return result;
     }
 
+    /**
+     * Used to apply a border around the edges of an image using the given color
+     * to draw the border space and then return the result. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * <p>
+     * <strong>TIP</strong>: This operation leaves the original <code>src</code>
+     * image unmodified. If the caller is done with the <code>src</code> image
+     * after getting the result of this operation, remember to call
+     * {@link BufferedImage#flush()} on the <code>src</code> to free up native
+     * resources and make it easier for the GC to collect the unused image.
+     * </p>
+     * @param src The image the border will be added to.
+     * @param thickness The number of pixels of border to add to each side in the
+     * resulting image.
+     * @param color The color to draw the border space with. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * @param ops <code>0</code> or more ops to apply to the image. If
+     * <code>null</code> or empty then <code>src</code> is return unmodified.
+     *
+     * @return a new {@link BufferedImage} representing <code>src</code> with
+     * the given border applied to it.
+     *
+     * @throws IllegalArgumentException if <code>src</code> is
+     * <code>null</code>.
+     * @throws IllegalArgumentException if <code>thickness</code> is &lt;
+     * <code>1</code>.
+     * @throws IllegalArgumentException if <code>color</code> is
+     * <code>null</code>.
+     * @throws ImagingOpException if one of the given {@link BufferedImageOp}s
+     * fails to apply. These exceptions bubble up from the inside of most of the
+     * {@link BufferedImageOp} implementations and are explicitly defined on the
+     * imgscalr API to make it easier for callers to catch the exception (if
+     * they are passing along optional ops to be applied). imgscalr takes
+     * detailed steps to avoid the most common pitfalls that will cause
+     * {@link BufferedImageOp}s to fail, even when using straight forward
+     * JDK-image operations.
+     */
+    public static BufferedImage border(BufferedImage src, int thickness,
+            Color color, BufferedImageOp... ops)
+            throws IllegalArgumentException, ImagingOpException {
+        
+        if (src == null) {
+            throw new IllegalArgumentException("src cannot be null");
+        }
+        if (thickness < 1) {
+            throw new IllegalArgumentException("thickness [" + thickness
+                    + "] must be > 0");
+        }
+        if (color == null) {
+            throw new IllegalArgumentException("color cannot be null");
+        }
+        
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+        
+        boolean colorHasAlpha = (color.getAlpha() != 255);
+        boolean imageHasAlpha = (src.getTransparency() != BufferedImage.OPAQUE);
+
+        BufferedImage result;
+        
+        /*
+         * We need to make sure our resulting image that we render into contains
+         * alpha if either our original image OR the padding color we are using
+         * contain it.
+         */
+        if (colorHasAlpha || imageHasAlpha) {
+            result = new BufferedImage(srcWidth, srcHeight,
+                    BufferedImage.TYPE_INT_ARGB);
+        } else {
+            result = new BufferedImage(srcWidth, srcHeight,
+                    BufferedImage.TYPE_INT_RGB);
+        }
+
+        Graphics2D g = (Graphics2D) result.getGraphics();
+        
+        // Draw the image
+        g.drawImage(src, 0, 0, null);
+        
+        // "Clear" the background of the new image with our padding color first.
+        g.setColor(color);
+        g.setStroke(new BasicStroke(2 * thickness));
+        g.drawRect(0, 0, srcWidth, srcHeight);
+        g.dispose();
+
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
+
+        return result;
+    }
+    
+    /**
+     * Used to apply padding around the edges of an image using the given color
+     * to fill the extra padded space and then return the result. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * <p>
+     * The amount of <code>padding</code> specified is applied to all sides;
+     * more specifically, a <code>padding</code> of <code>2</code> would add 2
+     * extra pixels of space (filled by the given <code>color</code>) on the
+     * top, bottom, left and right sides of the resulting image causing the
+     * result to be 4 pixels wider and 4 pixels taller than the <code>src</code>
+     * image.
+     * </p>
+     * <p>
+     * <strong>TIP</strong>: This operation leaves the original <code>src</code>
+     * image unmodified. If the caller is done with the <code>src</code> image
+     * after getting the result of this operation, remember to call
+     * {@link BufferedImage#flush()} on the <code>src</code> to free up native
+     * resources and make it easier for the GC to collect the unused image.
+     * </p>
+     * @param src The image the padding will be added to.
+     * @param padding The number of pixels of padding to add to each side in the
+     * resulting image.
+     * @param color The color to fill the padded space with. {@link Color}s
+     * using an alpha channel (i.e. transparency) are supported.
+     * @param ops <code>0</code> or more ops to apply to the image. If
+     * <code>null</code> or empty then <code>src</code> is return unmodified.
+     *
+     * @return a new {@link BufferedImage} representing <code>src</code> with
+     * the given padding applied to it.
+     *
+     * @throws IllegalArgumentException if <code>src</code> is
+     * <code>null</code>.
+     * @throws IllegalArgumentException if <code>padding</code> is &lt;
+     * <code>1</code>.
+     * @throws IllegalArgumentException if <code>color</code> is
+     * <code>null</code>.
+     * @throws ImagingOpException if one of the given {@link BufferedImageOp}s
+     * fails to apply. These exceptions bubble up from the inside of most of the
+     * {@link BufferedImageOp} implementations and are explicitly defined on the
+     * imgscalr API to make it easier for callers to catch the exception (if
+     * they are passing along optional ops to be applied). imgscalr takes
+     * detailed steps to avoid the most common pitfalls that will cause
+     * {@link BufferedImageOp}s to fail, even when using straight forward
+     * JDK-image operations.
+     */
+    public static BufferedImage pad(BufferedImage src, int padding,
+            Color color, BufferedImageOp... ops)
+            throws IllegalArgumentException, ImagingOpException {
+
+        if (src == null) {
+            throw new IllegalArgumentException("src cannot be null");
+        }
+        if (padding < 1) {
+            throw new IllegalArgumentException("padding [" + padding
+                    + "] must be > 0");
+        }
+        if (color == null) {
+            throw new IllegalArgumentException("color cannot be null");
+        }
+
+        int srcWidth = src.getWidth();
+        int srcHeight = src.getHeight();
+
+        /*
+         * Double the padding to account for all sides of the image. More
+         * specifically, if padding is "1" we add 2 pixels to width and 2 to
+         * height, so we have 1 new pixel of padding all the way around our
+         * image.
+         */
+        int sizeDiff = (padding * 2);
+        int newWidth = srcWidth + sizeDiff;
+        int newHeight = srcHeight + sizeDiff;
+
+        boolean colorHasAlpha = (color.getAlpha() != 255);
+        boolean imageHasAlpha = (src.getTransparency() != BufferedImage.OPAQUE);
+
+        BufferedImage result;
+
+        /*
+         * We need to make sure our resulting image that we render into contains
+         * alpha if either our original image OR the padding color we are using
+         * contain it.
+         */
+        if (colorHasAlpha || imageHasAlpha) {
+            result = new BufferedImage(newWidth, newHeight,
+                    BufferedImage.TYPE_INT_ARGB);
+        } else {
+            result = new BufferedImage(newWidth, newHeight,
+                    BufferedImage.TYPE_INT_RGB);
+        }
+
+        Graphics g = result.getGraphics();
+
+        // "Clear" the background of the new image with our padding color first.
+        g.setColor(color);
+        g.fillRect(0, 0, newWidth, newHeight);
+
+        // Draw the image into the center of the new padded image.
+        g.drawImage(src, padding, padding, null);
+        g.dispose();
+
+        // Apply any optional operations (if specified).
+        if (ops != null && ops.length > 0) {
+            result = apply(result, ops);
+        }
+
+        return result;
+    }
+    
     /**
      * Used to create a {@link BufferedImage} with the given dimensions and the
      * most optimal RGB TYPE ( {@link BufferedImage#TYPE_INT_RGB} or

@@ -1,5 +1,31 @@
 # Change Log
 
+_2016-07-12_
+
+* Added new image parameter *P* and *B* to apply padding and border around the 
+  edges of an image.
+* Added new image parameter *N* to extract a specified image frame from a
+  sequence of *1..n* image frames (e.g. Animated-GIFs).
+* Added resize mode *CROP*.
+* Added new vibrance effect filter.
+* Added new FTP resource locator.
+* Added support for auto image rotation depending on the source image
+  orientation provided by Exif metadata.
+* Added support for the upcoming Client Hint header *Save-Data*.
+* Added convenience methods to load and save the current http image cache.
+  Among the existing methods, now it is also possible to load and save cache 
+  entries within I/O streams.
+* Added the possibility to define a custom error handler in case of HTTP error
+  responses (status code 4xx and 5xx).
+* Added optional response header *X-Pictura-NormalizedParams*.
+* Added support for JEE 7 JSON API in cases of EXIF metadata requests.
+* Improved color value handling in image URL parameters. Now, 3-, 4-, 6- and
+  8-digit values, to handle RGB and ARGB color values, are supported.
+* Fixed unobserved maximum image resolution in case of up-scaling images.
+* Fixed *resourcePaths* in the base *RequestProcessor*. If the value was
+  overridden (by method) the new value was not used while the requested path
+  was checked by the *RequestProcessor* himself.
+
 ## 1.1.5.Final
 
 _2016-06-07_
@@ -64,8 +90,9 @@ _2016-01-19_
 
 _2016-01-16_
 
-* Added missing webp-imageio lib (required to run intefration tests).
 * Removed unnecessary whitespace in cache control header.
+
+* Added missing webp-imageio lib (required to run integration tests).
 * Fixed broken links in documentation.
 
 ## 1.0.1.Final

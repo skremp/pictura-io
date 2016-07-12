@@ -42,3 +42,6 @@ hs_err_pid*
 !/etc/*/lib
 !/etc/*/*.jar
 !/servlet/etc/webp/webp-imageio.jar
+
+server
+sandbox

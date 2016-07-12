@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -120,7 +119,6 @@ public class XMLCacheControlHandlerTest {
     }
 
     @Test
-    @Ignore
     public void testConfigFileChange() throws Exception {
 	String xml = "<cache-control><rule><path></path><directive>no-cache</directive></rule></cache-control>";
 
@@ -137,11 +135,14 @@ public class XMLCacheControlHandlerTest {
 	    os.write(xml.getBytes());
 	    os.flush();
 	}
+        System.out.println("last modified cache control: " + tmp.lastModified());
 
 	XMLCacheControlHandler handler = new XMLCacheControlHandler(tmp.getAbsolutePath());
 	assertEquals("no-cache", handler.getDirective("/public/id-1/myImage.jpg"));
 	assertEquals("no-cache", handler.getDirective("public/id-1/myImage.jpg"));
 
+        TimeUnit.SECONDS.sleep(1);
+        
 	xml = "<cache-control><rule><path></path><directive>max-age=20</directive></rule></cache-control>";
 
 	try (OutputStream os = new FileOutputStream(tmp)) {
@@ -149,6 +150,8 @@ public class XMLCacheControlHandlerTest {
 	    os.flush();
 	}
 
+        System.out.println("last modified cache control: " + tmp.lastModified());
+        
 	// automaically fail after 30 seconds
 	for (int i = 0; i < 30; i++) {
 	    String directive = handler.getDirective("/public/id-1/myImage.jpg");

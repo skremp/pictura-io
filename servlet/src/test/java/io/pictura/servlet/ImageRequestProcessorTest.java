@@ -16,12 +16,18 @@
 package io.pictura.servlet;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
 import java.awt.image.LookupOp;
 import java.awt.image.RescaleOp;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import javax.print.attribute.HashAttributeSet;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,9 +35,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -75,6 +81,15 @@ public class ImageRequestProcessorTest {
 	assertEquals(new Float(Float.NaN), ImageRequestProcessor.tryParseFloat("foobar", Float.NaN));
     }
 
+    public void testTryParseColor() {
+        System.out.println("tryParseColor");
+        
+        assertEquals(Color.decode("#123456"), ImageRequestProcessor.tryParseColor("123456", null));
+        assertEquals(Color.decode("#123456"), ImageRequestProcessor.tryParseColor("#123456", null));
+        assertEquals(Color.decode("#334455"), ImageRequestProcessor.tryParseColor("345", null));        
+        assertEquals(Color.decode("#334455"), ImageRequestProcessor.tryParseColor("#345", null));
+    }
+    
     @Test
     public void testCanReadFormat() {
 	System.out.println("canReadFormat");
@@ -370,6 +385,17 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertEquals(ImageRequestProcessor.Quality.AUTO, irp.getRequestedQuality(req));
+        
+        HttpServletRequest req2 = mock(HttpServletRequest.class);
+
+	when(req2.getContextPath()).thenReturn("/pictura-web");
+	when(req2.getServletPath()).thenReturn("/images");
+	when(req2.getRequestURI()).thenReturn("/pictura-web/images/q=a/lenna.jpg");
+	when(req2.getQueryString()).thenReturn(null);
+	when(req2.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp2 = new ImageRequestProcessor();
+	assertEquals(ImageRequestProcessor.Quality.AUTO, irp2.getRequestedQuality(req));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -787,7 +813,7 @@ public class ImageRequestProcessorTest {
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertTrue(irp.getRequestedScaleForceUpscale(req));
     }
-
+    
     @Test
     public void testGetRequestedScaleForceUpscale_Null() {
 	System.out.println("getRequestedScaleForceUpscale_Null");
@@ -802,8 +828,13 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertFalse(irp.getRequestedScaleForceUpscale(req));
+    }       
+    
+    @Test
+    public void testGetRequestedRotation_Null() {
+	assertNull(new ImageRequestProcessor().getRequestedRoatation(null));
     }
-
+    
     @Test
     public void testGetRequestedRotation_L() {
 	System.out.println("getRequestedRotation_L");
@@ -867,7 +898,28 @@ public class ImageRequestProcessorTest {
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertEquals(new Integer(180), irp.getRequestedRoatation(req));
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedRotation_IllegalArgumentException() throws Exception {
+	System.out.println("getRequestedRotation_IllegalArgumentException");
 
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/r=notspecified/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedRoatation(req);
+    }
+
+    @Test
+    public void testGetRequestedFlip_Null() {
+	assertNull(new ImageRequestProcessor().getRequestedFlip(null));
+    }
+    
     @Test
     public void testGetRequestedFlip_H() {
 	System.out.println("getRequestedFlip_H");
@@ -900,6 +952,106 @@ public class ImageRequestProcessorTest {
 	assertEquals(new Integer(1), irp.getRequestedFlip(req));
     }
 
+    @Test
+    public void testGetRequestedPaddingSize() {
+	System.out.println("getRequestedPaddingSize");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/p=11,444444/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Integer(11), irp.getRequestedPaddingSize(req));
+    }
+    
+    @Test
+    public void testGetRequestedPaddingColor() {
+	System.out.println("getRequestedPaddingColor");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/p=11,444441/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(68, 68, 65), irp.getRequestedPaddingColor(req));
+        
+        assertNull(new ImageRequestProcessor().getRequestedPaddingColor(null));
+    }
+    
+    @Test
+    public void testGetRequestedPaddingColor_2() {
+	System.out.println("getRequestedPaddingColor_2");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/p=11,333/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(51, 51, 51), irp.getRequestedPaddingColor(req));               
+    }
+    
+    @Test
+    public void testGetRequestedBorderColor() {
+	System.out.println("getRequestedBorderColor");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,444441/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(68, 68, 65), irp.getRequestedBorderColor(req));
+        
+        assertNull(new ImageRequestProcessor().getRequestedBorderColor(null));
+    }
+    
+    @Test
+    public void testGetRequestedBorderColor_2() {
+	System.out.println("getRequestedBorderColor_2");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,333/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Color(51, 51, 51), irp.getRequestedBorderColor(req));
+    }
+    
+    @Test
+    public void testGetRequestedBorderSize() {
+	System.out.println("getRequestedBorderSize");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/b=11,444444/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Integer(11), irp.getRequestedBorderSize(req));
+    }
+    
     @Test
     public void testGetRequestedTrimTolerance() {
 	System.out.println("getRequestedTrimTolerance");
@@ -946,6 +1098,22 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	irp.getRequestedTrimTolerance(req);
+    }
+    
+    @Test
+    public void testGetRequestedPage() {
+	System.out.println("getRequestedPage");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/t=2.1/s=w120,h60/c=x5,y15,w100,h50/n=1/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(new Integer(1), irp.getRequestedPage(req));
     }
     
     @Test
@@ -1559,6 +1727,22 @@ public class ImageRequestProcessorTest {
 	assertEquals(1, irp.getRequestedEffects(req).length);
 	assertTrue(irp.getRequestedEffects(req)[0] instanceof LookupOp);
     }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_GAM_150() {
+	System.out.println("getRequestedEffects_GAM_150");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=gam(150)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
+    }
 
     @Test
     public void testGetRequestedEffects_SAT_25() {
@@ -1574,6 +1758,54 @@ public class ImageRequestProcessorTest {
 
 	ImageRequestProcessor irp = new ImageRequestProcessor();
 	assertEquals(1, irp.getRequestedEffects(req).length);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_SAT_125() {
+	System.out.println("getRequestedEffects_SAT_125");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=sat(125)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
+    }
+    
+    @Test
+    public void testGetRequestedEffects_VIB_25() {
+	System.out.println("getRequestedEffects_VIB_25");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=vib(25)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	assertEquals(1, irp.getRequestedEffects(req).length);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void testGetRequestedEffects_VIB_125() {
+	System.out.println("getRequestedEffects_VIB_125");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/s=w120,h60/e=vib(125)/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	irp.getRequestedEffects(req);
     }
     
     @Test
@@ -1873,6 +2105,27 @@ public class ImageRequestProcessorTest {
 	assertEquals(0, c.getGreen());
 	assertEquals(0, c.getBlue());
     }
+    
+    @Test
+    public void testGetRequestedBackgroundColor_EEE() {
+	System.out.println("getRequestedBackgroundColor_EEE");
+
+	HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/bg=EEE/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+
+	ImageRequestProcessor irp = new ImageRequestProcessor();
+	Color c = irp.getRequestedBackgroundColor(req);
+
+	assertNotNull(c);
+	assertEquals(238, c.getRed());
+	assertEquals(238, c.getGreen());
+	assertEquals(238, c.getBlue());
+    }
 
     @Test
     public void testGetRequestedBackgroundColor_Null() {
@@ -1947,6 +2200,153 @@ public class ImageRequestProcessorTest {
     @Test
     public void testIgnoreSourceContentType() throws Exception {
         assertFalse(new ImageRequestProcessor().ignoreSourceContentType());
+    }
+
+    @Test
+    public void testGetTrueCacheKey() {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+
+	when(req.getContextPath()).thenReturn("/pictura-web");
+	when(req.getServletPath()).thenReturn("/images");
+	when(req.getRequestURI()).thenReturn("/pictura-web/images/f=png/lenna.jpg");
+	when(req.getQueryString()).thenReturn(null);
+	when(req.getParameterNames()).thenReturn(Collections.enumeration(new ArrayList<String>(0)));
+        
+        ImageRequestProcessor irp = new ImageRequestProcessor() {
+            
+            private final HashMap<String, Object> attributes = new HashMap<>();
+
+            @Override
+            public void setAttribute(String name, Object o) {
+                attributes.put(name, o);
+            }
+
+            @Override
+            public Object getAttribute(String name) {
+                return attributes.get(name);
+            }  
+        };
+        irp.setRequest(req);
+        
+        assertEquals("/pictura-web/images/f=png/lenna.jpg", irp.getTrueCacheKey());        
+        
+        irp.setParamsInterceptor(new ParamsInterceptor() {
+            @Override
+            public String getVaryCacheKey(String trueCacheKey, HttpServletRequest req) {
+                return trueCacheKey + "#test";
+            }
+
+            @Override
+            public Map<String, String> intercept(Map<String, String> params, HttpServletRequest req) {
+                return null;
+            }
+        });
+        
+        assertEquals("/pictura-web/images/f=png/lenna.jpg#test", irp.getTrueCacheKey());
+        
+        irp.setImageInterceptor(new ImageInterceptor() {
+            @Override
+            public String getVaryCacheKey(String trueCacheKey, HttpServletRequest req) {
+                return trueCacheKey + "#tEsT";
+            }
+
+            @Override
+            public BufferedImage intercept(BufferedImage img, HttpServletRequest req) {
+                return null;
+            }
+        });
+        
+        assertEquals("/pictura-web/images/f=png/lenna.jpg#tEsT#test", irp.getTrueCacheKey());
+    }
+    
+    @Test
+    public void testClassForName_Null() {
+        assertNull(ImageRequestProcessor.classForName(null, "com.foo.Foo2Bar"));
+    }
+    
+    @Test
+    public void testDoProcessImage_ImageInputStream_InternalServerError() throws Exception {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        
+        ImageRequestProcessor irp = new ImageRequestProcessor();
+        irp.setRequest(req);
+        irp.setResponse(resp);
+        
+        irp.doProcessImage(null, req, resp);        
+        verify(resp).sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+    
+    @Test
+    public void testDoProcessImage_Format_BadRequest() throws Exception {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        
+        ImageRequestProcessor irp = new ImageRequestProcessor() {
+            @Override
+            protected String getRequestedFormatName(HttpServletRequest req) {
+                return "";
+            }            
+        };
+        irp.setRequest(req);
+        irp.setResponse(resp);
+        
+        irp.doProcessImage(new ByteArrayInputStream(new byte[1]), req, resp);        
+        verify(resp).sendError(HttpServletResponse.SC_BAD_REQUEST, 
+                "Invalid format: the format parameter is present but there was no format specified");
+    }
+    
+    @Test
+    public void testDoProcessImage_Format_UnsupportedMediaType() throws Exception {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        
+        ImageRequestProcessor irp = new ImageRequestProcessor() {
+            @Override
+            protected String getRequestedFormatName(HttpServletRequest req) {
+                return "foo";
+            }            
+        };
+        irp.setRequest(req);
+        irp.setResponse(resp);
+        
+        irp.doProcessImage(new ByteArrayInputStream(new byte[1]), req, resp);        
+        verify(resp).sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, 
+                "Invalid format: the requested image output format \"foo\" is not supported by this server");
+    }
+
+    @Test
+    public void testDoProcessImage_CompressionQuality_BadRequest() throws Exception {
+        HttpServletRequest req = mock(HttpServletRequest.class);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        
+        ImageRequestProcessor irp = new ImageRequestProcessor() {    
+            @Override
+            protected String getRequestedFormatName(HttpServletRequest req) {
+                return null;
+            }
+
+            @Override
+            protected String getRequestedFormatOption(HttpServletRequest req) {
+                return null;
+            }
+
+            @Override
+            protected String getRequestedFormatEncoding(HttpServletRequest req) {
+                return null;
+            }
+            
+            @Override
+            protected Float getRequestedCompressionQuality(HttpServletRequest req) {
+                return -1f;
+            }            
+        };
+        irp.setRequest(req);
+        irp.setResponse(resp);
+        
+        irp.doProcessImage(new ByteArrayInputStream(new byte[1]), req, resp);        
+        verify(resp).sendError(HttpServletResponse.SC_BAD_REQUEST, 
+                "Invalid compression: the compression quality must be between 0 and 100");
     }
     
 }

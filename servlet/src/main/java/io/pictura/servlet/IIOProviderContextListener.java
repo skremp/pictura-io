@@ -18,9 +18,12 @@ package io.pictura.servlet;
 import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ServiceRegistry;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.imageio.ImageIO;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageReaderWriterSpi;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
@@ -63,6 +66,27 @@ public class IIOProviderContextListener implements ServletContextListener {
         
 	LOG.info("Scan classpath for Image I/O plugins");
 	ImageIO.scanForPlugins();
+        
+        if (LOG.isDebugEnabled()) {
+            Iterator<ImageReaderSpi> readers = IIORegistry.getDefaultInstance()
+                    .getServiceProviders(ImageReaderSpi.class, true);
+            while (readers.hasNext()) {
+                logImageReaderWriterSpi(readers.next());
+            }
+            Iterator<ImageReaderSpi> writers = IIORegistry.getDefaultInstance()
+                    .getServiceProviders(ImageReaderSpi.class, true);
+            while (writers.hasNext()) {
+                logImageReaderWriterSpi(writers.next());
+            }
+        }
+    }
+    
+    private void logImageReaderWriterSpi(ImageReaderWriterSpi spi) {
+        LOG.debug("Found Image I/O service provider \"" 
+                + spi.getPluginClassName() + ":" 
+                + spi.getVersion()+ ":" 
+                + spi.getVendorName() + "\" on class path to handle " 
+                + Arrays.toString(spi.getMIMETypes()));
     }
 
     // https://github.com/haraldk/TwelveMonkeys/blob/master/servlet/src/main/java/com/twelvemonkeys/servlet/image/IIOProviderContextListener.java

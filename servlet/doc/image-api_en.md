@@ -40,6 +40,9 @@ or with an optional query string as
   1. [Crop](#crop)
   1. [Trim](#trim)
   1. [Rotation](#rotation)
+  1. [Padding](#padding)
+  1. [Border](#border)
+  1. [Page](#page)
   1. [Effects](#effects)
   1. [Background](#background)
 
@@ -252,6 +255,10 @@ image.
 that best-fit within the given height, regardless of the orientation of the 
 image.
 
+`5` (crop) is used to indicate that the scaling implementation should calculate
+dimensions for the resultant image that best-fit within the given height and 
+width, and then crop it to fit within the bounding box.
+
 You must specify either a width, a height, or both for this parameter to work.
 
 **Examples**
@@ -404,7 +411,10 @@ are in the range `0 - 10`.
 Rotate and flip your image. Valid values, to flip the image horizontally or
 vertically are `H` or `V`. To change the orientation you can set the value to 
 `L` to rotate the image 90 degrees clockwise, `LR` or `RL` to rotate the image 
-180 degrees clockwise or `R` to rotate the image 270 degrees clockwise.
+180 degrees clockwise or `R` to rotate the image 270 degrees clockwise. If the
+source image contains Exif metadata, it is also possible to rotate or flip the
+image automatically by the provided metadata when the request image parameter
+was set to `A` (auto correct the rotation of images).
 
 **Examples**
 
@@ -417,6 +427,70 @@ vertically are `H` or `V`. To change the orientation you can set the value to
  `/R=LR/image.jpg`
  
  `/R=R/image.jpg`
+
+ `/R=A/image.jpg`
+
+> **Note**: auto correct the rotation of images is available since version 1.2.
+
+**[\[⬆\]](#table-of-contents)**
+
+## Padding
+
+***@since 1.2***
+
+ `P={value}`
+
+Used to apply padding around the edges of an image using the given color
+to fill the extra padded space. The value is specified by `{size,color}` where
+the size unit are pixels and the color must be a 3-, 4-, 6- or 8-digit hex color 
+value. Valid sizes are in the range `1 - 99`.
+
+**Examples**
+
+ `/P=5,232323/image.jpg`
+
+ `/P=10,444/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_pad.jpg)|
+ 
+## Border
+
+***@since 1.2***
+
+ `B={value}`
+
+Used to apply a border around the edges of an image using the given color. 
+The value is specified by `{thickness,color}` where the thickness unit are 
+pixels and the color must be a 3-, 4-, 6- or 8-digit hex color value. Valid 
+sizes are in the range `1 - 99`.
+
+**Examples**
+
+ `/B=5,232323/image.jpg`
+
+ `/B=10,444/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_border.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
+## Page (Frame Index)
+
+***@since 1.2***
+
+ `N={value}`
+
+Used to extract the specified image frame from the source image (e.g. in cases
+of Animated-GIFs). Valid values are positive integers including `0`. The default 
+value is `0`.
+
+**Example**
+
+ `/N=3/image.gif`
 
 **[\[⬆\]](#table-of-contents)**
  
@@ -636,6 +710,8 @@ range `10 - 100`. The default value is `10`.
 
 ### Median
 
+***@since 1.1***
+
  `M`
 
 Applies a median (noise reduction) effect to the image.
@@ -685,6 +761,8 @@ to `100`. The default value is `0` which leaves the image unchanged.
 
 ### Saturation
 
+***@since 1.1***
+
  `SAT({value})`
  
 Adjusts the saturation of the image. Valid values are in the range `-100`
@@ -698,6 +776,25 @@ to `100`. The default value is `0` which leaves the image unchanged. A value of
 |Source|Destination|
 |------|-----------|
 |![A](misc/lenna.jpg)|![A](misc/lenna_effect_sat60.jpg)|
+
+**[\[⬆\]](#table-of-contents)**
+
+### Vibrance
+
+***@since 1.2***
+
+ `VIB({value})`
+ 
+Adjusts the vibrance of the image. Valid values are in the range `-100`
+to `100`. The default value is `0` which leaves the image unchanged.
+
+**Example**
+
+ `/E=VIB(-30)/image.jpg`
+
+|Source|Destination|
+|------|-----------|
+|![A](misc/lenna.jpg)|![A](misc/lenna_effect_vib20.jpg)|
 
 **[\[⬆\]](#table-of-contents)**
 
@@ -765,11 +862,17 @@ Applies all three auto filters `AC`, `AL` and `AS` which is equals to
   `BG={value}`
   
 Control the background color of your image. The background color to use when 
-transparency is encountered. Valid values are 6-value (rgb) hexadecimal colors.
-The default value is `FFFFFF`.
+transparency is encountered. Valid values are 3-, 4-, 6- and 8-value (rgb and 
+argb) hexadecimal colors. The default value is `FFFFFF`.
 
 **Example**
 
  `/F=JPG/BG=336699/image.png`
+
+ `/F=JPG/BG=369/image.png`
+
+ `/F=JPG/BG=88336699/image.png`
+
+ `/F=JPG/BG=8369/image.png`
 
 **[\[⬆\]](#table-of-contents)**

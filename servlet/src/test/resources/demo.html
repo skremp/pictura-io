@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Accept-CH" content="DPR, Viewport-Width, Width">
 
         <title>PicturaIO Demo</title>
 
@@ -27,7 +28,7 @@
             .pictura {
             }
         </style>        
-        
+
         <link rel="stylesheet" href="/F=PCSS/PF=lenna/lenna.jpg">
     </head>
     <body>
@@ -60,7 +61,7 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/s=h50">
         </div>
-        
+
         <div>
             <h3>Rotation</h3>
             <img class="pictura" alt="" style="width: 200px;" 
@@ -70,7 +71,7 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/r=h">
         </div>
-        
+
         <div>
             <h3>Crop</h3>
             <img class="pictura" alt="" style="width: 200px;" 
@@ -83,7 +84,7 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/c=t10,b10,l50">
         </div>
-        
+
         <div>
             <h3>Quality</h3>
             <img class="pictura" alt="" style="width: 200px;" 
@@ -99,7 +100,7 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/q=l">
         </div>
-        
+
         <div>
             <h3>Compression</h3>
             <img class="pictura" alt="" style="width: 200px;" 
@@ -115,7 +116,7 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/o=20">
         </div>
-        
+
         <div>
             <h3>Format</h3>
             <img class="pictura" alt="" style="width: 200px;" 
@@ -128,83 +129,134 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/f=gif">
         </div>
-        
+
+        <div>
+            <h3>Padding</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/p=10,985643">
+        </div>
+
+        <div>
+            <h3>Border</h3>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/b=10,99985643">
+            <br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/b=10,985643">
+        </div>
+
         <div>
             <h3>Effects</h3>
+            <i>Antialias (Blur)</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=a">
             <br>
+            <i>Brightness</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=b">
             <br>
-            <img class="pictura" alt="" style="width: 200px;" 
+            <i>Darkness</i><br>
+            <img id="aa" class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=d">
             <br>
+            <i>Sharpen</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=s">
             <br>
+            <i>Grayscale</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=g">
             <br>
+            <i>Grayscale Luminosity</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=gl">
             <br>
+            <i>Sepia Tone</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=sp">
             <br>
+            <i>Sunset Tone</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=ss">
             <br>
+            <i>Invert</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=i">
             <br>
+            <i>Threshold</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=t(100)">
             <br>
+            <i>Posterize</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=p">
             <br>
+            <i>Pixelate</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=px(10)">
             <br>
+            <i>Noice</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=n">
             <br>
+            <i>Median</i><br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=m">
+            <br>
+            <i>Gamma</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=gam(25)">
             <br>
+            <i>Saturation</i><br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=sat(-10)">
+            <br>
+            <i>Vibrance</i><br>
+            <img class="pictura" alt="" style="width: 200px;" 
+                 src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                 data-src="/lenna.jpg" data-params="/e=vib(-15)">
+            <br>
+            <i>Auto Contrast</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=ac">
             <br>
+            <i>Auto Level</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=al">
             <br>
+            <i>Auto Color</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=as">
             <br>
+            <i>Auto Enhancement</i><br>
             <img class="pictura" alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg" data-params="/e=ae">
             <br>
         </div>
-        
+
         <div>
             <h3>Download Link</h3>
             <a href="/f=jpg/s=w320/lenna.png?dl=example-download-filename">
@@ -213,13 +265,25 @@
                      data-src="/lenna.png" data-params="/s=w200">
             </a>
         </div>
-        
+
+        <div>
+            <h3>PDF</h3>
+            <a href="/f=pdf/s=w320/lenna.png">Open as PDF</a>
+            <br>
+            <a href="/f=pdf/s=w320/lenna.png?dl=lenna-pdf">Download as PDF</a>
+        </div>
+
+        <div>
+            <h3>Metadata</h3>
+            <a href="/f=exif/lenna.png">Open EXIF as JSON</a>
+        </div>
+
         <div>
             <h3>Palette CSS</h3>
             <img class="pictura" alt="" style="width: 200px;"
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/lenna.jpg">
-            
+
             <div>
                 <div style="float: left; width: 20px; height: 20px" class="lenna-bg-0"></div>
                 <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-1"></div>
@@ -231,12 +295,12 @@
                 <div style="margin-left: 5px; float: left; width: 20px; height: 20px" class="lenna-bg-7"></div>
             </div>
         </div>
-        
+
         <div style="clear: left;"></div>
-        
+
         <div>
             <h3>Placeholder Images</h3>
-            
+
             <img alt="" style="width: 200px;" 
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/ip/D=200x100">
@@ -253,27 +317,24 @@
                  src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
                  data-src="/ip/D=200x50/BG=blue">
         </div>
-        
+
         <script>
             PicturaIO = {
                 init: {
                     server: '/',
                     delay: 500,
                     imageClass: 'pictura',
-                    imageCompressionQuality: 80,
+                    imageCompressionQuality: (window.devicePixelRatio || 1) > 1.9 ? 50 : 80,
                     reloadOnResize: true,
                     reloadOnResizeDown: true,
-                    lazyLoad: true,
-                    imageOnLoad: function(e) {
-                        console.log("Loading image");
-                    }
+                    lazyLoad: true
                 }
             };
         </script>
 
         <script src="/js/pictura.js" type="text/javascript"></script>
         <script src="/js/cookie.js" type="text/javascript"></script>
-        
+
         <script>
             console.log("Pictura version: " + PicturaIO.version);
         </script>

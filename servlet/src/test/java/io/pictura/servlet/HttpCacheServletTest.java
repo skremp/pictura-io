@@ -15,7 +15,16 @@
  */
 package io.pictura.servlet;
 
+import static io.pictura.servlet.RequestProcessor.HEADER_EXPIRES;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +37,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * @author Steffen Kremp
@@ -104,20 +114,20 @@ public class HttpCacheServletTest {
     public void testInitialHttpCacheSize() throws Exception {
         HttpCacheServlet servlet = new HttpCacheServletMock();
         assertEquals(-1, servlet.getHttpCacheSize());
-        
+
         servlet.setHttpCache(HttpCacheServletMock.createDefaultHttpCache(100, 1024));
         assertEquals(0, servlet.getHttpCacheSize());
     }
-    
+
     @Test
     public void testInitialHttpCacheHitRate() throws Exception {
         HttpCacheServlet servlet = new HttpCacheServletMock();
         assertEquals(-1f, servlet.getHttpCacheHitRate(), 0f);
-        
+
         servlet.setHttpCache(HttpCacheServletMock.createDefaultHttpCache(100, 1024));
         assertEquals(0f, servlet.getHttpCacheHitRate(), 0f);
     }
-    
+
     @Test
     public void testCreateDefaultHttpCache() throws Exception {
         HttpCache c = HttpCacheServletMock.createDefaultHttpCache(100, 1024);
@@ -147,6 +157,95 @@ public class HttpCacheServletTest {
                 assertEquals(100, c.keySet().size());
             }
         }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveHttpCacheToStreamStreamNull() throws Exception {
+        HttpCacheServlet.saveHttpCacheToStream(null, HttpCacheServlet.createDefaultHttpCache(1, 1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveHttpCacheToStreamCacheNull() throws Exception {
+        HttpCacheServlet.saveHttpCacheToStream(new ByteArrayOutputStream(), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveHttpCacheToFileFileNull() throws Exception {
+        HttpCacheServlet.saveHttpCacheToFile(null, HttpCacheServlet.createDefaultHttpCache(1, 1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testSaveHttpCacheToFileCacheNull() throws Exception {
+        File f = File.createTempFile("test", "dat");
+        f.deleteOnExit();
+        HttpCacheServlet.saveHttpCacheToFile(f, null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoadHttpCacheFromStreamStreamNull() throws Exception {
+        HttpCacheServlet.loadHttpCacheFromStream(null, HttpCacheServlet.createDefaultHttpCache(1, 1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoadHttpCacheFromStreamCacheNull() throws Exception {
+        HttpCacheServlet.loadHttpCacheFromStream(new ByteArrayInputStream(new byte[1]), null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoadHttpCacheFromFileFileNull() throws Exception {
+        HttpCacheServlet.loadHttpCacheFromFile(null, HttpCacheServlet.createDefaultHttpCache(1, 1));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testLoadHttpCacheFromFileCacheNull() throws Exception {
+        File f = File.createTempFile("test", "dat");
+        f.deleteOnExit();
+        HttpCacheServlet.loadHttpCacheFromFile(f, null);
+    }
+
+    @Test
+    public void testSaveLoadHttpCacheToStream() throws Exception {
+        ByteArrayOutputStream os = new ByteArrayOutputStream(1024 * 64);        
+        HttpCacheServlet.saveHttpCacheToStream(os, createDummyCache());
+        assertTrue(os.toByteArray().length > (10 * 1024));
+        
+        HttpCache newCache = HttpCacheServlet.createDefaultHttpCache(100, 1024 * 32);
+        assertEquals(0, newCache.keySet().size());
+        
+        HttpCacheServlet.loadHttpCacheFromStream(new ByteArrayInputStream(os.toByteArray()), newCache);
+        assertEquals(10, newCache.keySet().size());
+        
+        Thread.sleep(1010);
+        
+        HttpCache newCache2 = HttpCacheServlet.createDefaultHttpCache(100, 1024 * 32);
+        assertEquals(0, newCache2.keySet().size());
+        
+        HttpCacheServlet.loadHttpCacheFromStream(new ByteArrayInputStream(os.toByteArray()), newCache2);
+        assertEquals(0, newCache2.keySet().size());
+    }    
+    
+    public HttpCache createDummyCache() {
+        HttpCache cache = HttpCacheServlet.createDefaultHttpCache(10, 1024 * 32);
+        for (int i = 0; i < 10; i++) {
+            cache.put("key-" + i, createDummyCacheEntry("key-" + i, new Date(System.currentTimeMillis() + 1000)));
+        }
+        return cache;
+    }
+    
+    public HttpCacheEntry createDummyCacheEntry(String key, Date expires) {
+
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+
+        HashMap<String, String> headers = new HashMap<>();
+        headers.put(HEADER_EXPIRES, new SimpleDateFormat("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US).format(expires));
+
+        Collection<String> headerNames = headers.keySet();
+
+        when(resp.getStatus()).thenReturn(200);
+        when(resp.getHeaderNames()).thenReturn(headerNames);
+        when(resp.getHeader(HEADER_EXPIRES)).thenReturn(headers.get(HEADER_EXPIRES));
+
+        return new HttpCacheEntry(key, new byte[1024], null, resp);
     }
 
     public static final class HttpCacheServletMock extends HttpCacheServlet {
