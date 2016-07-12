@@ -119,8 +119,8 @@ public class MetadataRequestProcessor extends StrategyRequestProcessor {
                 }
                 json = builder.build().toString();
             } catch (Throwable t) {
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug(t);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("Missing implementation provider for javax.json.Json", t);
                 }
             }
             if (json != null) {
